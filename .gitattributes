@@ -1,0 +1,19 @@
+# Default all text to LF
+* text=auto eol=lf
+
+
+# Windows specific
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+
+# Binaries and Images
+*.exe binary
+*.dll binary
+*.so binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.ttf binary
+*.webp binary
