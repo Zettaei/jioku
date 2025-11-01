@@ -1,5 +1,5 @@
 .vscode
-!.gitkeep
+.env
 
 
 # ignore dict
@@ -9,3 +9,5 @@
 # ignore python environment
 /script/postgreSQL/data_insert/venv/
 /script/postgreSQL/data_insert/src/__pycache__/
+
+!.gitkeep
