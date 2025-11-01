@@ -1,0 +1,36 @@
+services:
+  pg:
+    # postgres:14.19-alpine3.21
+    image: postgres@sha256:6175800783081e977f6987a7bf3664fa407f73ef61ae485549fecd51f9b5efa9
+    container_name: pg
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+      # # <host path>:<container path>
+      # # :/docker-entrypoint-initdb.d/init_user.sql  is like magic variable postgreSQL will init this
+      # - ./data/init_user/init_user.sql:/docker-entrypoint-initdb.d/init_user.sql
+
+
+  # might remove on deploy
+  pgAdmin:
+    # dpage/pgadmin4:snapshot
+    image: dpage/pgadmin4@sha256:e3391fbf625360136995800377968d0cfaf0a6277d76d651b355f4eeac9c67a3
+    container_name: pgadmin
+    env_file:
+      - .env
+    ports:
+      # pgAdmin by default listen to 80 so use 80 and expose outside as 8080
+      - "8080:80"
+    depends_on:
+      - pg
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  pgadmin_data:
