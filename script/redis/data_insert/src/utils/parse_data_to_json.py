@@ -8,6 +8,7 @@ def escape_all_entities(xml_chunk):
     return re.sub(r'&(?!(?:amp|lt|gt|quot|apos)\b)([a-zA-Z0-9_-]+);', r'&amp;\1;', xml_chunk)
 
 def parse_entry(entry):
+
     entry_json = {}
     for child in entry:
         if child.tag == 'ent_seq':

@@ -7,7 +7,7 @@
 
 
 # ignore python environment
-/script/postgres/data_insert/venv/
-/script/postgres/data_insert/src/__pycache__/
+/script/**/venv/
+/script/**/__pycache__/
 
 !.gitkeep

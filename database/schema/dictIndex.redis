@@ -1,0 +1,8 @@
+FT.CREATE dict_idx ON JSON PREFIX 1 dict:entry:
+SCHEMA
+  $.k_ele[*].keb AS kanji TEXT
+  $.k_ele[*].score AS kanji_score NUMERIC SORTABLE
+  $.r_ele[*].reb AS reading TEXT
+  $.r_ele[*].score AS reading_score NUMERIC SORTABLE
+  $.sense[*].gloss[*].translation[*].text AS meaning TEXT
+  $.ent_score AS ent_score NUMERIC SORTABLE

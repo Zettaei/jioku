@@ -1,4 +1,20 @@
 services:
+
+  redis-stack_dict:
+    image: redis/redis-stack@sha256:880df9c228597cb0d15b585f39a4327d6ee2d8b0d0f155e3f75dba9a761d4ec3
+    container_name: redis-stack
+    env_file:
+      - .env
+    ports:
+      - ${JIOKU_REDIS_EXPOSE_PORT:-6379}:6379
+      - ${JIOKU_REDISINSIGHT_EXPOSE_PORT:-8001}:8001
+    environment:
+      - REDIS_ARGS=--requirepass ${JIOKU_REDIS_PASSWORD}
+    volumes:
+      - redis_data:/var/lib/redis/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    # restart: unless-stopped
+
   pg:
     # postgres:14.19-alpine3.21
     image: postgres@sha256:6175800783081e977f6987a7bf3664fa407f73ef61ae485549fecd51f9b5efa9
@@ -36,8 +52,9 @@ services:
       - pg
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-    restart: unless-stopped
+    # restart: unless-stopped
 
 volumes:
   postgres_data:
   pgadmin_data:
+  redis_data:
