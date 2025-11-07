@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 def check_file_exist(file_path: Path): 
-    if os.path.exists(file_path.with_suffix(".json")):
+    if os.path.exists(file_path):
         return True
     else:
         return False

@@ -3,11 +3,11 @@
 
 
 # ignore dict
-/data/dict/
+/scripts/**/dict/
 
 
 # ignore python environment
-/script/**/venv/
-/script/**/__pycache__/
+**/venv/
+**/__pycache__/
 
 !.gitkeep

@@ -1,6 +1,6 @@
 services:
 
-  redis-stack_dict:
+  redis-stack:
     image: redis/redis-stack@sha256:880df9c228597cb0d15b585f39a4327d6ee2d8b0d0f155e3f75dba9a761d4ec3
     container_name: redis-stack
     env_file:

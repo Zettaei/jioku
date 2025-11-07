@@ -1,4 +1,4 @@
-FT.CREATE dict_idx ON JSON PREFIX 1 dict:entry:
+FT.CREATE dict:entry_idx ON JSON PREFIX 1 dict:entry:
 SCHEMA
   $.k_ele[*].keb AS kanji TEXT
   $.k_ele[*].score AS kanji_score NUMERIC SORTABLE

@@ -1,0 +1,16 @@
+
+
+dict:
+  # path to dictionary file including the filename and suffix
+  file_path: "./dict/JMdict_e"
+
+  # directory to output json file of the dictionary file (same filename)
+  out_dir: "./dict/"
+
+
+redis:
+  schema:
+    dict_index_file_path: "./schema/dictIndex.redis"
+
+  insert_batch_size: 2000
+

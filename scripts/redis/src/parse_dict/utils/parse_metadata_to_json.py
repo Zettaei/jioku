@@ -1,6 +1,6 @@
 import re
 import json
-import config
+from config import config
 from pathlib import Path
 
 def parse_metadata_to_json(file_path: Path):
@@ -16,7 +16,8 @@ def parse_metadata_to_json(file_path: Path):
                 break  # stop after finding the first match
 
     # Construct output JSON path
-    output_path = file_path.parent / f"{config.DICT_FILENAME}_metadata"
+    filename = Path(config["dict"]["file_path"]).stem
+    output_path = Path(config["dict"]["out_dir"]) / (f"{filename}_metadata.json")
 
     # Save metadata to JSON
     with open(output_path.with_suffix(".json"), "w", encoding="utf-8") as f:

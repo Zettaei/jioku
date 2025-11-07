@@ -4,7 +4,7 @@ import os
 def connect_to_db():
     return redis.Redis(
         host=os.getenv("JIOKU_REDIS_HOST"),
-        port=os.getenv("JIOKU_REDIS_EXPOSE_PORT"),
+        port=os.getenv("JIOKU_REDIS_EXPOSE_PORT", 0),   ## to avoid error
         password=os.getenv("JIOKU_REDIS_PASSWORD"),
         decode_responses=True
 )
@@ -18,16 +18,16 @@ def check_redis_module(db: redis.Redis) -> bool:
     isPass = True
 
     if "ReJSON" in module_names:
-        print(">>\t✓  RedisJSON available")
+        print(">>\t[OK] RedisJSON available")
     else:
         isPass = False
-        print(">>\t✕  RedisJSON is NOT available.")
+        print(">>\t[FAIL] RedisJSON is NOT available.")
 
     if "search" in module_names:
-        print(">>\t✓  RediSearch available")
+        print(">>\t[OK] RediSearch available")
     else:
         isPass = False
-        print(">>\t✕  RediSearch is NOT available.")
+        print(">>\t[FAIL] RediSearch is NOT available.")
 
 
     return isPass
@@ -40,21 +40,22 @@ def connect_to_redis() -> redis:
         db = connect_to_db()
         db.ping()   # will throw error if connection wrong
         print(">> Successfully connected to Redis.\n>>")
+    except redis.RedisError as e:
+        print(">> Failed to establish connection to Redis.")
+        
+        raise e
 
 
-
-        print(">> Checking required Redis modules")
+    try:
+        print(">> Checking required Redis modules.")
 
         if(check_redis_module(db) == False):
-            raise redis.RedisError("Required Redis modules missing")
+            raise redis.RedisError("Required Redis modules missing.")
         
         print(">> Successfully checking required Redis modules.\n>>")
         
     except redis.RedisError as e:
-        try:
-            db.close()
-        except:
-            pass
+        db.close()
 
         raise e
     

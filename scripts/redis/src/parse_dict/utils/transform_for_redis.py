@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from .score_priority import score_priority
-from .score_nf import score_nf
-from .score_sort import score_sort
+from shared.utils.score_priority import score_priority
+from shared.utils.score_nf import score_nf
+from shared.utils.score_sort import score_sort
 
 def transform_text_list(text_list):
     return [word.lower() for word in text_list if isinstance(word, str)]
