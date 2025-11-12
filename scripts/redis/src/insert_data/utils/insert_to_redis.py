@@ -100,18 +100,18 @@ def insert_to_redis(db: redis, file_path: Path):
 
         print(">> Inserting data to Redis, this may take a few minutes...")
         drop_index(db, INDEX_NAME)
-        print(">>\t[OK] Dropped all indices at dict:entry...")
+        print(f">>\t[OK] Dropped index \"{INDEX_NAME}\"")
         drop_data(db, ENTRY_NAME, BATCH_SIZE)
-        print(">>\t[OK] Dropped all data at dict:entry")
+        print(f">>\t[OK] Dropped all data at \"{ENTRY_NAME}\"")
         data_inserted_count: int = insert_data(db, ENTRY_NAME, data, BATCH_SIZE)
-        print(f">>\t[OK] Inserted {data_inserted_count} data at dict:entry:")
+        print(f">>\t[OK] Inserted {data_inserted_count} data at \"{ENTRY_NAME}\"")
         metadata["count_inserted"] = data_inserted_count
         metadata_inserted_count: int = insert_metadata(db, METADATA_NAME, metadata)
-        print(f">>\t[OK] Inserted {metadata_inserted_count} metadata at dict:metadata:")
+        print(f">>\t[OK] Inserted {metadata_inserted_count} metadata at \"{METADATA_NAME}\"")
 
-        print(">>\t[OK] Creating indices dict:entry...")
         create_index(db)
-        print(">> Successfully inserted data to Redis")
+        print(f">>\t[OK] Created index \"{INDEX_NAME}\" for \"{ENTRY_NAME}\"")
+        print(">> Successfully inserted data to Redis.")
 
         db.execute_command("SAVE")
         print(">>\n>> Redis snapshot created.")
