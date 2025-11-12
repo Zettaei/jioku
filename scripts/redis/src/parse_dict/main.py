@@ -21,7 +21,12 @@ def parse_dict(file_path: Path):
         if(cmd == "1"):
             json_data_file.unlink(missing_ok=True)
             json_metadata_file.unlink(missing_ok=True)
-            print(">> Existing JSONs deleted.")
+
+            print(">> Deleting existing dictionary JSONs files...")
+            for file in  [json_data_file, json_metadata_file]:
+                print(">>\t[OK] Deleted \"" + file.absolute() + "\"")
+            print(">> Successfully deleted existing dictionary JSONs files.")
+
         elif(cmd == "2"):
             print(">> Use existing JSONs.")
             return True
