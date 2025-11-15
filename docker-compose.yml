@@ -1,25 +1,25 @@
 services:
 
-  redis-stack:
-    image: redis/redis-stack@sha256:880df9c228597cb0d15b585f39a4327d6ee2d8b0d0f155e3f75dba9a761d4ec3
-    container_name: redis-stack
+  redisstack:
+    container_name: redisstack
+    build: 
+      context: services/redis
+      dockerfile: Dockerfile
+    image: redisstack
     env_file:
-      - .env
+      - services/redis/.env
     ports:
       - ${JIOKU_REDIS_EXPOSE_PORT:-6379}:6379
       - ${JIOKU_REDISINSIGHT_EXPOSE_PORT:-8001}:8001
-    environment:
-      - REDIS_ARGS=--requirepass ${JIOKU_REDIS_PASSWORD}
     volumes:
       - redis_data:/var/lib/redis/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     # restart: unless-stopped
 
   paddleocr:
+    container_name: paddleocr
     build:
       context: services/paddleocr
       dockerfile: Dockerfile
-    container_name: paddleocr
     image: paddleocr
     env_file:
       - services/paddleocr/.env
