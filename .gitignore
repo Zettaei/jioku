@@ -1,13 +1,17 @@
 .vscode
 .env
 
-
 # ignore dict
-/scripts/**/dict/*
-!/scripts/**/dict/.gitkeep
+/scripts/**/dict/**
 
 # ignore ocr models
-/paddleocr/ocr_models/*
+/services/paddleocr/ocr_models/**
+/services/paddleocr/logs/**
+/services/paddleocr/tmp/**
+
+# ignore dict
+/scripts/**/dict/**
+
 
 # ignore python environment
 **/venv/
