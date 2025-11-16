@@ -1,74 +1,52 @@
 services:
 
-  redis-stack:
-    image: redis/redis-stack@sha256:880df9c228597cb0d15b585f39a4327d6ee2d8b0d0f155e3f75dba9a761d4ec3
-    container_name: redis-stack
+  redisstack:
+    container_name: redisstack
+    build: 
+      context: services/redis
+      dockerfile: Dockerfile
+    image: redisstack
     env_file:
-      - .env
+      - services/redis/.env
     ports:
-      - ${JIOKU_REDIS_EXPOSE_PORT:-6379}:6379
-      - ${JIOKU_REDISINSIGHT_EXPOSE_PORT:-8001}:8001
-    environment:
-      - REDIS_ARGS=--requirepass ${JIOKU_REDIS_PASSWORD}
+      - ${COMPOSE_REDIS_EXPOSE_PORT:-6379}:6379
     volumes:
-      - redis_data:/var/lib/redis/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
     # restart: unless-stopped
 
   paddleocr:
+    container_name: paddleocr
     build:
       context: services/paddleocr
       dockerfile: Dockerfile
-    container_name: paddleocr
     image: paddleocr
     env_file:
       - services/paddleocr/.env
     ports:
-      - ${JIOKU_PADDLEOCR_EXPOSE_PORT:-8866}:8000
+      - ${COMPOSE_PADDLEOCR_EXPOSE_PORT:-8866}:8866
     volumes:
-      - paddleocr_data:/var/lib/paddleocr/data
+      - paddleocr_logs:/app/logs
+      - paddleocr_officialmodels:/home/paddleocr/.paddlex
 
-  pg:
-    # postgres:14.19-alpine3.21
-    image: postgres@sha256:6175800783081e977f6987a7bf3664fa407f73ef61ae485549fecd51f9b5efa9
-    container_name: pg
+  postgres:
+    container_name: postgres
+    build:
+      context: services/postgres
+      dockerfile: Dockerfile
+    image: postgres
     env_file:
-      - .env
+      - services/postgres/.env
     ports:
-      - ${JIOKU_PG_EXPOSE_PORT:-5432}:5432
-    environment:
-      - POSTGRES_USER=${JIOKU_PG_USER:-admin}
-      - POSTGRES_PASSWORD=${JIOKU_PG_PASSWORD:-admin}
-      - POSTGRES_DB=${JIOKU_PG_DB:-jioku}
+      - ${COMPOSE_PG_EXPOSE_PORT:-5432}:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
       # # <host path>:<container path>
       # # :/docker-entrypoint-initdb.d/init_user.sql  is like magic variable postgreSQL will init this
       # - ./data/init_user/init_user.sql:/docker-entrypoint-initdb.d/init_user.sql
 
-
-  # might remove on deploy
-  pgAdmin:
-    # dpage/pgadmin4:snapshot
-    image: dpage/pgadmin4@sha256:e3391fbf625360136995800377968d0cfaf0a6277d76d651b355f4eeac9c67a3
-    container_name: pgadmin
-    env_file:
-      - .env
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${JIOKU_PGADMIN_EMAIL:-admin@example.com}
-      - PGADMIN_DEFAULT_PASSWORD=${JIOKU_PGADMIN_PASSWORD:-admin}
-    ports:
-      # pgAdmin by default listen to 80 so use 80 and expose outside as 8080
-      - ${JIOKU_PGADMIN_EXPOSE_PORT:-8080}:80
-    depends_on:
-      - pg
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    # restart: unless-stopped
-
 volumes:
   postgres_data:
-  pgadmin_data:
   redis_data:
-  paddleocr_data:
+  paddleocr_logs:
+  paddleocr_officialmodels:

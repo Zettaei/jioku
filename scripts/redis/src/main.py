@@ -2,6 +2,8 @@ from parse_dict.main import main as parsing
 from insert_data.main import main as inserting
 
 def main():
+    print(">>")
+    
     isContinue = parsing()
     if(isContinue == False):
         return

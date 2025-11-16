@@ -3,9 +3,9 @@ import os
 
 def connect_to_db():
     return redis.Redis(
-        host=os.getenv("JIOKU_REDIS_HOST"),
-        port=os.getenv("JIOKU_REDIS_EXPOSE_PORT", 0),   ## to avoid error
-        password=os.getenv("JIOKU_REDIS_PASSWORD"),
+        host=os.getenv("SCRIPT_REDIS_HOST"),
+        port=os.getenv("SCRIPT_REDIS_PORT", 0),   ## 0 to avoid throwing error
+        password=os.getenv("SCRIPT_REDIS_PASSWORD"),
         decode_responses=True
 )
 

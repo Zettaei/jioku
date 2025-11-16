@@ -1,8 +1,4 @@
-# #!/bin/sh
-# # Ensure mounted volumes are writable
-# mkdir -p /home/ocr/.paddlex/temp
-# chown -R ocr:paddleocr /home/ocr/.paddlex /paddleocr/logs /paddleocr/tmp
+#!/bin/bash
+chown -R paddleocr:paddleocr /app/logs /app/tmp /home/paddleocr/.paddlex
 
-# exec "$@"
-#
-# # NOT IN USE CURRENTLY BUT SAVED JUST IN CASE
+exec "$@"

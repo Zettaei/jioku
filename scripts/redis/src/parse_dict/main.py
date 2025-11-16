@@ -2,6 +2,7 @@ from pathlib import Path
 import parse_dict.utils as utils
 from config import config
 from shared.utils.check_file_exist import check_file_exist
+from dotenv import load_dotenv, find_dotenv
 
 def parse_dict(file_path: Path):
     json_data_file = file_path.with_suffix(".json").resolve()
@@ -17,6 +18,9 @@ def parse_dict(file_path: Path):
         print(">> \t3  Cancel")
         cmd = input(">> What do you want to do? (default: 2): ").strip()
         print(">>")
+
+        if(cmd == "" or cmd is None):
+            cmd = "2"
         
         if(cmd == "1"):
             json_data_file.unlink(missing_ok=True)
@@ -24,7 +28,7 @@ def parse_dict(file_path: Path):
 
             print(">> Deleting existing dictionary JSONs files...")
             for file in  [json_data_file, json_metadata_file]:
-                print(">>\t[OK] Deleted \"" + file.absolute() + "\"")
+                print(">>\t[OK] Deleted \"" + str(file.absolute()) + "\"")
             print(">> Successfully deleted existing dictionary JSONs files.")
 
         elif(cmd == "2"):
@@ -44,6 +48,7 @@ def parse_dict(file_path: Path):
 
 
 def main() -> bool:
+    load_dotenv(find_dotenv(".env"))
     file_path = Path(config["dict"]["file_path"]).resolve()
     isContinue = parse_dict(file_path)
     print(">>")
