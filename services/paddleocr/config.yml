@@ -1,0 +1,25 @@
+default: 
+  logger: &default_logger
+    filename:
+      info: "info.log"
+      error: "error.log"
+
+    format: "%(asctime)s - %(levelname)s - %(message)s"
+
+dev:
+  logger:
+    <<: *default_logger
+    level: "DEBUG"
+    rotation:
+      when: "M"         # minute
+      interval: 5       # every 5 minutes
+      backup_count: 4
+
+prod:
+  logger:
+    <<: *default_logger
+    level: "INFO"
+    rotation:
+      when: "W6"        # sunday
+      interval: 1       # every sunday
+      backup_count: 8

@@ -1,10 +1,10 @@
 from paddleocr import PaddleOCR
 import cv2
 import numpy as np
-from src.config import OCR_MODELS, OCR_OPTIONS
+from src.config import OCR
 
 
-ocr = PaddleOCR(**OCR_MODELS, **OCR_OPTIONS, lang="japan")
+ocr = PaddleOCR(**OCR["OCR_MODELS"], **OCR["OCR_OPTIONS"], lang="japan")
 
 
 def run_ocr(image_bytes: bytes) -> dict[str, list]:

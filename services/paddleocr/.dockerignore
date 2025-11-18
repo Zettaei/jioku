@@ -1,8 +1,15 @@
+.dockerignore
+
 venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
 ocr_models/
+logs/
+tmp/
+
 README.md
 .env
+.env.example

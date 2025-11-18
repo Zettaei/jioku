@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 import os
 
 router = APIRouter()
 
 @router.get("/")
-async def default(request: Request):
+async def default():
 
     return {
-        "message": "It works!",
+        "message": "server is running",
     }

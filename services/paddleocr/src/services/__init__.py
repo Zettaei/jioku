@@ -1,11 +1,11 @@
-from .logger import logger, error_handler, info_handler
+from .logger import logger
 from .run_ocr import run_ocr
 from .verify_key import verify_key
+from .validate_ip import validate_ip
 
 __all__ = [
     "logger",
-    "info_handler",
-    "error_handler",
     "run_ocr",
-    "verify_key"
+    "verify_key",
+    "validate_ip"
 ]

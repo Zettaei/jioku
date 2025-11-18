@@ -1,25 +1,21 @@
-import logging
 from pathlib import Path
+import logging
+from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
+from src.config import LOGGER
 
 LOGS_DIR = Path(__file__).parents[2] / "logs"
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
-INFO_LOGS_FILE_PATH = LOGS_DIR / "info.log"
-ERROR_LOGS_FILE_PATH = LOGS_DIR / "error.log"
-FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-
-ROTATION_WHEN = "W6"          # Weekly W0-W6, W6 = Sunday
-ROTATION_INTERVAL = 1         # 1 = every Sunday, 4 = every 4 Sunday (every 4 weeks)
-ROTATION_BACKUP_COUNT = 8     # 8 = backup for 8 Sunday(s)
+ROTATION = LOGGER["rotation"]
 
 
-logger = logging.getLogger("paddleocr")
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter(FORMAT)
+logger = logging.getLogger("uvicorn.info")
+logger.setLevel(LOGGER["level"])
+formatter = logging.Formatter(LOGGER["format"])
 
-# INFO and DEBUG
+# INFO
 info_handler = TimedRotatingFileHandler(
-    INFO_LOGS_FILE_PATH, when=ROTATION_WHEN, interval=ROTATION_INTERVAL, backupCount=ROTATION_BACKUP_COUNT
+    (LOGS_DIR / LOGGER["filename"]["info"]), when=ROTATION["when"], interval=ROTATION["interval"], backupCount=ROTATION["backup_count"]
 )
 info_handler.addFilter(lambda logRecord: logRecord.levelno == logging.INFO)  # Only INFO
 info_handler.setLevel(logging.INFO)       
@@ -27,7 +23,7 @@ info_handler.setFormatter(formatter)
 
 # WARNING and above
 error_handler = TimedRotatingFileHandler(
-    ERROR_LOGS_FILE_PATH, when=ROTATION_WHEN, interval=ROTATION_INTERVAL, backupCount=ROTATION_BACKUP_COUNT
+    (LOGS_DIR / LOGGER["filename"]["error"]), when=ROTATION["when"], interval=ROTATION["interval"], backupCount=ROTATION["backup_count"]
 )
 error_handler.setLevel(logging.WARNING)
 error_handler.setFormatter(formatter)
