@@ -1,11 +1,11 @@
 from pathlib import Path
-import insert_data.utils as utils
+import insert_dict_redis.utils as utils
 from dotenv import load_dotenv, find_dotenv
 import redis
 from config import config
 
 
-def insert_data(file_path: Path):
+def insert_dict_redis(file_path: Path):
 
     # if(utils.check_env() == False):
     try:
@@ -22,7 +22,7 @@ def insert_data(file_path: Path):
 def main():
     load_dotenv(find_dotenv(".env"))
     file_path = Path(config["dict"]["file_path"]).resolve()
-    insert_data(file_path)
+    insert_dict_redis(file_path)
     print(">>")
 
 

@@ -1,5 +1,5 @@
 from parse_dict.main import main as parsing
-from insert_data.main import main as inserting
+from insert_dict_redis.main import main as inserting
 
 def main():
     print(">>")
