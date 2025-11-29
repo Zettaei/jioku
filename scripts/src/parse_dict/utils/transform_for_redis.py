@@ -77,10 +77,8 @@ def transform_entry(entry):
         gloss_list = s.get("gloss", [])
         for g in gloss_list:
             text_list = g.get("text", [])
-            # Replace text array with array of {"text": ...} objects
-            g["translation"] = [{"text": t} for t in text_list if isinstance(t, str)]
 
-            g.pop("text", None)  # remove original array if you don't need it
+            g["text"] = [t for t in text_list if isinstance(t, str)]
 
 
     new_entry = {
