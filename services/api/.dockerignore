@@ -1,0 +1,10 @@
+.dockerignore
+
+**/node_modules/
+
+logs/
+tmp/
+
+**/README.md
+**/.env
+**/.env.example
