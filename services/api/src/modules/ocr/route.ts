@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import Service from "./service.js";
+import { sendImgToOCR } from "./service.js";
 
 const routes = new Hono();
 
@@ -16,7 +16,7 @@ routes.post("/", async (c) => {
     ocrFormData.set("file", file);
 
     try {
-        const result = await Service.sendImgToOCR(ocrFormData);
+        const result = await sendImgToOCR(ocrFormData);
         return c.json(result);
     }
     catch(err)

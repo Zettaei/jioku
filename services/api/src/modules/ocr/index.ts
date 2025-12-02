@@ -1,8 +1,11 @@
 import { Hono } from "hono";
 import routes from "./route.js";
+import { sendImgToOCR } from "./service.js";
 
-const ocr = new Hono();
 
-ocr.route('/', routes);
 
-export default ocr;
+export type { OcrItem, OcrResult } from "./type.js";
+export default {
+    routes,
+    sendImgToOCR
+};

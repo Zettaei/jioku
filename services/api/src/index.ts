@@ -13,7 +13,7 @@ app.use(cors({
 }));
 
 
-app.route("/ocr", ocr);
+app.route("/ocr", ocr.routes);
 
 
 

@@ -1,11 +1,11 @@
-interface OcrResult 
+export interface OcrResult 
 {
     filename: string;
     result: OcrItem[];
 }
 
 
-interface OcrItem 
+export interface OcrItem 
 {
     text: string;
     score: number;
