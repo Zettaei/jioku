@@ -23,6 +23,7 @@ RUN chown -R paddleocr:paddleocr /app/logs /app/tmp && \
 
 VOLUME ["/app/logs", "/home/paddleocr/.paddlex"]
 
-USER paddleocr
+# FIXME: it doesn't work again goddamn bernkastel, and I already spent an entire week for it
+# USER paddleocr
 
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8866"]
