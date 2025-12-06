@@ -14,3 +14,10 @@ redis:
 
   insert_batch_size: 2000
 
+
+postgres:
+  schema:
+    table_and_index_file_path: "./schema/table_and_index.sql"
+    extension_file_path: "./schema/extension.sql"
+    
+
