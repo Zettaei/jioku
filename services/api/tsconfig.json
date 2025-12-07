@@ -42,5 +42,13 @@
     "esModuleInterop": true,
     // "allowImportingTsExtensions": true,
     // "emitDeclarationOnly": true
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"],
+      "core/*": ["src/core/*"],
+      "modules/*": ["src/modules/*"],
+      "root/*": ["*"]
+    }
+
   }
 }
