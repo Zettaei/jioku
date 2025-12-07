@@ -1,21 +1,23 @@
 import { Hono } from "hono";
-import type { RegisterData, LoginData, Email, Password } from "./type.js";
+import type { RegisterData, LoginData } from "./type.js";
+import { validateLogin } from "./service.js";
+import { BadRequestError } from "src/core/errors/httpErrors.js"
 
 const routes = new Hono();
 
 // TODO: obviously not finish, continue the postgres
 routes.post("/auth/login", async (c) => {
-    let data: LoginData | null = null;
-    try {
-        data = await c.req.json();
-    }
-    catch(err) {
 
+    const data = await c.req.json() as LoginData;
+    if(!data) {
+        throw new BadRequestError("Email and Password must be a non-empty string")
     }
 
-    if(!data || !data.email || !data.password || typeof(data.email) !== "string" || typeof(data.password) !== "string") {
-        return c.text("Incorrect or missing credential data", 400);
-    }
+    const email = data.email;
+    const password = data.password;
+
+    const userId: string = await validateLogin(email, password);
+    return c.json({ userId }, 200);
 
 });
 

@@ -1,17 +1,14 @@
-export type Email = string;
-export type Password = string;
-
 
 export interface LoginData 
 {
     email: string;
-    password: Password;
+    password: string;
 }
 
 
 export interface RegisterData 
 {
     email: string;
-    password: Password;
-    confirmPassword: Password;
+    password: string;
+    confirmPassword: string;
 }
