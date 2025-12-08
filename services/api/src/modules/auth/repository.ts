@@ -2,7 +2,7 @@ import { Pool } from "core/postgres/index.js";
 import type { User } from "core/type.js";
 import { DatabaseError } from "core/errors/internalErrors.js";
 import { hash } from "argon2";
-import type { LoginData, RegisterData } from "./type.js";
+import type { RegisterData } from "./type.js";
 
 export async function getUserByEmail(email: string): Promise<User | null> {
     try {

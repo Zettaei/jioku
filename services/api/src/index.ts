@@ -10,6 +10,7 @@ import { ENV_VARS } from "./config.js";
 import ocr from "modules/ocr/index.js";
 import auth from "modules/auth/index.js";
 
+
 dotenv.config();
 validateEnvironment();
 

@@ -4,7 +4,7 @@ import { createUser, getUserByEmail } from "./repository.js"; // Assuming create
 import { UnauthorizedError, BadRequestError, ConflictError } from "core/errors/httpErrors.js";
 import type { User } from "core/type.js";
 import type { LoginData, RegisterData } from "./type.js";
-import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 import { ENV_VARS } from "src/config.js";
 
@@ -20,9 +20,9 @@ export function createAccessToken(userId: string): string {
 
     const token = jwt.sign(
         payload,
-        ENV_VARS.API_JWT_SECRET.value as Secret, 
+        ENV_VARS.API_JWT_SECRET.value!, 
         {
-            expiresIn: ENV_VARS.API_JWT_EXPIRATION.value,
+            expiresIn: ENV_VARS.API_JWT_EXPIRATION.value!,
             algorithm: "HS256",
             subject: userId.toString()
         } as SignOptions
