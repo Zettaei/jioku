@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import type { RegisterData, LoginData } from "./type.js";
-import { validateLogin } from "./service.js";
-import { BadRequestError } from "src/core/errors/httpErrors.js"
+import { createRefreshToken, validateLogin, validateRegister } from "./service.js";
 
 const routes = new Hono();
 
@@ -9,20 +8,20 @@ const routes = new Hono();
 routes.post("/auth/login", async (c) => {
 
     const data = await c.req.json() as LoginData;
-    if(!data) {
-        throw new BadRequestError("Email and Password must be a non-empty string")
-    }
 
-    const email = data.email;
-    const password = data.password;
+    const userId: string = await validateLogin(data);
+    const refreshToken: string = await createRefreshToken(userId);
+    // add createAccessToken
+    // attach refresh and access tokens to cookie
 
-    const userId: string = await validateLogin(email, password);
-    return c.json({ userId }, 200);
-
+    return c.json({ /*Refresh Token*/ */ }, 200);
 });
 
 routes.post("/auth/register", async (c) => {
+    const data = await c.req.json() as RegisterData;
 
+    await validateRegister(data);
+    return c.json({ message: "User registered successfully" }, 201);
 });
 
 export default routes;
