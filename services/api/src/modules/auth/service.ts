@@ -2,7 +2,6 @@ import { Pool } from "core/postgres/index.js"
 import { verifyPassword, validateNonEmptyString, hashRefreshToken } from "./utils.js";
 import { createUser, getUserByEmail } from "./repository.js"; // Assuming createUser exists in repository.js
 import { UnauthorizedError, BadRequestError, ConflictError } from "core/errors/httpErrors.js";
-import { getEnv } from "src/core/env.js";
 import type { User } from "core/type.js";
 import type { LoginData, RegisterData } from "./type.js";
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
@@ -21,9 +20,9 @@ export function createAccessToken(userId: string): string {
 
     const token = jwt.sign(
         payload,
-        getEnv("API_JWT_SECRET") as Secret, 
+        ENV_VARS.API_JWT_SECRET.value as Secret, 
         {
-            expiresIn: getEnv("API_JWT_EXPIRATION"),
+            expiresIn: ENV_VARS.API_JWT_EXPIRATION.value,
             algorithm: "HS256",
             subject: userId.toString()
         } as SignOptions

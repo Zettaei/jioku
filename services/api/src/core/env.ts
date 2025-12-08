@@ -25,7 +25,7 @@ export function validateEnvironment(): void {
     console.error("[ERROR] Missing " + missingRequiredVarsCount + " required environment variables, please refer src/config.ts for more detail");
         process.exit(1);
     }
-    else {.
+    else {
         console.log("[OK] All required environment variables are set");
     }
 
