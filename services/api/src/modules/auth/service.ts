@@ -1,17 +1,35 @@
 import { Pool } from "core/postgres/index.js"
 import { verifyPassword, validateNonEmptyString, hashRefreshToken } from "./utils.js";
 import { createUser, getUserByEmail } from "./repository.js"; // Assuming createUser exists in repository.js
-import { UnauthorizedError, BadRequestError, ConflictError } from "src/core/errors/httpErrors.js";
-import type { User } from "src/core/type.js";
+import { UnauthorizedError, BadRequestError, ConflictError } from "core/errors/httpErrors.js";
+import { getEnv } from "src/core/env.js";
+import type { User } from "core/type.js";
 import type { LoginData, RegisterData } from "./type.js";
-import jwt from "jsonwebtoken";
+import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
+import { ENV_VARS } from "src/config.js";
 
 
 export async function createRefreshToken(userId: string): Promise<string> {
     const randomString = crypto.randomBytes(64).toString("hex");
     const hashedRefreshToken = await hashRefreshToken(randomString);
     return hashedRefreshToken;
+}
+
+export function createAccessToken(userId: string): string {
+    const payload = {};
+
+    const token = jwt.sign(
+        payload,
+        getEnv("API_JWT_SECRET") as Secret, 
+        {
+            expiresIn: getEnv("API_JWT_EXPIRATION"),
+            algorithm: "HS256",
+            subject: userId.toString()
+        } as SignOptions
+    );
+
+    return token;
 }
 
 export async function validateLogin(data: LoginData) {

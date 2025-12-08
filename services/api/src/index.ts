@@ -3,10 +3,15 @@ import { serve } from "@hono/node-server"
 import { cors } from "hono/cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import ocr from "modules/ocr/index.js";
 import { HttpError } from "src/core/errors/httpErrors.js";
 import { InternalError } from "./core/errors/internalErrors.js";
+import { validateEnvironment } from "./core/env.js";
+import { ENV_VARS } from "./config.js";
+import ocr from "modules/ocr/index.js";
+import auth from "modules/auth/index.js";
+
 dotenv.config();
+validateEnvironment();
 
 const app = new Hono().basePath("/");
 app.use(cors({
@@ -16,6 +21,7 @@ app.use(cors({
 
 
 app.route("/ocr", ocr.routes);
+app.route("/auth", auth.routes);
 
 
 
