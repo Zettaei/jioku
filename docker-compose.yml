@@ -28,25 +28,7 @@ services:
       - paddleocr_logs:/app/logs
       - paddleocr_officialmodels:/home/paddleocr/.paddlex
 
-  postgres:
-    container_name: postgres
-    build:
-      context: services/postgres
-      dockerfile: Dockerfile
-    image: postgres
-    env_file:
-      - services/postgres/.env
-    ports:
-      - ${COMPOSE_PG_EXPOSE_PORT:-5432}:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql
-
-      # # <host path>:<container path>
-      # # :/docker-entrypoint-initdb.d/init_user.sql  is like magic variable postgreSQL will init this
-      # - ./data/init_user/init_user.sql:/docker-entrypoint-initdb.d/init_user.sql
-
 volumes:
-  postgres_data:
   redis_data:
   paddleocr_logs:
   paddleocr_officialmodels:

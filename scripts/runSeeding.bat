@@ -10,7 +10,7 @@ if not exist venv (
 
 call venv\Scripts\python.exe -m pip install --upgrade pip
 call venv\Scripts\python.exe -m pip install -r ./requirements.txt
-call venv\Scripts\python.exe src\postgres.py
+call venv\Scripts\python.exe src\main.py
 
 cd /d "%OLD_DIR%"
 endlocal

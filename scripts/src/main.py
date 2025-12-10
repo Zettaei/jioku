@@ -1,7 +1,7 @@
 from parse_dict.main import main as redis_parsing
 from insert_dict_redis.main import main as redis_inserting
 
-def redis():
+def main():
     print(">>")
     
     isContinue = redis_parsing()
@@ -12,4 +12,4 @@ def redis():
 
 
 if __name__ == "__main__":
-    redis()
+    main()

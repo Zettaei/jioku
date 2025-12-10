@@ -1,8 +1,9 @@
+import type { OcrItem, OcrResult } from "./type.js"
 
 const OCR_ENDPOINT = "/ocr";
 
 
-async function sendImgToOCR(formData: FormData): Promise<OcrResult>
+export async function sendImgToOCR(formData: FormData): Promise<OcrResult>
 {
     const response = await fetch(process.env["OCR_HOST"] + OCR_ENDPOINT, {
         method: 'POST',
@@ -17,8 +18,4 @@ async function sendImgToOCR(formData: FormData): Promise<OcrResult>
 
     const data = await response.json() as OcrResult;
     return data;
-}
-
-export default {
-    sendImgToOCR
 }
