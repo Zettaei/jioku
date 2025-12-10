@@ -19,10 +19,10 @@
     "kuromoji": "^0.1.2",
     "multer": "^2.0.2",
     "pg": "^8.16.3",
+    "redis": "^5.10.0",
     "wanakana": "^5.3.1"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.10",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.1",

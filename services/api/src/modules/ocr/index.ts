@@ -1,11 +1,7 @@
-import { Hono } from "hono";
-import routes from "./route.js";
-import { sendImgToOCR } from "./service.js";
 
+export { routes } from  "./route.js";
 
+export * as types from "./type.js";
 
-export type { OcrItem, OcrResult } from "./type.js";
-export default {
-    routes,
-    sendImgToOCR
-};
+export * as services from "./service.js";
+export * as utils from "./utils.js";

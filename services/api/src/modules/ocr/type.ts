@@ -1,3 +1,4 @@
+
 export interface OcrResult 
 {
     filename: string;

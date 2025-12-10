@@ -1,21 +1,19 @@
 import type { OcrItem, OcrResult } from "./type.js"
+import type { Context } from "hono";
+import * as utils from "./utils.js";
 
-const OCR_ENDPOINT = "/ocr";
+async function processOCR(c: Context): Promise<OcrResult> {
+    const file = (await c.req.parseBody())["file"];
 
+    utils.isValidImageFile(file);
 
-export async function sendImgToOCR(formData: FormData): Promise<OcrResult>
-{
-    const response = await fetch(process.env["OCR_HOST"] + OCR_ENDPOINT, {
-        method: 'POST',
-        headers: {
-            "X-API-KEY": process.env["OCR_API_KEY"]
-        },
-        body: formData
-    });
+    const formData = utils.createForwardingFormData(file);
 
-    if(!response.ok) 
-        throw new Error("OCR server returned " + response.status);
-
-    const data = await response.json() as OcrResult;
-    return data;
+    const OCR_URL = new URL(process.env["OCR_HOST"] + "/ocr");
+    const result = await utils.sendImgToOCR(OCR_URL, formData);
+    return result;
 }
+
+export { 
+    processOCR
+};

@@ -1,13 +1,11 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server" 
 import { cors } from "hono/cors";
-import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { HttpError } from "src/core/errors/httpErrors.js";
 import { InternalError } from "./core/errors/internalErrors.js";
-import { validateEnvironment } from "./core/env.js";
-import { ENV_VARS } from "./config.js";
-import ocr from "modules/ocr/index.js";
+import { validateEnvironment } from "./core/utils/env.js";
+import * as ocr from "modules/ocr/index.js";
 
 
 dotenv.config();

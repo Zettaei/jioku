@@ -9,7 +9,10 @@
     "moduleDetection": "force",
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-
+    "typeRoots": [
+      "./src/dict",
+      "./node_modules/@types"
+    ],
     /* Strictness */
     "strict": true,
     "noUncheckedIndexedAccess": true,
