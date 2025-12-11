@@ -1,19 +1,21 @@
 // @ts-ignore
 import kuromoji from "kuromoji"
 import path from "path";
+import type { KuromojiResult } from "./type.js";
 
 // TODO: change DICT_PATH too
 // NOTE: test with "npx tsx {this file}.ts"
-const DICT_PATH = path.join("X:", "PRIVATE", "WORKS", "CITE_DPU", "FINAL PROJECT", "app", "services", "api", "node_modules", "kuromoji", "dict")
+const DICT_PATH = path.join("..", "..", "..", "node_modules", "kuromoji", "dict");
 
-kuromoji.builder({ dicPath: DICT_PATH }).build(function (err, tokenizer) {
-    // tokenizer is ready
-    var path = tokenizer.tokenize("すもももももももものうち");
-    console.log(path);
-});
-
-
-
-function analyzeText() {
-    
+async function initializeTokenizer(): Promise<{ tokenize: (text: string) => KuromojiResult[] }> {
+    return await new Promise<any>((resolve, reject) => {
+        kuromoji.builder({ dicPath: DICT_PATH }).build(function (err: any, tokenizer: any) {
+            if(err) reject(err);
+            resolve(tokenizer);
+        });
+    })
 }
+
+// const a = await initializeTokenizer();
+// const b = a.tokenize("a");
+// console.log(b[0].basic_form);
