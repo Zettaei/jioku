@@ -1,7 +1,8 @@
+
 export interface OcrResult 
 {
     filename: string;
-    result: OcrItem[];
+    result: Array<OcrItem>;
 }
 
 

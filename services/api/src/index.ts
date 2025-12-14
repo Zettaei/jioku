@@ -1,17 +1,16 @@
+
 import { Hono } from "hono";
 import { serve } from "@hono/node-server" 
 import { cors } from "hono/cors";
-import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import { HttpError } from "src/core/errors/httpErrors.js";
 import { InternalError } from "./core/errors/internalErrors.js";
-import { validateEnvironment } from "./core/env.js";
+import * as utils from "./core/utils/index.js";
+import * as ocr from "modules/ocr/index.js";
+import * as dict from "modules/dict/index.js";
+
 import { ENV_VARS } from "./config.js";
-import ocr from "modules/ocr/index.js";
-
-
-dotenv.config();
-validateEnvironment();
+import { setupShutdown } from "./shutdown.js";
+// utils.env.validateEnvironment();
 
 const app = new Hono().basePath("/");
 app.use(cors({
@@ -21,24 +20,31 @@ app.use(cors({
 
 
 app.route("/ocr", ocr.routes);
-
+app.route("/dict", dict.routes);
 
 
 app.onError((err, c) => {
-    if (err instanceof HttpError) {
-        console.error(err.name, err.message);
-        return c.text(err.message, err.status);
-    }
+    try {
+        if (err instanceof HttpError) {
+            console.error(err);
+            return c.text(err.message, err.status);
+        }
 
-    if (err instanceof InternalError) {
-        console.error(err.name, err.message, err.originalMsg);
-        return c.text("Internal Server Error", err.status);
-    }
+        if (err instanceof InternalError) {
+            console.error(err);
+            return c.text("Internal Server Error", err.status);
+        }
 
-    console.error("Unexpected error:", err);
-    return c.text("Internal server error", 500);
+        console.error("Unexpected Error:", err);
+        return c.text("Internal Server Error", 500);
+    }
+    catch(err2) {
+        console.error("Unhandled Rejected Error:", err2);
+        return c.text("Internal Server Error", 500)
+    }
 });
 
+setupShutdown();
 
 const HOST = "localhost";
 const PORT = 8787;
@@ -47,3 +53,4 @@ serve({
     hostname: HOST,
     port: PORT,
 });
+console.log("Server running on " + `http://${HOST}:${PORT}/`);
