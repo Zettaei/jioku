@@ -11,5 +11,5 @@ export class InternalError extends Error {
   }
 }
 
-export class PostgresError extends InternalError {}
+export class SupabaseError extends InternalError {}
 export class RedisError extends InternalError {}
