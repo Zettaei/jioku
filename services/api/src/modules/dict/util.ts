@@ -1,11 +1,11 @@
 import kuromoji, { type IpadicFeatures, type Tokenizer } from "kuromoji"
 import path from "path";
-import { TranslationLanguage, WordType } from "./type.js";
+import { TranslationLanguage, WordType } from "./type/model.js";
 import { isJapanese, isKana } from "wanakana";
-import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest } from "./apiType.js";
-import { InternalError } from "src/core/errors/internalErrors.js";
+import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest } from "./type/dto.js";
+import { InternalError } from "src/core/errors/internalError.js";
 import { ENV_VARS } from "src/config.js";
-import { BadRequestError } from "src/core/errors/httpErrors.js";
+import { BadRequestError } from "src/core/errors/httpError.js";
 
 const DICT_PATH = path.join("node_modules", "kuromoji", "dict");
 

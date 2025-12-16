@@ -1,5 +1,5 @@
 import { getRedisClient, type FtSearchResult } from "core/redisstack/index.js";
-import { WordType, type Entry, type EntryIndexType, type EntryScoreType } from "./type.js";
+import { WordType, type Entry, type EntryIndexType, type EntryScoreType } from "./type/model.js";
 import { DICT_OPTIONS } from "src/config.js";
 
 function convertToScoreKey(wordType: WordType)

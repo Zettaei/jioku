@@ -1,5 +1,5 @@
-export * from "./httpErrors.js";
-export * from "./internalErrors.js";
+export * from "./httpError.js";
+export * from "./internalError.js";
 
-export * as httpErrors from "./httpErrors.js";
-export * as internalErros from "./internalErrors.js";
+export * as httpErrors from "./httpError.js";
+export * as internalErros from "./internalError.js";
