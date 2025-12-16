@@ -1,56 +1,87 @@
 import type { IpadicFeatures } from "kuromoji";
-import * as utils from "./utils.js"; 
-import { TranslationLanguage, WordType, type Entry } from "./type.js";
+import * as utils from "./util.js"; 
+import { TranslationLanguage, type Entry, type TokenFeatures } from "./type/model.js";
 import type { FtSearchResult } from "src/core/redisstack/type.js";
-import type { AzureTranslationRequest } from "./apiType.js";
+import type { AzureTranslationRequest } from "./type/dto.js";
 
 const tokenizer = await utils.initializeTokenizer();
 
-function tokenize(text: string): IpadicFeatures[] {
-    return tokenizer.tokenize(text);
+async function processTokenization(paramQuery: string): Promise<Array<TokenFeatures>> {
+    const tokens = tokenizer.tokenize(paramQuery);
+
+    for(const token of tokens) {
+        (token as TokenFeatures).isUseful = utils.isUsefulToken(token);
+    }
+
+    return tokens as Array<TokenFeatures>;
 }
 
+async function processQuickTranslation(paramQuery: string, paramTranslation: TranslationLanguage): Promise<string> {
+    try {
+        return (await utils.sendToAzureTranslator(
+            paramTranslation, 
+            [ { text: paramQuery } ]
+        ))[0]?.translations[0]?.text ?? "";
+    }
+    catch(err) { console.warn("Azure translation failed, skipping", err); }
+    
+    return "";
+}
+
+
 /**
- * @note This function **mutates the input *searchResult* object directly**. Do not call on copies if you expect immutability.
- * @param toLang ISO639-1 codes ("en", "ja", "th", etc...)
+ * @note This function **mutates the input *searchResult* object directly**.
+ * @param paramTranslation ISO639-1 codes ("en", "ja", "th", etc...)
  * @param searchResult result from searching with FT.SEARCH in RediSEARCH, **this param will get mutated**
+ * @sideeffect mutates **searchResult**
  * @returns {void}
  */
 // NOTE: check country-two char code or whatever it called is a great idea
-async function transformRedisResult(toLang: TranslationLanguage, searchResult: FtSearchResult<Entry>)
-: Promise<void> 
-{
-    const translationTexts: Array<AzureTranslationRequest> = [];
+async function processRedisResultTranslation(
+    paramTranslation: TranslationLanguage, 
+    searchResult: FtSearchResult<Entry>
+): Promise<void> {
 
-    for(const document of searchResult.documents) {
-        for (const sense of document.value.sense ?? []) {
-            for (const gloss of sense.gloss ?? []) {
-                for (const text of gloss.text ?? []) {
-                    translationTexts.push({ text: text });
+    if( // en don't need to be translate
+        (searchResult.documents.length > 0) &&
+        (paramTranslation === TranslationLanguage.Thai)
+    ) {
+        const translationTexts: Array<AzureTranslationRequest> = [];
+
+        for(const document of searchResult.documents) {
+            for (const sense of document.value.sense ?? []) {
+                for (const gloss of sense.gloss ?? []) {
+                    for (const text of gloss.text ?? []) {
+                        translationTexts.push({ text: text });
+                    }
                 }
             }
         }
-    }
 
-    const translationResult = await utils.sendToAzureTranslator(toLang, translationTexts);
+        try {
+            const translationResult = await utils.sendToAzureTranslator(paramTranslation, translationTexts);
 
-    let j = 0;  // <-- post-increment
-    for(const document of searchResult.documents) {
-        for (const sense of document.value.sense ?? []) {
-            for (const gloss of sense.gloss ?? []) {
-                gloss.lang = toLang;
-                for (let i = 0; i < gloss.text.length; ++i) {
-                    gloss.text[i] = translationResult[j++]!.translations[0]!.text;
+            let j = 0;  // <-- post-increment
+            for(const document of searchResult.documents) {
+                for (const sense of document.value.sense ?? []) {
+                    for (const gloss of sense.gloss ?? []) {
+                        gloss.lang = paramTranslation;
+                        for (let i = 0; i < gloss.text.length; ++i) {
+                            gloss.text[i] = translationResult[j++]!.translations[0]!.text;
+                        }
+                    }
                 }
             }
         }
-    }
+        catch(err) { console.warn("Azure translation failed, skipping", err); }
 
-    return;
+        return;
+    }
 }
 
 
 export {
-    tokenize,
-    transformRedisResult
+    processTokenization,
+    processRedisResultTranslation,
+    processQuickTranslation
 }

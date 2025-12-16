@@ -1,10 +1,6 @@
 import { Hono } from "hono";
-import * as services from "./service.js";
-import * as repository from "./repository.js";
-import { utils } from "./index.js";
-import type { OcrResult } from "./type.js";
-import sharp, { type Sharp } from "sharp";
-import type { OcrRouteResponse } from "./apiType.js";
+import { type OcrRouteResponse } from "./type/dto.js";
+import { ocrRouteHandler } from "./handler.js";
 
 
 const routes = new Hono();
@@ -16,45 +12,14 @@ routes.post("/", async (c) => {
     const force = (c.req.query("force") === "true");          // force doing OCR for this, ignore cache result
     const nocache = (c.req.query("nocache") === "true");      // don't cache this result
 
-    utils.validateImageFile(file);
-
-    const img: Sharp = sharp(Buffer.from(await file.arrayBuffer()));
-
-    let ocrResult: OcrResult | null = null;
-
-    const resizedImg = sharp(await utils.resizeImageForOCR(img).toBuffer());
-    const hash = utils.checksumImageBuffer( await resizedImg.toBuffer() );
-
-    if(!force) {
-        try {
-            ocrResult = await repository.getCacheOcrResult(hash);
-        } 
-        catch(err) { console.warn("Redis cache reading failed, skipping:", err); }
-
-        if(ocrResult) {
-            return c.json<OcrRouteResponse>({
-                hash: hash,
-                source: "cache",
-                result: ocrResult
-            });
+    const result = await ocrRouteHandler({ 
+        image: file,
+        query: {
+            force, nocache
         }
-    }
-
-    ocrResult = await services.sendImgToOCR(resizedImg, file.name);
-
-    if(!nocache) {
-        try {
-            await repository.setCacheOcrResult(hash, ocrResult);
-        }
-        catch(err) { console.warn("Redis cache writing failed, skipping:", err); }
-    }
-
-
-    return c.json<OcrRouteResponse>({
-        hash: hash,
-        source: "ocr",
-        result: ocrResult
     });
+
+    return c.json<OcrRouteResponse>(result);
 });
 
 export { routes };

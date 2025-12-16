@@ -1,92 +1,56 @@
-import { Hono, type Input } from "hono";
+import { Hono } from "hono";
 import { string } from "core/utils/index.js";
-import * as ocr from "modules/ocr/index.js";
-import * as utils from "./utils.js";
-import * as services from "./service.js";
-import * as repository from "./repository.js";
-import { TranslationLanguage, WordType, type TokenFeatures } from "./type.js";
-import type { TokensRouteResponse, EntriesRouteResponse, AzureTranslationOKResponse } from "./apiType.js";
-import { BadRequestError } from "src/core/errors/httpErrors.js";
-import { DICT_OPTIONS } from "src/config.js";
+import { TranslationLanguage } from "./type/model.js";
+import { type TokensRouteResponse, type EntriesRouteResponse, type TokensOcrRouteHandler } from "./type/dto.js";
+import { entriesRouteHandler, tokensOcrRouteHandler, tokensRouteHandler } from "./handler.js";
 
 const routes = new Hono();
 
 
-routes.get("/tokens", async (c) => {
-    const paramQuery = string.trimOrUndefined(c.req.query("query"));
-    const paramTranslation = string.trimOrUndefined(c.req.query("translation"));
+routes.get("/tokens/:param", async (c) => {
+    const param = string.trimOrUndefined(c.req.param("param"));
+    const queryTranslation = string.trimOrUndefined(c.req.query("translation")) as TranslationLanguage | undefined;
 
-    utils.validateTranslationLanguage(paramTranslation);
-
-    const MAX_QUERY_LENGTH = DICT_OPTIONS.MAX_QUERY_LENGTH
-    if(!paramQuery) {
-        return c.json<TokensRouteResponse>({ 
-            query: "", 
-            queryTranslation: paramTranslation, 
-            quickTranslation: "", 
-            tokens: [] 
-        });
-    }
-    if(paramQuery.length > MAX_QUERY_LENGTH) {
-        throw new BadRequestError("Query characters length exceeded ( " + MAX_QUERY_LENGTH + " characters)");
-    }
-
-    const tokens = services.tokenize(paramQuery);
-    for(const token of tokens) {
-        (token as TokenFeatures).isUseful = utils.isUsefulToken(token);
-    }
-
-    let quickTranslation = ""
-    try {
-        quickTranslation = (await utils.sendToAzureTranslator(
-            paramTranslation, 
-            [ { text: paramQuery } ]
-        ))[0]?.translations[0]?.text ?? "";
-    }
-    catch(err) { console.warn("Azure translation failed, skipping", err); }
-
-
-    return c.json<TokensRouteResponse>({
-        query: paramQuery,
-        queryTranslation: paramTranslation,
-        quickTranslation: quickTranslation,
-        tokens: tokens,
+    const result = await tokensRouteHandler({
+        param,
+        query: {
+            translation: queryTranslation
+        }
     });
+
+    return c.json<TokensRouteResponse>(result);
 });
 
 
-routes.get("/entries", async (c) => {
-    const paramQuery = string.trimOrUndefined(c.req.query("query"));
-    const paramTranslation = string.trimOrUndefined(c.req.query("translation"));
-    
-    if(!paramQuery) {
-        return c.json<EntriesRouteResponse>({ 
-            query: "", 
-            queryTranslation: TranslationLanguage.English, 
-            result: { documents: [], total: 0 } 
-        });
-    }
-    
-    utils.validateQuery(paramQuery);
-    utils.validateTranslationLanguage(paramTranslation);
-    
-    const words = await repository.getWord(paramQuery, utils.getWordType(paramQuery));
-        
-    if( // en don't need to be translate
-        (words.documents.length > 0) &&
-        (paramTranslation === TranslationLanguage.Thai)
-    ) {
-        try {
-            await services.transformRedisResult(paramTranslation, words); // <-- !!! this mutate the object !!!
-        }
-        catch(err) { console.warn("Azure translation failed, skipping", err); }
-    }
+routes.post("/tokens/ocr", async (c) => {
+    const queryTranslation = string.trimOrUndefined(c.req.query("translation")) as TranslationLanguage | undefined;
+    const file = (await c.req.parseBody())["file"];
+    const force = (c.req.query("force") === "true");          // force doing OCR for this, ignore cache result
+    const nocache = (c.req.query("nocache") === "true");      // don't cache this result
 
-    return c.json<EntriesRouteResponse>({
-        query: paramQuery,
-        queryTranslation: paramTranslation,
-        result: words
+    const result = await tokensOcrRouteHandler({
+        tokens: { query: { translation: queryTranslation } },
+        ocr: {
+            image: file,
+            query: { force, nocache }
+        }
     });
+
+    return c.json<TokensRouteResponse>(result);
+});
+
+routes.get("/entries/:param", async (c) => {
+    const param = string.trimOrUndefined(c.req.param("param"));
+    const queryTranslation = string.trimOrUndefined(c.req.query("translation")) as TranslationLanguage | undefined;
+    
+    const result = await entriesRouteHandler({
+        param,
+        query: {
+            translation: queryTranslation
+        }
+    })
+
+    return c.json<EntriesRouteResponse>(result);
 });
 
 

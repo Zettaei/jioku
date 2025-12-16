@@ -1,5 +1,5 @@
 import { getRedisClient } from "src/core/redisstack/redisstack.js";
-import type { OcrResult } from "./type.js";
+import type { OcrResult } from "./type/model.js";
 import { OCR_OPTIONS } from "src/config.js";
 
 const REDIS_CACHE_KEY = "ocr:result:" as const;
