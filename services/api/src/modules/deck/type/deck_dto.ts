@@ -1,11 +1,12 @@
 import type { DeckRow, DeckInsert, DeckUpdate } from "src/core/supabase/type.js";
 
+type DeckResponseHiddenColumn = Pick<DeckRow, "users_id">;
 ////////////////////////////////////////////// GET DECKS
 export interface GetDecksRouteHandler {
     userId: string;
 }
 
-export type GetDecksRouteResponse = DeckRow[];
+export type GetDecksRouteResponse = Array<Omit<DeckRow, keyof DeckResponseHiddenColumn>>;
 
 
 ////////////////////////////////////////////// GET DECK BY ID
@@ -14,7 +15,7 @@ export interface GetDeckByIdRouteHandler {
     deckId: string;
 }
 
-export type GetDeckByIdRouteResponse = DeckRow | null;
+export type GetDeckByIdRouteResponse = Omit<DeckRow, keyof DeckResponseHiddenColumn>;
 
 
 ////////////////////////////////////////////// CREATE DECK
@@ -23,7 +24,7 @@ export interface CreateDeckRouteHandler {
     data: Omit<DeckInsert, "users_id">;
 }
 
-export type CreateDeckRouteResponse = DeckRow;
+export type CreateDeckRouteResponse = Omit<DeckRow, keyof DeckResponseHiddenColumn>;
 
 
 ////////////////////////////////////////////// UPDATE DECK

@@ -1,4 +1,5 @@
 import * as service from "../service/deck.js";
+import * as repository from "../repository/deck.js";
 import type {
     GetDecksRouteHandler,
     GetDecksRouteResponse,
@@ -11,41 +12,38 @@ import type {
     DeleteDeckRouteHandler,
     DeleteDeckRouteResponse
 } from "../type/deck_dto.js";
+import type { DeckRow } from "src/core/supabase/type.js";
 
 
-async function getDecksRouteHandler(
-    req: GetDecksRouteHandler
-): Promise<GetDecksRouteResponse> {
-    return await service.getDecksByUserId(req.userId);
+async function getDecksRouteHandler(req: GetDecksRouteHandler): Promise<Array<DeckRow>> {
+    const userId = req.userId;
+    return await repository.getDecksByUserId(userId);
 }
 
 
-async function getDeckByIdRouteHandler(
-    req: GetDeckByIdRouteHandler
-): Promise<GetDeckByIdRouteResponse> {
-    return await service.getDeckById(req.userId, req.deckId);
+async function getDeckByIdRouteHandler(req: GetDeckByIdRouteHandler): Promise<DeckRow | null> {
+    const userId = req.userId;
+    const deckId = req.deckId;
+    return await repository.getDeckById(userId, deckId);
 }
 
 
-async function createDeckRouteHandler(
-    req: CreateDeckRouteHandler
-): Promise<CreateDeckRouteResponse> {
-    return await service.createDeck(req.userId, req.data);
+async function createDeckRouteHandler(userId: string, deck: Omit<DeckInsert, "users_id">): Promise<DeckRow> {
+    const deckWithUserId: DeckInsert = {
+        ...deck,
+        users_id: userId
+    };
+    return await repository.createDeck(deckWithUserId);
 }
 
 
-async function updateDeckRouteHandler(
-    req: UpdateDeckRouteHandler
-): Promise<UpdateDeckRouteResponse> {
-    return await service.updateDeck(req.userId, req.deckId, req.data);
+async function updateDeckRouteHandler(userId: string, deckId: string, updates: DeckUpdate): Promise<DeckRow> {
+    return await repository.updateDeck(deckId, userId, updates);
 }
 
 
-async function deleteDeckRouteHandler(
-    req: DeleteDeckRouteHandler
-): Promise<DeleteDeckRouteResponse> {
-    await service.deleteDeck(req.userId, req.deckId);
-    return {};
+async function deleteDeckRouteHandler(userId: string, deckId: string): Promise<void> {
+    return await repository.deleteDeck(deckId, userId);
 }
 
 
