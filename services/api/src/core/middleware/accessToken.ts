@@ -9,7 +9,8 @@ declare module "hono" {
 
 const userIdMiddleware = createMiddleware( async (c, next) => {
 
-    const userId = ""
+    // FIXME: Placeholder user ID
+    const userId = "1bf34483-06d8-4073-8e4e-e91257d167a8";
     c.set("userId", userId);
 
     await next();

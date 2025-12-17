@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "core/supabase/index.js";
-import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/types.js";
-import { SupabaseError } from "src/core/errors/internalErrors.js";
+import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
+import { SupabaseError } from "src/core/errors/internalError.js";
 
 
 async function getDecksByUserId(userId: string): Promise<DeckRow[]> {
