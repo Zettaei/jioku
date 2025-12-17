@@ -1,12 +1,12 @@
 import type { Database } from './generatedTypes.js'
 
 // Convenience aliases
-export type DeckRow = Database['jioku']['Tables']['decks']['Row'];
-export type DeckInsert = Database['jioku']['Tables']['decks']['Insert'];
-export type DeckUpdate = Database['jioku']['Tables']['decks']['Update'];
+export type DeckRow = Database['public']['Tables']['decks']['Row'];
+export type DeckInsert = Database['public']['Tables']['decks']['Insert'];
+export type DeckUpdate = Database['public']['Tables']['decks']['Update'];
 
-export type CardRow = Database['jioku']['Tables']['cards']['Row'];
-export type CardInsert = Database['jioku']['Tables']['cards']['Insert'];
-export type CardUpdate = Database['jioku']['Tables']['cards']['Update'];
+export type CardRow = Database['public']['Tables']['cards']['Row'];
+export type CardInsert = Database['public']['Tables']['cards']['Insert'];
+export type CardUpdate = Database['public']['Tables']['cards']['Update'];
 
-export type ProfileRow = Database['jioku']['Tables']['profiles']['Row'];
+export type ProfileRow = Database['public']['Tables']['profiles']['Row'];

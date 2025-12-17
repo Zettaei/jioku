@@ -895,7 +895,7 @@ export type Database = {
       [_ in never]: never
     }
   }
-  jioku: {
+  public: {
     Tables: {
       cards: {
         Row: {
@@ -1036,23 +1036,6 @@ export type Database = {
         }
         Relationships: []
       }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  public: {
-    Tables: {
-      [_ in never]: never
     }
     Views: {
       [_ in never]: never
