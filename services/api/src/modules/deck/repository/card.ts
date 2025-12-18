@@ -1,10 +1,12 @@
-import { supabaseAdmin } from "core/supabase/index.js";
+import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
 import { SupabaseError } from "src/core/errors/internalError.js";
 
 
 async function getCardsByDeckId(deckId: string): Promise<CardRow[]> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("cards")
         .select("*")
         .eq("decks_id", deckId)
@@ -19,7 +21,9 @@ async function getCardsByDeckId(deckId: string): Promise<CardRow[]> {
 
 
 async function getCardById(cardId: string, deckId: string): Promise<CardRow | null> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("cards")
         .select("*")
         .eq("id", cardId)
@@ -38,7 +42,9 @@ async function getCardById(cardId: string, deckId: string): Promise<CardRow | nu
 
 
 async function createCard(card: CardInsert): Promise<CardRow> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("cards")
         .insert(card)
         .select()
@@ -53,7 +59,9 @@ async function createCard(card: CardInsert): Promise<CardRow> {
 
 
 async function updateCard(cardId: string, deckId: string, updates: CardUpdate): Promise<CardRow> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("cards")
         .update(updates)
         .eq("id", cardId)
@@ -70,7 +78,9 @@ async function updateCard(cardId: string, deckId: string, updates: CardUpdate): 
 
 
 async function deleteCard(cardId: string, deckId: string): Promise<void> {
-    const { error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { error } = await supabase
         .from("cards")
         .delete()
         .eq("id", cardId)

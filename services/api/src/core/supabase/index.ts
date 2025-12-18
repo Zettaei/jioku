@@ -3,4 +3,4 @@
 
 export * as generatedTypes from "./generatedTypes.js";
 export * as types from "./type.js";
-export { supabaseAdmin } from "./supabase.js";
+export { getSupabaseAdminClient } from "./supabase.js";

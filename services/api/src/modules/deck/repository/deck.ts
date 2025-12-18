@@ -1,10 +1,12 @@
-import { supabaseAdmin } from "core/supabase/index.js";
+import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { SupabaseError } from "src/core/errors/internalError.js";
 
 
 async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("decks")
         .select("*")
         .eq("users_id", userId)
@@ -20,7 +22,9 @@ async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
 
 
 async function getDeckById(userId: string, deckId: string): Promise<DeckRow | null> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("decks")
         .select("*")
         .eq("id", deckId)
@@ -39,7 +43,9 @@ async function getDeckById(userId: string, deckId: string): Promise<DeckRow | nu
 
 
 async function createDeck(deck: DeckInsert): Promise<DeckRow> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("decks")
         .insert(deck)
         .select()
@@ -54,7 +60,9 @@ async function createDeck(deck: DeckInsert): Promise<DeckRow> {
 
 
 async function updateDeck(deckId: string, userId: string, updates: DeckUpdate): Promise<DeckRow> {
-    const { data, error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
         .from("decks")
         .update(updates)
         .eq("id", deckId)
@@ -71,7 +79,9 @@ async function updateDeck(deckId: string, userId: string, updates: DeckUpdate): 
 
 
 async function deleteDeck(deckId: string, userId: string): Promise<void> {
-    const { error } = await supabaseAdmin
+    const supabase = getSupabaseAdminClient();
+
+    const { error } = await supabase
         .from("decks")
         .delete()
         .eq("id", deckId)

@@ -35,7 +35,10 @@ async function createDeckRouteHandler(req: CreateDeckRouteHandler): Promise<Crea
 
 
 async function updateDeckRouteHandler(req: UpdateDeckRouteHandler): Promise<UpdateDeckRouteResponse> {
-    const deck = await service.updateDeck(req.userId, req.deckId, req.data);
+    const deck = await service.updateDeck(
+        req.userId, 
+        req.deckId, 
+        req.data);
     const { users_id, ...result } = deck;
     return result;
 }
