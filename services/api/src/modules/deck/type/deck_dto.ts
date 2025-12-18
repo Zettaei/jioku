@@ -15,7 +15,7 @@ export interface GetDeckByIdRouteHandler {
     deckId: string;
 }
 
-export type GetDeckByIdRouteResponse = Omit<DeckRow, keyof DeckResponseHiddenColumn>;
+export type GetDeckByIdRouteResponse = Omit<DeckRow, keyof DeckResponseHiddenColumn> | null;
 
 
 ////////////////////////////////////////////// CREATE DECK
@@ -34,7 +34,7 @@ export interface UpdateDeckRouteHandler {
     data: DeckUpdate;
 }
 
-export type UpdateDeckRouteResponse = DeckRow;
+export type UpdateDeckRouteResponse = Omit<DeckRow, keyof DeckResponseHiddenColumn>;
 
 
 ////////////////////////////////////////////// DELETE DECK

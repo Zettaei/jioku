@@ -3,12 +3,13 @@ import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js"
 import { SupabaseError } from "src/core/errors/internalError.js";
 
 
-async function getDecksByUserId(userId: string): Promise<DeckRow[]> {
+async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
     const { data, error } = await supabaseAdmin
         .from("decks")
         .select("*")
         .eq("users_id", userId)
-        .order("name");
+        .order("name", { ascending: false})
+        .limit(100);
 
     if (error) {
         throw new SupabaseError("Failed to get decks from Supabase", "", error);

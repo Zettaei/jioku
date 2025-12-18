@@ -57,11 +57,16 @@ export const REDIS_OPTIONS = {
     RETRY_CONNECTION_MS: 10000
 }
 
+export const DECK_OPTIONS = {
+    DECK_MAX_NAME_LENGTH: 100,
+    DECK_MAX_DESCRIPTION_LENGTH: 500,
+    DECK_RESULT_LIMIT: 40
+}
 
 export const DICT_OPTIONS = {
-        INDEX_KEYNAME: "dict:entry_idx",
-        MAX_QUERY_LENGTH: 300,
-        RESULT_LIMIT: 20
+    INDEX_KEYNAME: "dict:entry_idx",
+    MAX_QUERY_LENGTH: 300,
+    RESULT_LIMIT: 20
 }
 
 export const OCR_OPTIONS = {
