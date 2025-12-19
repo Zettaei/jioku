@@ -1,8 +1,7 @@
 import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
-import { SupabaseError } from "src/core/errors/internalError.js";
 import { DECK_OPTIONS } from "src/config.js";
-
+import * as util from "../util.js";
 
 async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
     const supabase = getSupabaseAdminClient();
@@ -14,9 +13,7 @@ async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
         .order("name", { ascending: false})
         .limit(DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT);
 
-    if (error) {
-        throw new SupabaseError("Failed to get decks from Supabase", "", error);
-    }
+    util.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return data || [];
 }
@@ -24,17 +21,15 @@ async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
 
 async function getDeckById(userId: string, deckId: string): Promise<DeckRow | null> {
     const supabase = getSupabaseAdminClient();
-
+    
     const { data, error } = await supabase
         .from("decks")
         .select("*")
         .eq("id", deckId)
         .eq("users_id", userId)
         .maybeSingle();
-
-    if (error) {
-        throw new SupabaseError("Failed to get deck from Supabase", "", error);
-    }
+        
+    util.throwSupabaseErrorIfExist(error, "Failed to get deck from Supabase");
 
     return data;
 }
@@ -46,12 +41,10 @@ async function createDeck(deck: DeckInsert): Promise<DeckRow> {
     const { data, error } = await supabase
         .from("decks")
         .insert(deck)
-        .select()
+        .select("*")
         .maybeSingle();
 
-    if (error) {
-        throw new SupabaseError("Failed to create decks in Supabase", "", error);
-    }
+    util.throwSupabaseErrorIfExist(error, "Failed to create decks in Supabase");
 
     return data;
 }
@@ -65,12 +58,11 @@ async function updateDeck(deckId: string, userId: string, updates: DeckUpdate): 
         .update(updates)
         .eq("id", deckId)
         .eq("users_id", userId)
-        .select()
+        .select("*")
         .maybeSingle();
 
-    if (error) {
-        throw new SupabaseError("Failed to update deck in Supabase", "", error);
-    }
+    util.throwSupabaseErrorIfExist(error, "Failed to update deck in Supabase");
+    util.assertAuthorized(data, "Incorrect permissions or deck does not exist");
 
     return data;
 }
@@ -79,18 +71,19 @@ async function updateDeck(deckId: string, userId: string, updates: DeckUpdate): 
 async function deleteDeck(deckId: string, userId: string): Promise<void> {
     const supabase = getSupabaseAdminClient();
 
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("decks")
         .delete()
         .eq("id", deckId)
-        .eq("users_id", userId);
+        .eq("users_id", userId)
+        .select("*")
+        .maybeSingle();
 
-    if (error) {
-        throw new SupabaseError("Failed to delete deck in Supabase", "", error);
-    }
+    util.throwSupabaseErrorIfExist(error, "Failed to delete deck in Supabase");
+    util.assertAuthorized(data, "Incorrect permissions or deck does not exist");
+        
+    return;
 }
-
-
 export {
     getDecksByUserId,
     getDeckById,
