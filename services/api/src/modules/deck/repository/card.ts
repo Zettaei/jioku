@@ -1,93 +1,143 @@
 import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
-import { SupabaseError } from "src/core/errors/internalError.js";
+import { DECK_OPTIONS } from "src/config.js";
+import * as util from "../util.js";
 
+//
+// OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
+//
 
-async function getCardsByDeckId(deckId: string): Promise<CardRow[]> {
+async function getCardsByDeckId(userId: string, deckId: string): Promise<CardRow[]> {
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("cards")
-        .select("*")
+        .select(`*, decks!inner()`)
         .eq("decks_id", deckId)
-        .order("due");
+        .eq("decks.users_id", userId)
+        .order("due", { ascending: true })
+        .limit(DECK_OPTIONS.CARD_REVIEW_FETCH_LIMIT);
 
-    if (error) {
-        throw new SupabaseError("Failed to get cards from Supabase", "", error);
-    }
+    util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
 
     return data || [];
 }
 
 
-async function getCardById(cardId: string, deckId: string): Promise<CardRow | null> {
+async function getCardById(userId: string, cardId: string, deckId: string): Promise<CardRow | null> {
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("cards")
-        .select("*")
+        .select(`*, decks!inner()`)
         .eq("id", cardId)
         .eq("decks_id", deckId)
-        .single();
+        .eq("decks.users_id", userId)
+        .order("due", { ascending: true })
+        .maybeSingle();
 
-    if (error) {
-        if (error.code === "PGRST116") {
-            return null; // Not found
-        }
-        throw new SupabaseError("Failed to get card from Supabase", "", error);
-    }
+    util.throwSupabaseErrorIfExist(error, "Failed to get card from Supabase");
 
     return data;
 }
 
-
-async function createCard(card: CardInsert): Promise<CardRow> {
+async function createCard(userId: string, deckId: string, newCardData: Omit<CardInsert, "decks_id">): Promise<CardRow> {
     const supabase = getSupabaseAdminClient();
+    const ERROR_MESSAGE = "Failed to create card in Supabase";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions to create card in this deck";
 
-    const { data, error } = await supabase
-        .from("cards")
-        .insert(card)
-        .select()
-        .single();
+    {
+        const { data, error } = await supabase
+            .from("decks")
+            .select("id")
+            .eq("id", deckId)
+            .eq("users_id", userId)
+            .maybeSingle();
 
-    if (error) {
-        throw new SupabaseError("Failed to create card in Supabase", "", error);
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
+    {
+        const { data, error } = await supabase
+            .from("cards")
+            .insert({
+                ...newCardData,
+                decks_id: deckId,
+            })
+            .select("*")
+            .single();
 
-    return data;
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        return data;
+    }
 }
 
 
-async function updateCard(cardId: string, deckId: string, updates: CardUpdate): Promise<CardRow> {
+async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: Omit<CardUpdate, "decks_id">): Promise<CardRow> {
     const supabase = getSupabaseAdminClient();
+    const ERROR_MESSAGE = "Failed to update card in Supabase";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
-    const { data, error } = await supabase
-        .from("cards")
-        .update(updates)
-        .eq("id", cardId)
-        .eq("decks_id", deckId)
-        .select()
-        .single();
+    {
+        const { data, error } = await supabase
+            .from("decks")
+            .select("*")
+            .eq("id", deckId)
+            .eq("users_id", userId)
+            .maybeSingle();
 
-    if (error) {
-        throw new SupabaseError("Failed to update card in Supabase", "", error);
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
+    {
+        const { data, error } = await supabase
+            .from("cards")
+            .update({
+                ...updatedCardData,
+                decks_id: deckId,
+            })
+            .select("*")
+            .eq("id", cardId)
+            .single();
 
-    return data;
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        return data;
+    }
 }
 
 
-async function deleteCard(cardId: string, deckId: string): Promise<void> {
+async function deleteCard(userId: string, cardId: string, deckId: string): Promise<void> {
     const supabase = getSupabaseAdminClient();
+    const ERROR_MESSAGE = "Failed to delete card in Supabase";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions to delete card in this deck";
 
-    const { error } = await supabase
-        .from("cards")
-        .delete()
-        .eq("id", cardId)
-        .eq("decks_id", deckId);
+    {
+        const { data, error } = await supabase
+            .from("decks")
+            .select("*")
+            .eq("id", deckId)
+            .eq("users_id", userId)
+            .maybeSingle();
 
-    if (error) {
-        throw new SupabaseError("Failed to delete card in Supabase", "", error);
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
+    }
+    {
+        const { data, error } = await supabase
+            .from("cards")
+            .delete()
+            .eq("decks_id", deckId)
+            .eq("id", cardId)
+            .single();
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        return data;
     }
 }
 

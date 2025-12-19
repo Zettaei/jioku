@@ -16,35 +16,40 @@ import type {
 async function getCardsByDeckIdRouteHandler(
     req: GetCardsByDeckIdRouteHandler
 ): Promise<GetCardsByDeckIdRouteResponse> {
-    return await service.getCardsByDeckId(req.deckId);
+    const cards = await service.getCardsByDeckId(req.userId, req.deckId);
+    return cards;
 }
 
 
 async function getCardByIdRouteHandler(
     req: GetCardByIdRouteHandler
 ): Promise<GetCardByIdRouteResponse> {
-    return await service.getCardById(req.cardId, req.deckId);
+    const card = await service.getCardById(req.userId, req.cardId, req.deckId);
+    if (!card) return null;
+    return card;
 }
 
 
 async function createCardRouteHandler(
     req: CreateCardRouteHandler
 ): Promise<CreateCardRouteResponse> {
-    return await service.createCard(req.deckId, req.data);
+    const card = await service.createCard(req.userId, req.deckId, req.data);
+    return card;
 }
 
 
 async function updateCardRouteHandler(
     req: UpdateCardRouteHandler
 ): Promise<UpdateCardRouteResponse> {
-    return await service.updateCard(req.cardId, req.deckId, req.data);
+    const card = await service.updateCard(req.userId, req.cardId, req.deckId, req.data);
+    return card;
 }
 
 
 async function deleteCardRouteHandler(
     req: DeleteCardRouteHandler
 ): Promise<DeleteCardRouteResponse> {
-    await service.deleteCard(req.cardId, req.deckId);
+    await service.deleteCard(req.userId, req.cardId, req.deckId);
     return {};
 }
 

@@ -2,7 +2,7 @@ import { SupabaseError } from "src/core/errors/internalError.js";
 import { DeckResponseHiddenColumn } from "./type/deck_dto.js";
 import type { DeckRow } from "src/core/supabase/type.js";
 import { PostgrestError } from "@supabase/supabase-js";
-import { BadRequestError, UnauthorizedError } from "src/core/errors/index.js";
+import { BadRequestError, ConflictError, UnauthorizedError } from "src/core/errors/index.js";
 
 /**
  * Removes hidden columns (like users_id) from a deck object.
@@ -17,24 +17,60 @@ function removeHiddenColumn(deck: DeckRow): Omit<DeckRow, DeckResponseHiddenColu
  * Asserts that no Supabase error occurred.
  * Throws SupabaseError if error is not null.
  */
-function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string): asserts error is null {
+
+/**
+ * Throws a typed error if a Supabase/PostgREST error exists.
+ * Groups errors by SQLSTATE code prefix.
+ */
+function throwSupabaseErrorIfExist(
+  error: PostgrestError | null,
+  message: string
+): asserts error is null {
     if (!error) return;
 
-    // check fields, not instanceof
-    if ("code" in error && "message" in error) {
-        switch (error.code) {
-        case "22P02":
-            throw new BadRequestError("Invalid UUID or type");
-        case "23503":
-            throw new BadRequestError("Foreign key does not exist");
-        default:
-            throw new SupabaseError(message, error.message, error);
-        }
+    const code = error.code;
+
+    if (code.startsWith("21")) {
+        throw new BadRequestError(
+            "Cardinality violation: expected single row, but multiple matched"
+        );
     }
 
-    // fallback
-    throw new SupabaseError(message, "Unknown error", error);
+    // 22xxx → data exception / invalid input / type
+    if (code.startsWith("22")) {
+        throw new BadRequestError(error.message || "Invalid input or type");
+    }
+
+    // 23xxx → constraint violation (FK, unique)
+    if (code.startsWith("23")) {
+        if (code === "23503") {
+        throw new BadRequestError("Foreign key does not exist");
+        }
+        if (code === "23505") {
+        throw new ConflictError("Duplicate key / unique constraint violation");
+        }
+        throw new ConflictError(error.message || "Constraint violation");
+    }
+
+    // 28xxx → authorization / permission errors
+    if (code.startsWith("28")) {
+        throw new UnauthorizedError(error.message || "Permission denied");
+    }
+
+    // 42xxx → syntax / undefined column
+    if (code.startsWith("42")) {
+        throw new SupabaseError("Developer error: invalid query", error.message, error);
+    }
+
+    // 08xxx → connection / server errors
+    if (code.startsWith("08")) {
+        throw new SupabaseError("Database connection error", error.message, error);
+    }
+
+    // fallback for anything unexpected
+    throw new SupabaseError(message, error.message, error);
 }
+
 
 /**
  * Asserts that authorization check passed (data exists).

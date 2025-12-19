@@ -2,32 +2,28 @@ import type { CardInsert, CardUpdate, CardRow } from "src/core/supabase/type.js"
 import * as repository from "../repository/card.js";
 
 
-async function getCardsByDeckId(deckId: string): Promise<CardRow[]> {
-    return await repository.getCardsByDeckId(deckId);
+async function getCardsByDeckId(userId: string, deckId: string): Promise<Array<CardRow>> {
+    return await repository.getCardsByDeckId(userId, deckId);
 }
 
 
-async function getCardById(cardId: string, deckId: string): Promise<CardRow | null> {
-    return await repository.getCardById(cardId, deckId);
+async function getCardById(userId: string, cardId: string, deckId: string): Promise<CardRow | null> {
+    return await repository.getCardById(userId, cardId, deckId);
 }
 
 
-async function createCard(deckId: string, card: Omit<CardInsert, "decks_id">): Promise<CardRow> {
-    const cardWithDeckId: CardInsert = {
-        ...card,
-        decks_id: deckId
-    };
-    return await repository.createCard(cardWithDeckId);
+async function createCard(userId: string, deckId: string, newCardData: Omit<CardInsert, "decks_id">): Promise<CardRow> {
+    return await repository.createCard(userId, deckId, newCardData);
 }
 
 
-async function updateCard(cardId: string, deckId: string, updates: CardUpdate): Promise<CardRow> {
-    return await repository.updateCard(cardId, deckId, updates);
+async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: Omit<CardUpdate, "decks_id">): Promise<CardRow> {
+    return await repository.updateCard(userId, cardId, deckId, updatedCardData);
 }
 
 
-async function deleteCard(cardId: string, deckId: string): Promise<void> {
-    return await repository.deleteCard(cardId, deckId);
+async function deleteCard(userId: string, cardId: string, deckId: string): Promise<void> {
+    return await repository.deleteCard(userId, cardId, deckId);
 }
 
 

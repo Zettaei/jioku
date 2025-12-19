@@ -14,6 +14,8 @@ import type {
     UpdateDeckRouteResponse,
     DeleteDeckRouteResponse
 } from "../type/deck_dto.js";
+import { BadRequestError } from "src/core/errors/httpError.js";
+
 
 const routes = new Hono();
 
@@ -39,7 +41,11 @@ routes.get("/decks/:deckId", async (c) => {
 
 routes.post("/decks", async (c) => {
     const userId = c.get("userId");
-    const data = await c.req.json();
+    let data;
+
+    try {
+        data = await c.req.json();
+    } catch (err) { throw new BadRequestError("Invalid JSON") };
 
     const result = await createDeckRouteHandler({ userId, data });
 
@@ -49,7 +55,11 @@ routes.post("/decks", async (c) => {
 routes.put("/decks/:deckId", async (c) => {
     const userId = c.get("userId");
     const deckId = c.req.param("deckId");
-    const data = await c.req.json();
+    let data;
+
+    try {
+        data = await c.req.json();
+    } catch (err) { throw new BadRequestError("Invalid JSON") };
 
     const result = await updateDeckRouteHandler({ userId, deckId, data });
 
