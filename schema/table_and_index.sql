@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.decks (
     name TEXT NOT NULL,
     users_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     headers JSONB '{}'::jsonb,
-    headerOrder JSONB '[]'::jsonb,
+    headersOrder JSONB '[]'::jsonb,
     -- headerCount SMALLINT NOT NULL,   likely not needed, probably
     settings '{}'::jsonb,
     createdAt TIMESTAMPTZ DEFAULT NOW(),
@@ -53,14 +53,14 @@ CREATE INDEX IF NOT EXISTS idx_cards_due ON public.cards(due);
 
 
 -- -------------------------
--- Stats Daily
+-- Reviews
+-- TODO: add schedule partitioning later
 -- -------------------------
-CREATE TABLE IF NOT EXISTS public.dailyStats (
+CREATE TABLE IF NOT EXISTS public.reviews (
     cards_id UUID NOT NULL REFERENCES public.cards(id) ON DELETE CASCADE,
-    date TIMESTAMPTZ NOT NULL,
     timeSpent INT NOT NULL,
-    accuracy SMALLINT NOT NULL,
-    count SMALLINT NOT NULL,
-    PRIMARY KEY (cards_id, date)
+    quality SMALLINT NOT NULL,
+    createdat TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (cards_id, createdat)
 );
-CREATE INDEX IF NOT EXISTS idx_dailyStats_cards_id ON public.dailyStats(cards_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_cards_id ON public.dailyStats(cards_id);

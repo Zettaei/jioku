@@ -1,6 +1,5 @@
 
-export { routes } from "./route/deck.js";
-
+export { routes } from "./route/index.js";
 export * as dto from "./type/deck_dto.js";
 
 export * as handler from "./handler/deck.js";

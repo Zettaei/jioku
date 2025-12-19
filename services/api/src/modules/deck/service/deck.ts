@@ -12,9 +12,9 @@ async function getDeckById(userId: string, deckId: string): Promise<DeckRow | nu
 }
 
 
-async function createDeck(userId: string, deck: Omit<DeckInsert, "users_id">): Promise<DeckRow> {
+async function createDeck(userId: string, newDeck: DeckInsert): Promise<DeckRow> {
     const deckWithUserId: DeckInsert = {
-        ...deck,
+        ...newDeck,
         users_id: userId
     };
     return await repository.createDeck(deckWithUserId);

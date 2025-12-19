@@ -1,6 +1,7 @@
 import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { SupabaseError } from "src/core/errors/internalError.js";
+import { DECK_OPTIONS } from "src/config.js";
 
 
 async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
@@ -11,7 +12,7 @@ async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
         .select("*")
         .eq("users_id", userId)
         .order("name", { ascending: false})
-        .limit(100);
+        .limit(DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT);
 
     if (error) {
         throw new SupabaseError("Failed to get decks from Supabase", "", error);
@@ -29,12 +30,9 @@ async function getDeckById(userId: string, deckId: string): Promise<DeckRow | nu
         .select("*")
         .eq("id", deckId)
         .eq("users_id", userId)
-        .single();
+        .maybeSingle();
 
     if (error) {
-        if (error.code === "PGRST116") {
-            return null; // Not found
-        }
         throw new SupabaseError("Failed to get deck from Supabase", "", error);
     }
 
@@ -49,7 +47,7 @@ async function createDeck(deck: DeckInsert): Promise<DeckRow> {
         .from("decks")
         .insert(deck)
         .select()
-        .single();
+        .maybeSingle();
 
     if (error) {
         throw new SupabaseError("Failed to create decks in Supabase", "", error);
@@ -68,7 +66,7 @@ async function updateDeck(deckId: string, userId: string, updates: DeckUpdate): 
         .eq("id", deckId)
         .eq("users_id", userId)
         .select()
-        .single();
+        .maybeSingle();
 
     if (error) {
         throw new SupabaseError("Failed to update deck in Supabase", "", error);

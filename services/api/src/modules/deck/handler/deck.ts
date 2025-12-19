@@ -1,36 +1,25 @@
 import * as service from "../service/deck.js";
-import type {
-    GetDecksRouteHandler,
-    GetDecksRouteResponse,
-    GetDeckByIdRouteHandler,
-    GetDeckByIdRouteResponse,
-    CreateDeckRouteHandler,
-    CreateDeckRouteResponse,
-    UpdateDeckRouteHandler,
-    UpdateDeckRouteResponse,
-    DeleteDeckRouteHandler,
-    DeleteDeckRouteResponse
-} from "../type/deck_dto.js";
+import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, CreateDeckRouteHandler,
+CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
+import { removeHiddenColumn } from "../util/deck.js";
 
 
 async function getDecksRouteHandler(req: GetDecksRouteHandler): Promise<GetDecksRouteResponse> {
     const decks = await service.getDecksByUserId(req.userId);
-    return decks.map(({ users_id, ...deck }) => deck);
+    return decks.map((deck) => removeHiddenColumn(deck));
 }
 
 
 async function getDeckByIdRouteHandler(req: GetDeckByIdRouteHandler): Promise<GetDeckByIdRouteResponse> {
     const deck = await service.getDeckById(req.userId, req.deckId);
     if (!deck) return null;
-    const { users_id, ...result } = deck;
-    return result;
+    return removeHiddenColumn(deck);
 }
 
 
 async function createDeckRouteHandler(req: CreateDeckRouteHandler): Promise<CreateDeckRouteResponse> {
     const deck = await service.createDeck(req.userId, req.data);
-    const { users_id, ...result } = deck;
-    return result;
+    return removeHiddenColumn(deck);
 }
 
 
@@ -39,8 +28,7 @@ async function updateDeckRouteHandler(req: UpdateDeckRouteHandler): Promise<Upda
         req.userId, 
         req.deckId, 
         req.data);
-    const { users_id, ...result } = deck;
-    return result;
+    return removeHiddenColumn(deck);
 }
 
 
