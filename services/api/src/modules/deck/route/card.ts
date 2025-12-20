@@ -24,8 +24,13 @@ routes.use(userIdMiddleware);
 routes.get("/decks/:deckId/cards", async (c) => {
     const userId = c.get("userId");
     const deckId = c.req.param("deckId");
+    const pageQuery = c.req.query("page");
+    const limitQuery = c.req.query("limit");
 
-    const result = await getCardsByDeckIdRouteHandler({ deckId, userId });
+    const result = await getCardsByDeckIdRouteHandler({ deckId, userId,
+        page: pageQuery,
+        limit: limitQuery
+    });
 
     return c.json<GetCardsByDeckIdRouteResponse>(result);
 });

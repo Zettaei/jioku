@@ -2,24 +2,43 @@ import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
+import type { DecksPaginatedResponse } from "../type/deck_dto.js";
 
-async function getDecksByUserId(userId: string): Promise<Array<DeckRow>> {
+async function getDecksByUserId(userId: string, page: number = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
+: Promise<DecksPaginatedResponse<DeckRow>> 
+{
     const supabase = getSupabaseAdminClient();
+
+    const offset = (page - 1) * limit;
 
     const { data, error } = await supabase
         .from("decks")
         .select("*")
         .eq("users_id", userId)
-        .order("name", { ascending: false})
-        .limit(DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT);
+        .order("name", { ascending: false })
+        .order("id", { ascending: false })  // extra, incase of decks having the same name
+        .range(offset, offset + limit);
 
     util.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
-    return data || [];
+    const hasNext = (data?.length ?? 0) > limit;
+
+    if(hasNext) data.pop();
+
+    return {
+        result: data ?? [],
+        pagination: {
+            page,
+            limit,
+            hasNext
+        }
+    };
 }
 
 
-async function getDeckById(userId: string, deckId: string): Promise<DeckRow | null> {
+async function getDeckById(userId: string, deckId: string)
+: Promise<DeckRow | null> 
+{
     const supabase = getSupabaseAdminClient();
     
     const { data, error } = await supabase
@@ -35,7 +54,9 @@ async function getDeckById(userId: string, deckId: string): Promise<DeckRow | nu
 }
 
 
-async function createDeck(newDeckData: DeckInsert): Promise<DeckRow> {
+async function createDeck(newDeckData: DeckInsert)
+: Promise<DeckRow>
+{
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
@@ -50,7 +71,9 @@ async function createDeck(newDeckData: DeckInsert): Promise<DeckRow> {
 }
 
 
-async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckUpdate): Promise<DeckRow> {
+async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckUpdate)
+: Promise<DeckRow> 
+{
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
@@ -68,7 +91,9 @@ async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckU
 }
 
 
-async function deleteDeck(deckId: string, userId: string): Promise<void> {
+async function deleteDeck(deckId: string, userId: string)
+: Promise<void> 
+{
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase

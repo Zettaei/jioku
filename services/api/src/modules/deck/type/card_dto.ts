@@ -1,12 +1,23 @@
 import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
 
+export interface CardsPaginatedResponse<T> {
+    result: Array<T>;
+    pagination: {
+        page: number,
+        limit: number,
+        hasNext: boolean
+    }
+}
+
 ////////////////////////////////////////////// GET CARDS BY DECK ID
 export interface GetCardsByDeckIdRouteHandler {
     deckId: string;
     userId: string;
+    page: string | undefined;
+    limit: string | undefined;
 }
 
-export type GetCardsByDeckIdRouteResponse = CardRow[];
+export type GetCardsByDeckIdRouteResponse = CardsPaginatedResponse<CardRow>;
 
 
 ////////////////////////////////////////////// GET CARD BY ID

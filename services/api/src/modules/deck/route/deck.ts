@@ -23,8 +23,13 @@ routes.use(userIdMiddleware);
 
 routes.get("/decks", async (c) => {
     const userId = c.get("userId");
+    const pageQuery = c.req.query("page");
+    const limitQuery = c.req.query("limit");
 
-    const result = await getDecksRouteHandler({ userId });
+    const result = await getDecksRouteHandler({ userId, 
+        page: pageQuery, 
+        limit: limitQuery 
+    });
 
     return c.json<GetDecksRouteResponse>(result);
 });

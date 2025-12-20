@@ -2,13 +2,18 @@ import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
+import type { CardsPaginatedResponse } from "../type/card_dto.js";
 
 //
 // OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
 //
 
-async function getCardsByDeckId(userId: string, deckId: string): Promise<Array<CardRow>> {
+async function getCardsByDeckId(userId: string, deckId: string, page: number = 1, limit: number = DECK_OPTIONS.CARD_REVIEW_FETCH_LIMIT)
+: Promise<CardsPaginatedResponse<CardRow>>
+{
     const supabase = getSupabaseAdminClient();
+
+    const offset = (page - 1) * limit;
 
     const { data, error } = await supabase
         .from("cards")
@@ -16,15 +21,28 @@ async function getCardsByDeckId(userId: string, deckId: string): Promise<Array<C
         .eq("decks_id", deckId)
         .eq("decks.users_id", userId)
         .order("due", { ascending: true })
-        .limit(DECK_OPTIONS.CARD_REVIEW_FETCH_LIMIT);
+        .range(offset, offset + limit);
 
     util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
 
-    return data || [];
+    const hasNext = (data?.length ?? 0) > limit;
+
+    if(hasNext) data?.pop();
+
+    return {
+        result: data ?? [],
+        pagination: {
+            page,
+            limit,
+            hasNext
+        }
+    };
 }
 
 
-async function getCardById(userId: string, cardId: string, deckId: string): Promise<CardRow | null> {
+async function getCardById(userId: string, cardId: string, deckId: string)
+: Promise<CardRow | null>
+{
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
@@ -40,7 +58,9 @@ async function getCardById(userId: string, cardId: string, deckId: string): Prom
     return data;
 }
 
-async function createCard(userId: string, deckId: string, newCardData: CardInsert): Promise<CardRow> {
+async function createCard(userId: string, deckId: string, newCardData: CardInsert)
+: Promise<CardRow>
+{
     const supabase = getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to create card in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
@@ -73,7 +93,9 @@ async function createCard(userId: string, deckId: string, newCardData: CardInser
 }
 
 
-async function updateCard(userId: string, cardId: string, deckId: string, updates: CardUpdate): Promise<CardRow> {
+async function updateCard(userId: string, cardId: string, deckId: string, updates: CardUpdate)
+: Promise<CardRow>
+{
     const supabase = getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to update card in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
@@ -107,7 +129,9 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
 }
 
 
-async function deleteCard(userId: string, cardId: string, deckId: string): Promise<void> {
+async function deleteCard(userId: string, cardId: string, deckId: string)
+: Promise<void>
+{
     const supabase = getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to delete card in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
