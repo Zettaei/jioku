@@ -12,12 +12,12 @@ async function getCardById(userId: string, cardId: string, deckId: string): Prom
 }
 
 
-async function createCard(userId: string, deckId: string, newCardData: Omit<CardInsert, "decks_id">): Promise<CardRow> {
+async function createCard(userId: string, deckId: string, newCardData: CardInsert): Promise<CardRow> {
     return await repository.createCard(userId, deckId, newCardData);
 }
 
 
-async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: Omit<CardUpdate, "decks_id">): Promise<CardRow> {
+async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: CardUpdate): Promise<CardRow> {
     return await repository.updateCard(userId, cardId, deckId, updatedCardData);
 }
 

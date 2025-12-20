@@ -23,7 +23,7 @@ export type GetCardByIdRouteResponse = CardRow | null;
 export interface CreateCardRouteHandler {
     deckId: string;
     userId: string;
-    data: Omit<CardInsert, "decks_id">;
+    data: CardInsert;
 }
 
 export type CreateCardRouteResponse = CardRow;

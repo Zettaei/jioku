@@ -7,7 +7,7 @@ import * as util from "../util.js";
 // OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
 //
 
-async function getCardsByDeckId(userId: string, deckId: string): Promise<CardRow[]> {
+async function getCardsByDeckId(userId: string, deckId: string): Promise<Array<CardRow>> {
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
@@ -41,10 +41,10 @@ async function getCardById(userId: string, cardId: string, deckId: string): Prom
     return data;
 }
 
-async function createCard(userId: string, deckId: string, newCardData: Omit<CardInsert, "decks_id">): Promise<CardRow> {
+async function createCard(userId: string, deckId: string, newCardData: CardInsert): Promise<CardRow> {
     const supabase = getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to create card in Supabase";
-    const UNAUTHORIZED_MESSAGE = "Incorrect permissions to create card in this deck";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
     {
         const { data, error } = await supabase
@@ -55,7 +55,6 @@ async function createCard(userId: string, deckId: string, newCardData: Omit<Card
             .maybeSingle();
 
         util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
-
         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
     {
@@ -75,7 +74,7 @@ async function createCard(userId: string, deckId: string, newCardData: Omit<Card
 }
 
 
-async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: Omit<CardUpdate, "decks_id">): Promise<CardRow> {
+async function updateCard(userId: string, cardId: string, deckId: string, updates: CardUpdate): Promise<CardRow> {
     const supabase = getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to update card in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
@@ -89,14 +88,13 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
             .maybeSingle();
 
         util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
-
         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
     {
         const { data, error } = await supabase
             .from("cards")
             .update({
-                ...updatedCardData,
+                ...updates,
                 decks_id: deckId,
             })
             .select("*")
@@ -113,7 +111,7 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
 async function deleteCard(userId: string, cardId: string, deckId: string): Promise<void> {
     const supabase = getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to delete card in Supabase";
-    const UNAUTHORIZED_MESSAGE = "Incorrect permissions to delete card in this deck";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
     {
         const { data, error } = await supabase
@@ -124,7 +122,6 @@ async function deleteCard(userId: string, cardId: string, deckId: string): Promi
             .maybeSingle();
 
         util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
-
         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
     {
@@ -133,11 +130,13 @@ async function deleteCard(userId: string, cardId: string, deckId: string): Promi
             .delete()
             .eq("decks_id", deckId)
             .eq("id", cardId)
-            .single();
+            .select("*")
+            .maybeSingle()
 
         util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
 
-        return data;
+        return;
     }
 }
 

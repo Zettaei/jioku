@@ -35,12 +35,12 @@ async function getDeckById(userId: string, deckId: string): Promise<DeckRow | nu
 }
 
 
-async function createDeck(deck: DeckInsert): Promise<DeckRow> {
+async function createDeck(newDeckData: DeckInsert): Promise<DeckRow> {
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("decks")
-        .insert(deck)
+        .insert(newDeckData)
         .select("*")
         .maybeSingle();
 
@@ -50,12 +50,12 @@ async function createDeck(deck: DeckInsert): Promise<DeckRow> {
 }
 
 
-async function updateDeck(deckId: string, userId: string, updates: DeckUpdate): Promise<DeckRow> {
+async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckUpdate): Promise<DeckRow> {
     const supabase = getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("decks")
-        .update(updates)
+        .update(updatedDeckData)
         .eq("id", deckId)
         .eq("users_id", userId)
         .select("*")

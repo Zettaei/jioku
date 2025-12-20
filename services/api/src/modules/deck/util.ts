@@ -14,18 +14,10 @@ function removeHiddenColumn(deck: DeckRow): Omit<DeckRow, DeckResponseHiddenColu
 }
 
 /**
- * Asserts that no Supabase error occurred.
- * Throws SupabaseError if error is not null.
- */
-
-/**
  * Throws a typed error if a Supabase/PostgREST error exists.
  * Groups errors by SQLSTATE code prefix.
  */
-function throwSupabaseErrorIfExist(
-  error: PostgrestError | null,
-  message: string
-): asserts error is null {
+function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string): asserts error is null {
     if (!error) return;
 
     const code = error.code;
@@ -44,12 +36,12 @@ function throwSupabaseErrorIfExist(
     // 23xxx → constraint violation (FK, unique)
     if (code.startsWith("23")) {
         if (code === "23503") {
-        throw new BadRequestError("Foreign key does not exist");
+            throw new SupabaseError("Foreign key does not exist", error.message, error);
         }
         if (code === "23505") {
-        throw new ConflictError("Duplicate key / unique constraint violation");
+            throw new SupabaseError("Duplicate key / unique constraint violation", error.message, error);
         }
-        throw new ConflictError(error.message || "Constraint violation");
+        throw new SupabaseError(error.message || "Constraint violation", error.message, error);
     }
 
     // 28xxx → authorization / permission errors
