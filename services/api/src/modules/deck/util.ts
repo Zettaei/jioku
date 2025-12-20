@@ -30,7 +30,7 @@ function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string
 
     // 22xxx → data exception / invalid input / type
     if (code.startsWith("22")) {
-        throw new BadRequestError(error.message || "Invalid input or type");
+        throw new BadRequestError("Invalid input syntax for a type in Database");
     }
 
     // 23xxx → constraint violation (FK, unique)

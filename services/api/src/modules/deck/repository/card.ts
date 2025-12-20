@@ -33,7 +33,6 @@ async function getCardById(userId: string, cardId: string, deckId: string): Prom
         .eq("id", cardId)
         .eq("decks_id", deckId)
         .eq("decks.users_id", userId)
-        .order("due", { ascending: true })
         .maybeSingle();
 
     util.throwSupabaseErrorIfExist(error, "Failed to get card from Supabase");
@@ -82,7 +81,7 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
     {
         const { data, error } = await supabase
             .from("decks")
-            .select("*")
+            .select("id")
             .eq("id", deckId)
             .eq("users_id", userId)
             .maybeSingle();
@@ -116,7 +115,7 @@ async function deleteCard(userId: string, cardId: string, deckId: string): Promi
     {
         const { data, error } = await supabase
             .from("decks")
-            .select("*")
+            .select("id")
             .eq("id", deckId)
             .eq("users_id", userId)
             .maybeSingle();
