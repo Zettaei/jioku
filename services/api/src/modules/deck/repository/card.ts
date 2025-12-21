@@ -2,14 +2,14 @@ import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
-import type { CardsPaginatedResponse } from "../type/card_dto.js";
+import type { PaginatedResponse } from "../type/dto.js";
 
 //
 // OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
 //
 
-async function getCardsByDeckId(userId: string, deckId: string, page: number = 1, limit: number = DECK_OPTIONS.CARD_REVIEW_FETCH_LIMIT)
-: Promise<CardsPaginatedResponse<CardRow>>
+async function getCardsByDeckId(userId: string, deckId: string, page: number = 1, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT)
+: Promise<PaginatedResponse<CardRow>>
 {
     const supabase = getSupabaseAdminClient();
 
@@ -20,7 +20,7 @@ async function getCardsByDeckId(userId: string, deckId: string, page: number = 1
         .select(`*, decks!inner()`)
         .eq("decks_id", deckId)
         .eq("decks.users_id", userId)
-        .order("due", { ascending: true })
+        .order("createdat", { ascending: false })
         .range(offset, offset + limit);
 
     util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");

@@ -1,16 +1,8 @@
 import type { DeckRow, DeckInsert, DeckUpdate } from "src/core/supabase/type.js";
+import type { PaginatedResponse } from "./dto.js";
 
 export const DeckResponseHiddenColumn = { "users_id": "users_id" } as const;
 export type DeckResponseHiddenColumn = typeof DeckResponseHiddenColumn[keyof typeof DeckResponseHiddenColumn];
-
-export interface DecksPaginatedResponse<T> {
-    result: Array<T>;
-    pagination: {
-        page: number,
-        limit: number,
-        hasNext: boolean
-    }
-}
 
 ////////////////////////////////////////////// GET DECKS
 export interface GetDecksRouteHandler {
@@ -19,7 +11,7 @@ export interface GetDecksRouteHandler {
     limit: string | undefined;
 }
 
-export type GetDecksRouteResponse = DecksPaginatedResponse<Omit<DeckRow, DeckResponseHiddenColumn>>;
+export type GetDecksRouteResponse = PaginatedResponse<Omit<DeckRow, DeckResponseHiddenColumn>>;
 
 
 ////////////////////////////////////////////// GET DECK BY ID
@@ -56,4 +48,4 @@ export interface DeleteDeckRouteHandler {
     deckId: string;
 }
 
-export type DeleteDeckRouteResponse = Record<string, never>;
+export type DeleteDeckRouteResponse = {};

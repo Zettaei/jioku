@@ -4,6 +4,11 @@ import { InternalError } from "../errors/internalError.js";
 
 let supabaseAdmin: SupabaseClient<any, any, string, any, any> | null = null;
 
+/**
+ * 
+ * @returns an instance of already connected supabase service role client
+ * @note if none has been init, it will start one
+ */
 function getSupabaseAdminClient(): SupabaseClient<any, any, string, any, any> {
     if (supabaseAdmin) return supabaseAdmin;
 

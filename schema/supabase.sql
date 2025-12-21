@@ -1,13 +1,11 @@
 ---------------### THIS IS FOR SUPABASE ONLY
 ---------------### copy these code to run on supabase sql query
 
--- -------------------------
--- Profiles
--- -------------------------
-
 CREATE SCHEMA IF NOT EXISTS public;
 
-
+-- -------------------------.
+-- Profiles
+-- -------------------------
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -24,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.decks (
     users_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     headersData JSONB NOT NULL DEFAULT '{}'::jsonb,
     headersOrder JSONB NOT NULL DEFAULT '[]'::jsonb,
-    -- headerCount SMALLINT NOT NULL,   likely not needed, probably
+    -- headerCount SMALLINT NOT NULL,           likely not needed, probably
     settings JSONB NOT NULL DEFAULT '{}'::jsonb,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -63,4 +61,3 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     createdat TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (cards_id, createdat)
 );
-CREATE INDEX IF NOT EXISTS idx_reviews_cards_id ON public.reviews(cards_id);

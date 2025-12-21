@@ -1,10 +1,10 @@
 import type { CardInsert, CardUpdate, CardRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/card.js";
-import type { CardsPaginatedResponse } from "../type/card_dto.js";
+import type { PaginatedResponse } from "../type/dto.js";
 
 
 async function getCardsByDeckId(userId: string, deckId: string, page: number | undefined, limit: number | undefined)
-: Promise<CardsPaginatedResponse<CardRow>>
+: Promise<PaginatedResponse<CardRow>>
 {
     const data = await repository.getCardsByDeckId(userId, deckId, page, limit);
 

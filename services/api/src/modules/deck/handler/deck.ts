@@ -1,4 +1,3 @@
-import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
 import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";

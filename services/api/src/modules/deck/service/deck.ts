@@ -1,10 +1,11 @@
 import type { DeckInsert, DeckUpdate, DeckRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/deck.js";
 import * as util from "../util.js";
-import type { DeckResponseHiddenColumn, DecksPaginatedResponse } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn } from "../type/deck_dto.js";
+import type { PaginatedResponse } from "../type/dto.js";
 
 async function getDecksByUserId(userId: string, page: number | undefined, limit: number | undefined)
-: Promise<DecksPaginatedResponse<Omit<DeckRow, DeckResponseHiddenColumn>>>
+: Promise<PaginatedResponse<Omit<DeckRow, DeckResponseHiddenColumn>>>
 {
     const data = await repository.getDecksByUserId(userId, page, limit);
 

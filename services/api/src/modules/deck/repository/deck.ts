@@ -2,10 +2,11 @@ import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
-import type { DecksPaginatedResponse } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn } from "../type/deck_dto.js";
+import type { PaginatedResponse } from "../type/dto.js";
 
 async function getDecksByUserId(userId: string, page: number = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
-: Promise<DecksPaginatedResponse<DeckRow>> 
+: Promise<PaginatedResponse<DeckRow>> 
 {
     const supabase = getSupabaseAdminClient();
 
