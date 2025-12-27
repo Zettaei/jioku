@@ -3,7 +3,6 @@ import insert_dict_redis.utils as utils
 from dotenv import load_dotenv, find_dotenv
 import redis
 from config import config
-import psycopg
 
 
 def insert_dict_redis(file_path: Path):

@@ -7,6 +7,7 @@ import { InternalError } from "core/errors/internalError.js";
 import * as utils from "core/utils/index.js";
 import * as ocr from "modules/ocr/index.js";
 import * as dict from "modules/dict/index.js";
+import * as deck from "modules/deck/index.js";
 
 import { ENV_VARS } from "./config.js";
 import { setupShutdown } from "./shutdown.js";
@@ -21,6 +22,7 @@ app.use(cors({
 
 app.route("/ocr", ocr.routes);
 app.route("/dict", dict.routes);
+app.route("/deck", deck.routes);
 
 
 app.onError((err, c) => {

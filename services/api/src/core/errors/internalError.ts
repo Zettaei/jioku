@@ -11,5 +11,9 @@ export class InternalError extends Error {
   }
 }
 
-export class PostgresError extends InternalError {}
+export class SupabaseError extends InternalError {
+  constructor(message: string, subMessage?: string, rawResponse?: unknown) {
+    super(message, subMessage, rawResponse);
+  }
+}
 export class RedisError extends InternalError {}

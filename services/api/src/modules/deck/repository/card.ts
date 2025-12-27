@@ -1,0 +1,175 @@
+import { getSupabaseAdminClient } from "core/supabase/supabase.js";
+import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
+import { DECK_OPTIONS } from "src/config.js";
+import * as util from "../util.js";
+import type { PaginatedResponse } from "../type/dto.js";
+
+//
+// OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
+//
+
+async function getCardsByDeckId(userId: string, deckId: string, page: number = 1, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT)
+: Promise<PaginatedResponse<CardRow>>
+{
+    const supabase = getSupabaseAdminClient();
+
+    const offset = (page - 1) * limit;
+
+    const { data, error } = await supabase
+        .from("cards")
+        .select(`
+            *,
+            decks!cards_decks_id_fkey!inner()
+        `)
+        .eq("decks.users_id", userId)
+        .order("createdat", { ascending: false })
+        .range(offset, offset + limit);
+
+    util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
+
+    const hasNext = (data?.length ?? 0) > limit;
+
+    if(hasNext) data?.pop();
+
+    return {
+        result: data ?? [],
+        pagination: {
+            page,
+            limit,
+            hasNext
+        }
+    };
+}
+
+
+async function getCardById(userId: string, cardId: string, deckId: string)
+: Promise<CardRow | null>
+{
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase
+        .from("cards")
+        .select(`*, decks!cards_decks_id_fkey!inner()`)
+        .eq("id", cardId)
+        .eq("decks_id", deckId)
+        .eq("decks.users_id", userId)
+        .maybeSingle();
+
+    util.throwSupabaseErrorIfExist(error, "Failed to get card from Supabase");
+
+    return data;
+}
+
+async function createCard(userId: string, deckId: string, newCardData: CardInsert)
+: Promise<CardRow>
+{
+    const supabase = getSupabaseAdminClient();
+    const ERROR_MESSAGE = "Failed to create card in Supabase";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
+
+    {
+        const { data, error } = await supabase
+            .from("decks")
+            .select("id")
+            .eq("id", deckId)
+            .eq("users_id", userId)
+            .maybeSingle();
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
+    }
+    {
+        const { data, error } = await supabase
+            .from("cards")
+            .insert({
+                ...newCardData,
+                decks_id: deckId,
+            })
+            .select("*")
+            .single();
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        return data;
+    }
+}
+
+// TODO: forgot to update the "updatedat" column when, well.. you know, "updated"
+async function updateCard(userId: string, cardId: string, deckId: string, updates: CardUpdate)
+: Promise<CardRow>
+{
+    const supabase = getSupabaseAdminClient();
+    const ERROR_MESSAGE = "Failed to update card in Supabase";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
+
+    {
+        const { data, error } = await supabase
+            .from("decks")
+            .select("id")
+            .eq("id", deckId)
+            .eq("users_id", userId)
+            .maybeSingle();
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
+    }
+    {
+        const { data, error } = await supabase
+            .from("cards")
+            .update({
+                ...updates,
+                decks_id: deckId,
+            })
+            .select("*")
+            .eq("id", cardId)
+            .single();
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+
+        return data;
+    }
+}
+
+
+async function deleteCard(userId: string, cardId: string, deckId: string)
+: Promise<void>
+{
+    const supabase = getSupabaseAdminClient();
+    const ERROR_MESSAGE = "Failed to delete card in Supabase";
+    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
+
+    {
+        const { data, error } = await supabase
+            .from("decks")
+            .select("id")
+            .eq("id", deckId)
+            .eq("users_id", userId)
+            .maybeSingle();
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
+    }
+    {
+        const { data, error } = await supabase
+            .from("cards")
+            .delete()
+            .eq("decks_id", deckId)
+            .eq("id", cardId)
+            .select("*")
+            .maybeSingle()
+
+        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
+
+        return;
+    }
+}
+
+
+export {
+    getCardsByDeckId,
+    getCardById,
+    createCard,
+    updateCard,
+    deleteCard
+}
