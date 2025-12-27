@@ -23,12 +23,12 @@ async function getReviewsByCardIdRouteHandler(req: GetReviewsByCardIdRouteHandle
 }
 
 
-async function createReviewRouteHandler(req: CreateReviewRouteHandler)
-: Promise<CreateReviewRouteResponse>
-{
-    const review = await service.createReview(req.userId, req.deckId, req.cardId, req.data);
-    return review;
-}
+// async function createReviewRouteHandler(req: CreateReviewRouteHandler)
+// : Promise<CreateReviewRouteResponse>
+// {
+//     const review = await service.createReview(req.userId, req.deckId, req.cardId, req.data);
+//     return review;
+// }
 
 
 // async function deleteReviewRouteHandler(req: DeleteReviewRouteHandler)
@@ -41,6 +41,6 @@ async function createReviewRouteHandler(req: CreateReviewRouteHandler)
 
 export {
     getReviewsByCardIdRouteHandler,
-    createReviewRouteHandler,
+    // createReviewRouteHandler,
     // deleteReviewRouteHandler
 }

@@ -30,7 +30,27 @@ function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string
 
     // 22xxx → data exception / invalid input / type
     if (code.startsWith("22")) {
-        throw new BadRequestError("Invalid input syntax for a type in Database");
+        switch (code) {
+            case "22P02":
+                throw new BadRequestError("Invalid input syntax for database type");
+
+            case "22001":
+                throw new BadRequestError("Value is too long");
+
+            case "22003":
+                throw new BadRequestError("Numeric value out of range");
+
+            case "22007":
+                throw new BadRequestError("Invalid date/time format");
+
+            case "22012":
+                throw new BadRequestError("Division by zero");
+
+            default:
+                if (code.startsWith("22")) {
+                    throw new BadRequestError("Invalid data input");
+                }
+        }
     }
 
     // 23xxx → constraint violation (FK, unique)

@@ -17,8 +17,8 @@ async function getDecksByUserId(userId: string, page: number = 1, limit: number 
         .select("*")
         .eq("users_id", userId)
         .order("name", { ascending: false })
-        .order("id", { ascending: false })  // extra, incase of decks having the same name
-        .range(offset, offset + limit);
+        .order("id", { ascending: false })  // extra, in case of decks having the same name
+        .range(offset, offset + limit)
 
     util.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 

@@ -17,8 +17,10 @@ async function getCardsByDeckId(userId: string, deckId: string, page: number = 1
 
     const { data, error } = await supabase
         .from("cards")
-        .select(`*, decks!inner()`)
-        .eq("decks_id", deckId)
+        .select(`
+            *,
+            decks!cards_decks_id_fkey!inner()
+        `)
         .eq("decks.users_id", userId)
         .order("createdat", { ascending: false })
         .range(offset, offset + limit);
@@ -47,7 +49,7 @@ async function getCardById(userId: string, cardId: string, deckId: string)
 
     const { data, error } = await supabase
         .from("cards")
-        .select(`*, decks!inner()`)
+        .select(`*, decks!cards_decks_id_fkey!inner()`)
         .eq("id", cardId)
         .eq("decks_id", deckId)
         .eq("decks.users_id", userId)
@@ -92,7 +94,7 @@ async function createCard(userId: string, deckId: string, newCardData: CardInser
     }
 }
 
-
+// TODO: forgot to update the "updatedat" column when, well.. you know, "updated"
 async function updateCard(userId: string, cardId: string, deckId: string, updates: CardUpdate)
 : Promise<CardRow>
 {

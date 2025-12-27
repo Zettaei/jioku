@@ -16,7 +16,7 @@ async function getReviewsByCardId(userId: string, deckId: string, cardId: string
 
     const { data, error } = await supabase
         .from("reviews")
-        .select(`*, cards!inner(decks!inner())`)
+        .select(`*, cards!reviews_cards_id_fkey!inner(decks!cards_decks_id_fkey!inner())`)
         .eq("cards_id", cardId)
         .eq("cards.decks_id", deckId)
         .eq("cards.decks.users_id", userId)
@@ -40,46 +40,46 @@ async function getReviewsByCardId(userId: string, deckId: string, cardId: string
 }
 
 
-async function createReview(userId: string, deckId: string, cardId: string, newReviewData: ReviewInsert)
-: Promise<{ review: ReviewRow; card: CardRow }>
-{
-    const supabase = getSupabaseAdminClient();
-    const ERROR_MESSAGE = "Failed to create review in Supabase";
-    const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
+// async function createReview(userId: string, deckId: string, cardId: string, newReviewData: ReviewInsert)
+// : Promise<{ review: ReviewRow }>
+// {
+//     const supabase = getSupabaseAdminClient();
+//     const ERROR_MESSAGE = "Failed to create review in Supabase";
+//     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
-    let cardData: any;
-    {
-        const { data, error } = await supabase
-            .from("cards")
-            .select("id, easefactor, interval, repetition, decks!inner()")
-            .eq("id", cardId)
-            .eq("decks.id", deckId)
-            .eq("decks.users_id", userId)
-            .maybeSingle();
+//     {
+//         const { data, error } = await supabase
+//             .from("cards")
+//             .select("id, easefactor, interval, repetition, decks!cards_decks_id_fkey!inner()")
+//             .eq("id", cardId)
+//             .eq("decks.id", deckId)
+//             .eq("decks.users_id", userId)
+//             .maybeSingle();
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
-        util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
-        cardData = data;
-    }
-    {
-        const { data, error } = await supabase
-            .from("reviews")
-            .insert({
-                ...newReviewData,
-                cards_id: cardId
-            })
-            .select("*")
-            .single();
+//         util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+//         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
+//     }
+//     console.log()
+//     {
+//         const { data, error } = await supabase
+//             .from("reviews")
+//             .insert({
+//                 decks_id: deckId,
+//                 cards_id: cardId,
+//                 ...newReviewData
+//             })
+//             .select("*")
+//             .single();
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+//         util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
 
-        return { review: data, card: cardData };
-    }
-}
+//         return { review: data };
+//     }
+// }
 
 
 
 export {
     getReviewsByCardId,
-    createReview,
+    // createReview,
 }

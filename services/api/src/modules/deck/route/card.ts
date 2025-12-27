@@ -27,7 +27,7 @@ routes.get("/decks/:deckId/cards", async (c) => {
     const pageQuery = c.req.query("page");
     const limitQuery = c.req.query("limit");
 
-    const result = await getCardsByDeckIdRouteHandler({ deckId, userId,
+    const result = await getCardsByDeckIdRouteHandler({ userId, deckId,
         page: pageQuery,
         limit: limitQuery
     });
@@ -40,7 +40,7 @@ routes.get("/decks/:deckId/cards/:cardId", async (c) => {
     const deckId = c.req.param("deckId");
     const cardId = c.req.param("cardId");
 
-    const result = await getCardByIdRouteHandler({ cardId, deckId, userId });
+    const result = await getCardByIdRouteHandler({ userId, deckId, cardId });
 
     return c.json<GetCardByIdRouteResponse>(result);
 });
@@ -54,7 +54,7 @@ routes.post("/decks/:deckId/cards", async (c) => {
         data = await c.req.json();
     } catch (err) { throw new BadRequestError("Invalid JSON") };
 
-    const result = await createCardRouteHandler({ deckId, userId, data });
+    const result = await createCardRouteHandler({ userId, deckId, data });
 
     return c.json<CreateCardRouteResponse>(result);
 });
@@ -69,7 +69,7 @@ routes.put("/decks/:deckId/cards/:cardId", async (c) => {
         data = await c.req.json();
     } catch (err) { throw new BadRequestError("Invalid JSON") };
 
-    const result = await updateCardRouteHandler({ deckId, cardId, data, userId });
+    const result = await updateCardRouteHandler({ userId, deckId, cardId, data });
 
     return c.json<UpdateCardRouteResponse>(result);
 });
@@ -79,7 +79,7 @@ routes.delete("/decks/:deckId/cards/:cardId", async (c) => {
     const deckId = c.req.param("deckId");
     const cardId = c.req.param("cardId");
 
-    const result = await deleteCardRouteHandler({ deckId, cardId, userId });
+    const result = await deleteCardRouteHandler({ userId, deckId, cardId });
 
     return c.json<DeleteCardRouteResponse>(result);
 });

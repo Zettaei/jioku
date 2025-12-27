@@ -28,7 +28,7 @@ app.route("/deck", deck.routes);
 app.onError((err, c) => {
     try {
         if (err instanceof HttpError) {
-            // console.error(err);
+            console.error(err);
             return c.text(err.message, err.status);
         }
 
