@@ -17,7 +17,12 @@
 		"target": "esnext",
 		"module": "esnext",
 		"types": ["svelte", "vite/client"]
-	}
+	},
+	"exclude": [
+		"node_modules",
+		"build",
+		"dist"
+	]
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
 	//
