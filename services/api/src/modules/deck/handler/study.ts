@@ -10,6 +10,7 @@ import type {
     UpdateCardAndReviewRouteHandler,
     UpdateCardAndReviewRouteResponse
 } from "../type/study_dto.js";
+import { DECK_OPTIONS } from "src/config.js";
 
 
 async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
@@ -20,10 +21,12 @@ async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
     const timezoneStr = req.timezone;
 
     const safePage =
-        Number.isInteger(pageNum) && pageNum > 0 ? pageNum : undefined;
-
+        (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
+        ? pageNum : undefined;
+    
     const safeLimit =
-        Number.isInteger(limitNum) && limitNum > 0 ? limitNum : undefined;
+        (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
+        ? limitNum : undefined;
 
     const safeTimezone =
         typeof timezoneStr === "string" && timezoneStr.length > 0 ? timezoneStr : undefined;
@@ -43,7 +46,7 @@ async function getStudyCardsByDeckIdRouteHandler(req: GetStudyCardsByDeckIdRoute
         typeof timezoneStr === "string" && timezoneStr.length > 0 ? timezoneStr : undefined;
 
     const safeLimit =
-        Number.isInteger(limitNum) && limitNum > 0 ? limitNum : undefined;
+        Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.STUDY_CARD_FETCH_LIMIT ? limitNum : undefined;
 
     const safeOffset =
         Number.isInteger(offsetNum) && offsetNum >= 0 ? offsetNum : undefined;
@@ -66,7 +69,7 @@ async function getStudyCardsByStatusDeckIdRouteHandler(req: GetStudyCardsByStatu
         Number.isInteger(statusNum) && statusNum >= 0 ? statusNum : undefined;
 
     const safeLimit =
-        Number.isInteger(limitNum) && limitNum > 0 ? limitNum : undefined;
+        Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.STUDY_CARD_FETCH_LIMIT ? limitNum : undefined;
 
     const safeOffset =
         Number.isInteger(offsetNum) && offsetNum >= 0 ? offsetNum : undefined;

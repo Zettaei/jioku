@@ -5,14 +5,14 @@ import {
     getCardByIdRouteHandler,
     createCardRouteHandler,
     updateCardRouteHandler,
-    deleteCardRouteHandler
+    deleteCardsRouteHandler,
 } from "../handler/card.js";
 import type {
     GetCardsByDeckIdRouteResponse,
     GetCardByIdRouteResponse,
     CreateCardRouteResponse,
     UpdateCardRouteResponse,
-    DeleteCardRouteResponse
+    DeleteCardsRouteResponse
 } from "../type/card_dto.js";
 import { BadRequestError } from "src/core/errors/httpError.js";
 
@@ -74,14 +74,18 @@ routes.put("/decks/:deckId/cards/:cardId", async (c) => {
     return c.json<UpdateCardRouteResponse>(result);
 });
 
-routes.delete("/decks/:deckId/cards/:cardId", async (c) => {
+routes.delete("/decks/:deckId/cards", async (c) => {
     const userId = c.get("userId");
     const deckId = c.req.param("deckId");
-    const cardId = c.req.param("cardId");
+    const cardIds = c.req.queries("cardId");
 
-    const result = await deleteCardRouteHandler({ userId, deckId, cardId });
+    if(!cardIds) {
+        throw new BadRequestError("Missing cardId parameters")
+    }
 
-    return c.json<DeleteCardRouteResponse>(result);
+    const result = await deleteCardsRouteHandler({ userId, deckId, cardIds });
+
+    return c.json<DeleteCardsRouteResponse>(result);
 });
 
 export { routes };

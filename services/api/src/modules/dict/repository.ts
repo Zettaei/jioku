@@ -30,7 +30,10 @@ async function getWord(word: string, wordType: WordType, from: number = 0, size:
 {
     const redis = await getRedisClient()!;
 
-    const searchKey = escapeRedisSearch(word);
+    let searchKey = escapeRedisSearch(word);
+    if(wordType !== WordType.meaning) {
+        searchKey += '*';
+    }
     const indexKey = convertToIndexKey(wordType);
     const scoreKey = convertToScoreKey(wordType);
 
@@ -40,14 +43,14 @@ async function getWord(word: string, wordType: WordType, from: number = 0, size:
         {
             LIMIT: {
                 from,
-                size             
+                size: size + 1  // hasMore           
             },
             SORTBY: {
                 BY: scoreKey,
                 DIRECTION: "ASC",
             }
         }
-    ) as unknown as FtSearchResult<Entry>;      // <-- dangerous type shi, make sure the type correct before casting
+    ) as unknown as FtSearchResult<Entry>;
 
     return result;
 }

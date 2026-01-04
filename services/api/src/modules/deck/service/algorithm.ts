@@ -3,18 +3,20 @@ import { CardStatusType } from "../type/model.js";
 
 interface SM2Input {
     quality: number;  // 0-5 rating
-    easefactor: number;
+    easefactor: number; // 1.3 - 2.5
     interval: number;
     repetition: number;
 }
 
 interface SM2Output {
-    status: number,
+    status: number, // 0: new, 1: due, 2: retry
     easefactor: number;
     interval: number;
     repetition: number;
     due: string;
 }
+
+// currently UNUSED (USE IN THE SUPABASE FUNCTION INSTEAD)
 
 function calculateSuperMemo2(input: SM2Input): SM2Output {
     const { quality, easefactor, interval, repetition } = input;

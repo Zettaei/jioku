@@ -14,9 +14,15 @@ import { setupShutdown } from "./shutdown.js";
 // utils.env.validateEnvironment();
 
 const app = new Hono().basePath("/");
-app.use(cors({
-    credentials: true,
-    origin: process.env["FRONTEND_HOST"] ?? ""
+app.use(
+    "*",
+    cors({
+        credentials: true,
+        origin: (origin) => {
+            return origin === ENV_VARS.FRONTEND_URL.value!
+            ? origin
+            : null;
+        }
 }));
 
 

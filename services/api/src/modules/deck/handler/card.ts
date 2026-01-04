@@ -1,3 +1,4 @@
+import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/card.js";
 import type {
     GetCardsByDeckIdRouteHandler,
@@ -8,8 +9,8 @@ import type {
     CreateCardRouteResponse,
     UpdateCardRouteHandler,
     UpdateCardRouteResponse,
-    DeleteCardRouteHandler,
-    DeleteCardRouteResponse
+    DeleteCardsRouteHandler,
+    DeleteCardsRouteResponse
 } from "../type/card_dto.js";
 
 
@@ -20,10 +21,12 @@ async function getCardsByDeckIdRouteHandler(req: GetCardsByDeckIdRouteHandler)
     const limitNum = Number(req.limit);
 
     const safePage =
-        Number.isInteger(pageNum) && pageNum > 0 ? pageNum : undefined;
+        (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
+        ? pageNum : undefined;
 
     const safeLimit =
-        Number.isInteger(limitNum) && limitNum > 0 ? limitNum : undefined;
+        (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT)
+        ? limitNum : undefined;
     
     return await service.getCardsByDeckId(req.userId, req.deckId, safePage, safeLimit);
 }
@@ -54,10 +57,10 @@ async function updateCardRouteHandler(req: UpdateCardRouteHandler)
 }
 
 
-async function deleteCardRouteHandler(req: DeleteCardRouteHandler)
-: Promise<DeleteCardRouteResponse>
+async function deleteCardsRouteHandler(req: DeleteCardsRouteHandler)
+: Promise<DeleteCardsRouteResponse>
 {
-    await service.deleteCard(req.userId, req.cardId, req.deckId);
+    await service.deleteCard(req.userId, req.cardIds, req.deckId);
     return {};
 }
 
@@ -67,5 +70,5 @@ export {
     getCardByIdRouteHandler,
     createCardRouteHandler,
     updateCardRouteHandler,
-    deleteCardRouteHandler
+    deleteCardsRouteHandler,
 }

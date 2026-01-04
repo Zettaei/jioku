@@ -6,8 +6,8 @@ import type { GetDecksStudyRouteResponse, GetStudyCardsByDeckIdRouteResponse, Ge
 
 //
 // NOTE: parameters "timezone" and "status" type is maybe too flexible, MIGHT do something with it later
+// TODO: pagination for deck
 //
-
 async function getStudyDecks(userId: string, page: number | undefined = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT, timezone: string | undefined = undefined)
 : Promise<GetDecksStudyRouteResponse>
 {
@@ -24,16 +24,12 @@ async function getStudyDecks(userId: string, page: number | undefined = 1, limit
 
     util.throwSupabaseErrorIfExist(error, "Failed to get study decks from Supabase");
 
-    const hasNext = (data?.length ?? 0) > limit;
-
-    if(hasNext) data.result.pop();
-
     return {
-        result: data ?? [],
+        result: data.decks,
+        total: data.total_deck_count,
         pagination: {
             page,
             limit,
-            hasNext
         }
     };
 }

@@ -3,6 +3,7 @@ import type { IpadicFeatures } from "kuromoji";
 import type { FtSearchResult } from "core/redisstack/index.js";
 import type { Entry, TokenFeatures, TranslationLanguage } from "./model.js";
 import * as Ocr from "modules/ocr/index.js";
+import type { PaginatedResponse } from "modules/deck/type/dto.js";
 
 
 ////////////////////////////////////////////// TOKENS
@@ -37,16 +38,18 @@ export interface TokensOcrRouteHandler {
 ////////////////////////////////////////////// ENTRIES
 export type EntriesRouteHandlerQuery = {
     translation: TranslationLanguage | undefined;
+    page?: number;
+    limit?: number;
 }
 export interface EntriesRouteHandler {
     param: string | undefined;
     query: EntriesRouteHandlerQuery;
 }
 
-export interface EntriesRouteResponse {
+export type EntriesRouteResponse = PaginatedResponse<Entry> & {
     param: string;
     language: TranslationLanguage;
-    result: FtSearchResult<Entry>;
+    total: number;
 }
 
 

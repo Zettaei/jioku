@@ -1,3 +1,4 @@
+import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
 import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
@@ -10,10 +11,12 @@ async function getDecksRouteHandler(req: GetDecksRouteHandler)
     const limitNum = Number(req.limit);
 
     const safePage =
-        Number.isInteger(pageNum) && pageNum > 0 ? pageNum : undefined;
-
-    const safeLimit =
-        Number.isInteger(limitNum) && limitNum > 0 ? limitNum : undefined;
+            (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
+            ? pageNum : undefined;
+    
+        const safeLimit =
+            (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
+            ? limitNum : undefined;
 
     return await service.getDecksByUserId(req.userId, safePage, safeLimit);
 }

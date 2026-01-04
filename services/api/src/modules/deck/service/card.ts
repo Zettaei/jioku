@@ -1,17 +1,14 @@
 import type { CardInsert, CardUpdate, CardRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/card.js";
-import type { PaginatedResponse } from "../type/dto.js";
+import type { PaginatedResponseWithTotalCount } from "../type/dto.js";
 
 
 async function getCardsByDeckId(userId: string, deckId: string, page: number | undefined, limit: number | undefined)
-: Promise<PaginatedResponse<CardRow>>
+: Promise<PaginatedResponseWithTotalCount<CardRow>>
 {
     const data = await repository.getCardsByDeckId(userId, deckId, page, limit);
 
-    return {
-        result: data.result,
-        pagination: data.pagination
-    };
+    return data;
 }
 
 
@@ -37,17 +34,16 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
 }
 
 
-async function deleteCard(userId: string, cardId: string, deckId: string)
+async function deleteCard(userId: string, cardIds: Array<string>, deckId: string)
 : Promise<void> 
 {
-    return await repository.deleteCard(userId, cardId, deckId);
+    return await repository.deleteCards(userId, cardIds, deckId);
 }
-
 
 export {
     getCardsByDeckId,
     getCardById,
     createCard,
     updateCard,
-    deleteCard
+    deleteCard,
 }

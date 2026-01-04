@@ -73,26 +73,37 @@ async function tokensOcrRouteHandler(req: TokensOcrRouteHandler): Promise<Tokens
 async function entriesRouteHandler(req: EntriesRouteHandler): Promise<EntriesRouteResponse> {
     const param = req.param;
     const queryTranslation = req.query.translation ?? TranslationLanguage.English;
+    const page = req.query.page ?? 1;
+    const limit = req.query.limit ?? DICT_OPTIONS.RESULT_LIMIT;
+    const from = (page - 1) * limit;
 
     if(!param) {
         return { 
             param: "", 
-            language: TranslationLanguage.English, 
-            result: { documents: [], total: 0 } 
+            language: TranslationLanguage.English,
+            result: [],
+            total: 0,
+            pagination: { page: 1, limit, hasNext: false }
         };
     }
     
     util.validateQuery(param);
     util.validateTranslationLanguage(queryTranslation);
     
-    const searchResult = await repository.getWord(param, util.getWordType(param));
+    const searchResult = await repository.getWord(param, util.getWordType(param), from, limit);
+    
+    // Transform FtSearchResult to array of entries and calculate hasNext
+    const entries = searchResult.documents.map(doc => doc.value);
+    const hasNext = searchResult.total > from + limit;
         
-    await service.processRedisResultTranslation(queryTranslation, searchResult);
+    await service.processRedisResultTranslation(queryTranslation, { documents: entries.map(entry => ({ id: "", value: entry })), total: searchResult.total });
 
     return { 
         param: param, 
-        language: queryTranslation, 
-        result: searchResult 
+        language: queryTranslation,
+        result: entries,
+        total: searchResult.total,
+        pagination: { page, limit, hasNext }
     };
 }
 

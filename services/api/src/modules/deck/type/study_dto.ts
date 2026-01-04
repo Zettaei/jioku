@@ -1,6 +1,14 @@
-import type { CardRow } from "src/core/supabase/type.js";
-import type { PaginatedResponse } from "./dto.js";
+import type { CardRow, DeckRow } from "src/core/supabase/type.js";
+import type { PaginatedResponse, PaginatedResponseWithTotalCount } from "./dto.js";
 import type { CardStatusType } from "./model.js";
+
+type GetStudyCardsBlock = {
+  status: keyof typeof CardStatusType;
+  status_code: CardStatusType;
+  items: Array<CardRow>;
+  total: number;
+  offset: number;
+};
 
 ////////////////////////////////////////////// GET DECKS STUDY
 export interface GetDecksStudyRouteHandler {
@@ -10,7 +18,9 @@ export interface GetDecksStudyRouteHandler {
     timezone: string | undefined;
 }
 
-export type GetDecksStudyRouteResponse = PaginatedResponse<CardRow>;
+export type GetDecksStudyRouteResponse = PaginatedResponseWithTotalCount<DeckRow & {
+    today_dues: Array<{ status: CardStatusType, count: number }>
+}>;
 
 ////////////////////////////////////////////// GET STUDY CARDS BY DECK ID
 export interface GetStudyCardsByDeckIdRouteHandler {
@@ -32,14 +42,6 @@ export interface GetStudyCardsByStatusAndDeckIdRouteHandler {
     limit: string | undefined;
     offset: string | undefined;
 }
-
-type GetStudyCardsBlock = {
-  status: keyof typeof CardStatusType;
-  status_code: CardStatusType;
-  items: Array<CardRow>;
-  total: number;
-  offset: number;
-};
 
 export type GetStudyCardsByStatusAndDeckIdRouteResponse = GetStudyCardsBlock;
 

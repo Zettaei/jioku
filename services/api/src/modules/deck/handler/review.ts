@@ -1,3 +1,4 @@
+import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/review.js";
 import type {
     GetReviewsByCardIdRouteHandler,
@@ -14,10 +15,12 @@ async function getReviewsByCardIdRouteHandler(req: GetReviewsByCardIdRouteHandle
     const limitNum = Number(req.limit);
 
     const safePage =
-        Number.isInteger(pageNum) && pageNum > 0 ? pageNum : undefined;
-
+        (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
+        ? pageNum : undefined;
+    
     const safeLimit =
-        Number.isInteger(limitNum) && limitNum > 0 ? limitNum : undefined;
+        (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.REVIEW_RESULT_FETCH_LIMIT)
+        ? limitNum : undefined;
     
     return await service.getReviewsByCardId(req.userId, req.deckId, req.cardId, safePage, safeLimit);
 }

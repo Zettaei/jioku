@@ -1,5 +1,5 @@
 import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
-import type { PaginatedResponse } from "./dto.js";
+import type { PaginatedResponseWithTotalCount } from "./dto.js";
 
 ////////////////////////////////////////////// GET CARDS BY DECK ID
 export interface GetCardsByDeckIdRouteHandler {
@@ -9,7 +9,7 @@ export interface GetCardsByDeckIdRouteHandler {
     limit: string | undefined;
 }
 
-export type GetCardsByDeckIdRouteResponse = PaginatedResponse<CardRow>;
+export type GetCardsByDeckIdRouteResponse = PaginatedResponseWithTotalCount<CardRow>;
 
 
 ////////////////////////////////////////////// GET CARD BY ID
@@ -43,11 +43,11 @@ export interface UpdateCardRouteHandler {
 export type UpdateCardRouteResponse = CardRow;
 
 
-////////////////////////////////////////////// DELETE CARD
-export interface DeleteCardRouteHandler {
+////////////////////////////////////////////// DELETE CARDS
+export interface DeleteCardsRouteHandler {
     userId: string;
     deckId: string;
-    cardId: string;
+    cardIds: Array<string>;
 }
 
-export type DeleteCardRouteResponse = {};
+export type DeleteCardsRouteResponse = {};

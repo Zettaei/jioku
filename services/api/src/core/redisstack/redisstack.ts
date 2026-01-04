@@ -16,12 +16,12 @@ async function getRedisClient()
             url: ENV_VARS.REDISSTACK_URL.value,
             username: ENV_VARS.REDISSTACK_USERNAME.value,
             password: ENV_VARS.REDISSTACK_PASSWORD.value,
-            socket: {
-                reconnectStrategy: (retries) => {
-                    console.error("Couldn't connect Redis, will retry in " + REDIS_OPTIONS.RETRY_CONNECTION_MS/100 + " seconds")
-                    return REDIS_OPTIONS.RETRY_CONNECTION_MS
-                }
-            }
+            // socket: {
+            //     reconnectStrategy: (retries) => {
+            //         console.error("Couldn't connect Redis, will retry in " + REDIS_OPTIONS.RETRY_CONNECTION_MS/100 + " seconds")
+            //         return REDIS_OPTIONS.RETRY_CONNECTION_MS
+            //     }
+            // }
         });
 
         await redis.connect();
