@@ -15,3 +15,5 @@ export interface PaginatedResponseWithTotalCount<T> {
         limit: number,
     }
 }
+
+// NOTE: USE A MORE "TYPE-LIKE" TYPENAME INSTEAD OF THESE WEIRD VERB LIKE TYPE SHI
