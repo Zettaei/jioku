@@ -30,34 +30,6 @@ export async function fetchCardsByDeckId(deckId: string, page: number = 0, limit
         }
 }
 
-
-export async function fetchDeckByDeckId(deckId: string)
-: Promise< GetDeckByIdRouteResponse >
-{
-    if(!deckId) throw new BadRequestError("Missing deck id to fetching cards data");
-
-    try {
-            const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
-                // {
-                //     credentials: "include",
-                // }
-            )
-    
-            if (!fetchData.ok) {
-                throw new HttpError(fetchData.status);
-            }
-    
-            return await fetchData.json();
-    
-        } catch (err) {
-            if (err instanceof HttpError) throw err;
-    
-            throw new ConnectionError();
-        }
-}
-
-
 export async function addCardToDeckId(deckId: string | undefined, cardData: Pick<CardRow, "data">)
 : Promise<void>
 {
