@@ -10,4 +10,5 @@ export const DECK_OPTIONS = {
 
 export const DICT_OPTIONS = {
     MAX_QUERY_LENGTH: 300,
+    ENTRY_RESULT_FETCH_LIMIT: 10
 }

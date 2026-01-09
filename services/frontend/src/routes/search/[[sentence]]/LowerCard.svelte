@@ -1,8 +1,12 @@
 <script lang="ts">
   import * as Accordion from "$lib/components/ui/accordion/index.js";
+    import { cardPos } from "$lib/constant/cardPos";
   import type { EntriesRouteResponse } from "$lib/types/server/modules/dict/type/dto";
+  import type { Entry } from "$lib/types/server/modules/dict/type/model";
+    import EllipsisButton from "./EllipsisButton.svelte";
+    import HighlightBox from "./HighlightBox.svelte";
   import { getEntryMetadata } from "./LowerCard";
-  import { Ellipsis } from "@lucide/svelte";
+  import { DotIcon, Ellipsis } from "@lucide/svelte";
 
   interface Props {
     entries: EntriesRouteResponse | null;
@@ -10,6 +14,8 @@
 
   // @ts-expect-error
   let { entries }: Props = $props<Props>();
+
+  $inspect(entries);
 
   let allItemIds = $derived(
     entries?.result.map((entry) => `item-${entry.ent_seq}`) ?? [],
@@ -23,29 +29,76 @@
   <div class="text-lg mb-4 border-x-8 border-zinc-500 px-4">
     Result Found ({entries?.total ?? 0})
   </div>
-  <hr class="mb-0" />
+  <hr class="border-b mx-2"/>
   {#if entries?.result}
     <Accordion.Root type="multiple" value={allItemIds}>
       {#each entries.result as entry (entry.ent_seq)}
-        {@const item = getEntryMetadata(entry)}
-        <Accordion.Item value="item-{entry.ent_seq}">
-          <div class="flex justify-between h-12">
-            <div class="flex space-x-5 items-center">
-              <div class="text-2xl">{item.kanji ?? item.reading}</div>
-              <div class="text-xl">{!item.kanji ? "" : item.reading}</div>
+        {@const metadata = getEntryMetadata(entry)}
+        <Accordion.Item value="item-{entry.ent_seq}" class="bg-accent rounded-lg">
+          <div class="flex justify-between ps-2 h-12">
+            <div class="flex space-x-3 items-center">
+              
+              <div class="text-2xl">{metadata.kanji ?? metadata.reading}</div>
+              <div class="text-lg">{!metadata.kanji ? "" : metadata.reading}</div>
+              <HighlightBox boxType={metadata.highlight.common}/>
+              <!-- <div class="text-md">{metadata.meaning}</div> -->
+
             </div>
-            <div class="flex items-center rounded-md border gap-4">
-              <div class="cursor-pointer ps-4">
-                <Ellipsis />
-              </div>
+            <div class="flex items-center rounded-md gap-4">
+              <EllipsisButton entryText={metadata.kanji ?? metadata.reading}/>
               <Accordion.Trigger class="pe-4 cursor-pointer" />
             </div>
           </div>
-          <Accordion.Content>
-            {item.definition ?? "No definition found."}
+          <Accordion.Content class="text-lg flex flex-col ps-2 gap-3 bg-background">
+            {@render entryDetail(entry)}
           </Accordion.Content>
         </Accordion.Item>
       {/each}
     </Accordion.Root>
   {/if}
 </div>
+
+
+{#snippet entryDetail(entry: Entry)}
+  {@const kanji = entry.k_ele.map((k_ele) => k_ele.keb)}
+  {@const reading = entry.r_ele.map((r_ele) => r_ele.reb)}
+  <!-- {@const meaning = entry.sense.map((sense) => sense.gloss.map((gloss) => gloss.text[0]))} -->
+
+  
+  {@render section("Alternatives:", kanji)}
+  {@render section("Reading:", reading)}
+  <div>
+    <div class="font-bold">Meaning:</div>
+    <div class="ms-3">
+      {#each entry.sense as sense}
+      <div class="mt-1 mb-3">
+        <div class="flex italic">
+          <span class="border-s-8 border-zinc-500 ps-3 text-sm">
+            {#each sense.pos as pos}
+              <span class="me-3">{cardPos.pos[pos]};</span>
+
+            {/each}
+        </div>
+        {#each sense.gloss as gloss}
+          {#each gloss.text as text}
+            <span class="me-2">{text};</span>
+          {/each}
+        {/each}
+      </div>
+      {/each}
+    </div>
+  </div>
+
+  
+  
+  {#snippet section(title: string, content: Array<string>)}
+  <div>
+    <span class="font-bold">{title}</span> 
+    <div class="ms-3 mt-1">
+      {#each content as text}
+        <span class="me-3">{text}</span>
+      {/each}
+    </div>
+  </div>
+  {/snippet}
+{/snippet}

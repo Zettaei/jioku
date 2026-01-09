@@ -9,10 +9,13 @@ export interface Entry
     k_ele: Array<{
         keb: string;
         score: number;
+        ke_inf: Array<string> | undefined;
+        ke_pri: Array<string> | undefined;
     }>;
     r_ele: Array<{
         reb: string;
         score: number;
+        re_pri: Array<string> | undefined;
     }>;
     sense: Array<{
         pos: Array<string>;

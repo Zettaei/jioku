@@ -5,3 +5,7 @@ export const TranslationLanguageFullname: Record<TranslationLanguage, string> = 
     th: "ไทย"
 } as const;
 export type TranslationLanguageFullname = typeof TranslationLanguageFullname[keyof typeof TranslationLanguageFullname];
+
+
+export const HightlightBoxType = { common: "common" } as const;
+export type HightlightBoxType = typeof HightlightBoxType[keyof typeof HightlightBoxType]; 

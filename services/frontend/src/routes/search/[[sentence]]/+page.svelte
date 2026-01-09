@@ -4,7 +4,7 @@
     import { page } from "$app/state";
     import { TranslationLanguage } from "$lib/types/server/modules/dict/type/model";
     import { LocalStorageKey } from "$lib/localStorage";
-    import { tokensMockData } from "../../../mock/search";
+    import { entriesMockData, tokensMockData } from "../../../mock/search";
     import UpperCard from "./UpperCard.svelte";
     import LowerCard from "./LowerCard.svelte";
     import { getContext, onMount, untrack } from "svelte";
@@ -14,6 +14,7 @@
     import ImageCard from "./ImageCard.svelte";
     import { goto } from "$app/navigation";
     import * as Pagination from "$lib/components/ui/pagination/index.js";
+    import { DICT_OPTIONS } from "$lib/constant/limit";
 
     // OPTIMIZE: check if the last image/text and translation is the same as the new one, if it is then no request
     // BUG: race condition if user clicking or searching too fast
@@ -34,14 +35,17 @@
   let selectedIndex = $derived<string>(tokens?.tokens[0] ? "0" : "");
 
   let currentPage = $state<number>(1);
-  let pageLimit = $state<number>(10);
+  let pageLimit = $state<number>(DICT_OPTIONS.ENTRY_RESULT_FETCH_LIMIT);
 
-  // // DEV: MOCK DATA
-  // $effect(() => {
-  //   const tmp = sentence;
-  //   $inspect(tmp);
-  //   if(tmp !== "") tokens = tokensMockData;
-  // })
+  // DEV: MOCK DATA
+  $effect(() => {
+    const tmp = sentence;
+    $inspect(tmp);
+    if(tmp !== "") {
+      tokens = tokensMockData;
+      entries = entriesMockData;
+    }
+  })
 
 
   onMount(() => {
