@@ -16,7 +16,7 @@
 
 <Card.Content class="text-xl">
     {#each headerOrder as header}
-        <div class="mt-10 min-h-[1lh] whitespace-pre-wrap">
+        <div class="mt-10 min-h-lh whitespace-pre-wrap">
             {(currentCard?.data as Array<string>)[(header as unknown as number)] ?? " "}
         </div>
     {/each}

@@ -34,7 +34,7 @@ export async function fetchCardsOnStart(deckId: string, timezone: string, offset
 }
 
 
-export async function fetchCardsByStatus(deckId: string, cardStatus: CardStatusType,timezone: string, offset: number = 0, limit: number = STUDY_OPTIONS.STUDY_CARD_FETCH_LIMIT)
+export async function fetchCardsByStatus(deckId: string, cardStatus: CardStatusType, timezone: string, offset: number = 0, limit: number = STUDY_OPTIONS.CARD_FETCH_LIMIT)
 : Promise<GetStudyCardsByStatusAndDeckIdRouteResponse> {
     if (!deckId) throw new BadRequestError("Missing deck id to fetching cards data");
     if (!timezone) throw new BadRequestError("Missing timezone parameter");
@@ -52,6 +52,39 @@ export async function fetchCardsByStatus(deckId: string, cardStatus: CardStatusT
         }
 
         return await fetchData.json() as GetStudyCardsByStatusAndDeckIdRouteResponse;
+
+    } catch (err) {
+        if (err instanceof HttpError) throw err;
+
+        throw new ConnectionError();
+    }
+}
+
+
+export async function submitCardReview(deckId: string, cardId: string, payload: { timeSpent: number, quality: number })
+: Promise<void> {
+    if (!deckId) throw new BadRequestError("Missing deck id for the card");
+    if (!cardId) throw new BadRequestError("Missing card id to update");
+    if (!payload) throw new BadRequestError("Missing payload");
+    if(isNaN(Number(payload.timeSpent)) || isNaN(Number(payload.quality))) throw new BadRequestError("Incorrect payload") 
+
+    try {
+        const fetchData = await fetch(
+            `${PUBLIC_BACKEND_URL}/deck/study/decks/${deckId}/cards/${cardId}`,
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+            // {
+            //     credentials: "include",
+            // }
+        );
+
+        if (!fetchData.ok) {
+            throw new HttpError(fetchData.status);
+        }
+
+        return;
 
     } catch (err) {
         if (err instanceof HttpError) throw err;
