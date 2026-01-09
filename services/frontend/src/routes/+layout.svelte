@@ -1,6 +1,4 @@
 <script lang="ts">
-	// export const ssr = false;
-	// export const prerender = false;
 
 	import { ModeWatcher } from "mode-watcher";
 	import './layout.css';
