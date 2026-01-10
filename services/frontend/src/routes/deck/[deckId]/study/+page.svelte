@@ -168,7 +168,7 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
     });
 
 
-    // TODO: copy-paste this func for other cards type
+    // TODO: dont know if these work as intended, need test later
     // listen to new cards length changes
     $effect(() => {
         const length = newCardLength;
