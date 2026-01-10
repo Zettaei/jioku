@@ -88,9 +88,9 @@ async function updateCardAndReviewRouteHandler(req: UpdateCardAndReviewRouteHand
 
     const safeQuality =
         Number.isInteger(qualityNum) && qualityNum >= 0 && qualityNum <= 5 ? qualityNum : undefined;
-    
-    if(!safeTimeSpent) throw new BadRequestError("Missing or incorrect value for query 'timeSpent'");
-    if(!safeQuality) throw new BadRequestError("Missing or incorrect value for query 'quality'");
+
+    if(safeTimeSpent === undefined) throw new BadRequestError("Missing or incorrect value for query 'timeSpent'");
+    if(safeQuality === undefined) throw new BadRequestError("Missing or incorrect value for query 'quality'");
 
     return await service.updateCardAndReview(
         req.userId,

@@ -1,8 +1,9 @@
+
 import type { CardRow, DeckRow } from "$lib/types/server/core/supabase/type.js";
 import type { PaginatedResponse } from "./dto.js";
 import type { CardStatusType } from "./model.js";
 
-type GetStudyCardsBlock = {
+export type StudyCardsBlock = {
   status: keyof typeof CardStatusType;
   status_code: CardStatusType;
   items: Array<CardRow>;
@@ -31,7 +32,7 @@ export interface GetStudyCardsByDeckIdRouteHandler {
     offset: string | undefined;
 }
 
-export type GetStudyCardsByDeckIdRouteResponse = Array<GetStudyCardsBlock>;
+export type GetStudyCardsByDeckIdRouteResponse = Array<StudyCardsBlock>;
 
 ////////////////////////////////////////////// GET STUDY CARDS BY STATUS AND DECK ID
 export interface GetStudyCardsByStatusAndDeckIdRouteHandler {
@@ -43,7 +44,7 @@ export interface GetStudyCardsByStatusAndDeckIdRouteHandler {
     offset: string | undefined;
 }
 
-export type GetStudyCardsByStatusAndDeckIdRouteResponse = GetStudyCardsBlock;
+export type GetStudyCardsByStatusAndDeckIdRouteResponse = StudyCardsBlock;
 
 ////////////////////////////////////////////// UPDATE CARD AND ADD REVIEW
 

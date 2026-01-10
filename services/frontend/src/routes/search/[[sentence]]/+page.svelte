@@ -14,7 +14,7 @@
     import ImageCard from "./ImageCard.svelte";
     import { goto } from "$app/navigation";
     import * as Pagination from "$lib/components/ui/pagination/index.js";
-    import { DICT_OPTIONS } from "$lib/constant/limit";
+    import { DICT_OPTIONS } from "$lib/constant/options";
 
     // OPTIMIZE: check if the last image/text and translation is the same as the new one, if it is then no request
     // BUG: race condition if user clicking or searching too fast
@@ -35,17 +35,17 @@
   let selectedIndex = $derived<string>(tokens?.tokens[0] ? "0" : "");
 
   let currentPage = $state<number>(1);
-  let pageLimit = $state<number>(DICT_OPTIONS.ENTRY_RESULT_FETCH_LIMIT);
+  let pageLimit = $state<number>(DICT_OPTIONS.MAX_RESULTS_PER_PAGE);
 
-  // DEV: MOCK DATA
-  $effect(() => {
-    const tmp = sentence;
-    $inspect(tmp);
-    if(tmp !== "") {
-      tokens = tokensMockData;
-      entries = entriesMockData;
-    }
-  })
+  // // DEV: MOCK DATA
+  // $effect(() => {
+  //   const tmp = sentence;
+  //   $inspect(tmp);
+  //   if(tmp !== "") {
+  //     tokens = tokensMockData;
+  //     entries = entriesMockData;
+  //   }
+  // })
 
 
   onMount(() => {

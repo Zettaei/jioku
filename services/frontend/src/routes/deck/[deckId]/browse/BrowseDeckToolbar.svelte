@@ -21,6 +21,7 @@
     function handleSubmit(e: Event) {
         e.preventDefault();
 
+        // TODO: search FUNCTION, I FORGOR OMG
         toolbarContext.searchText = toolbarContext.query;
     }
 

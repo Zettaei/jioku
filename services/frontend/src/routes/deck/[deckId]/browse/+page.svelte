@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { GetCardsByDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/card_dto";
-    import { getContext, onMount, untrack } from "svelte";
-    import { addCardToDeckId, deleteCard, fetchCardsByDeckId, fetchDeckByDeckId, updateCard } from "./services";
+    import { getContext, untrack } from "svelte";
+    import { addCardToDeckId, deleteCard, fetchCardsByDeckId, updateCard } from "./services";
     import { page } from "$app/state";
     import { BROWSE_DECK_TOOLBAR_CONTEXT, BROWSE_DECK_TOOLBAR_DELETE_HANDLER, BROWSE_DECK_TOOLBAR_CANCEL_HANDLER, BROWSE_DECK_TOOLBAR_ADD_HANDLER, type BrowseDeckToolbarContextInterface } from "$lib/context/deckToolbar.svelte";
     import { type GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
@@ -20,7 +20,8 @@
     import Card from "$lib/components/ui/card/card.svelte";
     import Confirmation from "$lib/components/Confirmation.svelte";
     import type { PaginatedResponseWithTotalCount } from "$lib/types/server/modules/deck/type/dto";
-    import { DECK_OPTIONS } from "$lib/constant/limit";
+    import { DECK_OPTIONS } from "$lib/constant/options";
+    import { fetchDeckByDeckId } from "../../services";
 
     let BrowseToolbarContext = getContext<BrowseDeckToolbarContextInterface>(BROWSE_DECK_TOOLBAR_CONTEXT);
     let setOnDelete: (handler: (() => void) | null) => void = getContext(BROWSE_DECK_TOOLBAR_DELETE_HANDLER);
