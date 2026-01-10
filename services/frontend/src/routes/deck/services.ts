@@ -4,12 +4,12 @@ import { userState } from "$lib/global/userState.svelte";
 import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 import type { GetDecksStudyRouteResponse } from "$lib/types/server/modules/deck/type/study_dto";
 
-export async function fetchUserDecks()
+export async function fetchUserDecks(page: number = 0, limit: number | undefined)
 : Promise< GetDecksStudyRouteResponse >
 {
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${userState.timezone}`,
+                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${userState.timezone}` + (page ? `&page=${page}` : '') + (limit ? `&limit=${limit}` : ''),
                 // {
                 //     credentials: "include",
                 // }
@@ -52,4 +52,11 @@ export async function fetchDeckByDeckId(deckId: string)
     
             throw new ConnectionError();
         }
+}
+
+export async function createDeck()
+: Promise<void>
+{
+    // TODO: Implement deck creation
+    console.log("Creating new deck...");
 }
