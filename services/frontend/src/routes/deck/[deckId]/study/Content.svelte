@@ -4,8 +4,8 @@
 
     interface Props {
         isFrontSide: boolean;
-        headerOrder: Array<string> | null;
-        currentCard: CardRow | null;
+        headerOrder: Array<string>;
+        currentCard: CardRow;
     }
 
     // @ts-expect-error
@@ -15,9 +15,16 @@
 
 
 <Card.Content class="text-xl">
-    {#each headerOrder as header}
+    {#if isFrontSide}
+        <!-- locked to the first one -->
         <div class="mt-10 min-h-lh whitespace-pre-wrap">
-            {(currentCard?.data as Array<string>)[(header as unknown as number)] ?? " "}
+            {(currentCard?.data as Array<string>)[(headerOrder[0] as unknown as number)] ?? " "}
         </div>
-    {/each}
+    {:else}
+        {#each headerOrder as header}
+            <div class="mt-10 min-h-lh whitespace-pre-wrap">
+                {(currentCard?.data as Array<string>)[(header as unknown as number)] ?? " "}
+            </div>
+        {/each}
+    {/if}
 </Card.Content>

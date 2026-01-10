@@ -9,6 +9,7 @@ export const DECK_OPTIONS = {
 
 export const DICT_OPTIONS = {
     MAX_QUERY_LENGTH: 300,
+    MAX_RESULTS_PER_PAGE: 20,
 }
 
 export const STUDY_OPTIONS = {

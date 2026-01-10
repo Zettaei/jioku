@@ -35,7 +35,7 @@
   let selectedIndex = $derived<string>(tokens?.tokens[0] ? "0" : "");
 
   let currentPage = $state<number>(1);
-  let pageLimit = $state<number>(1);
+  let pageLimit = $state<number>(DICT_OPTIONS.MAX_RESULTS_PER_PAGE);
 
   // // DEV: MOCK DATA
   // $effect(() => {
