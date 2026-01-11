@@ -13,7 +13,7 @@
     import DeckListToolbar from './DeckListToolbar.svelte';
     import Button from '$lib/components/ui/button/button.svelte';
     import { PlusIcon } from '@lucide/svelte';
-    import AddModal from './AddModal.svelte';
+    import AddModal from './AddDeckModal.svelte';
     import type { DeckEditableData } from '$lib/types/deck.js';
     import { errorState } from '$lib/global/errorState.svelte.js';
     
@@ -112,18 +112,14 @@
     goto("/deck/" + deckId + "/setting")
   }
 
-  function handleAddDeckClick()
-  : void 
-  {
-    isAddModalOpen = true;
-  }
-
   function handleAddDeckSave(deckData: DeckEditableData)
   : void
   {
+    isAddModalOpen = false
+    pageChanged = true;
+
     createDeck(deckData)
     .then((fetchResult) => {
-        pageChanged = true;
         currentPage = 1;
     })
     .catch((err) => {
@@ -132,6 +128,10 @@
     .finally(() => {
         pageChanged = false;
     })
+  }
+
+  function handleAddDeckClick() {
+    isAddModalOpen = true;
   }
 
   function handlePageChange(pageNum: number)
@@ -143,8 +143,11 @@
 </script>
 
 
-
-<AddModal bind:isOpen={isAddModalOpen} onSave={handleAddDeckSave}/>
+{#if isAddModalOpen}
+    <AddModal 
+        onSave={handleAddDeckSave} 
+        onCancel={() => {isAddModalOpen = false}}/>
+{/if}
 
 
 <div class="w-full flex justify-center">
