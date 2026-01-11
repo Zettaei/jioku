@@ -1,5 +1,5 @@
 import type { CardRow, DeckRow } from "src/core/supabase/type.js";
-import type { PaginatedResponse } from "./dto.js";
+import type { PaginatedResponse, PaginatedResponseWithTotalCount } from "./dto.js";
 import type { CardStatusType } from "./model.js";
 
 export type GetStudyCardsBlock = {
@@ -18,7 +18,7 @@ export interface GetDecksStudyRouteHandler {
     timezone: string | undefined;
 }
 
-export type GetDecksStudyRouteResponse = PaginatedResponse<DeckRow & {
+export type GetDecksStudyRouteResponse = PaginatedResponseWithTotalCount<DeckRow & {
     today_dues: Array<{ status: CardStatusType, count: number }>
 }>;
 

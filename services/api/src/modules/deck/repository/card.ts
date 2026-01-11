@@ -23,6 +23,7 @@ async function getCardsByDeckId(userId: string, deckId: string, page: number = 1
             `, 
             { count: "exact" }
         )
+        .eq("decks_id", deckId)
         .eq("decks.users_id", userId)
         .order("createdat", { ascending: false })
         .range(offset, offset + (limit-1));

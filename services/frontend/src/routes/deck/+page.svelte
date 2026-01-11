@@ -15,6 +15,7 @@
     import { PlusIcon } from '@lucide/svelte';
     import AddModal from './AddModal.svelte';
     import type { DeckEditableData } from '$lib/types/deck.js';
+    import { errorState } from '$lib/global/errorState.svelte.js';
     
     const SUB_BUTTON_STYLE = cn("flex-4 py-2 hover:bg-accent cursor-pointer");
     const STUDY_BUTTON_STYLE = cn("flex-4 rounded-tr-2xl hover:bg-accent cursor-pointer");
@@ -27,12 +28,12 @@
 
     let isAddModalOpen = $state(false);
 
-    // NOTE: because of this page, I should RETHINK how the toolbar work (BTW, HOW DOES IT EVEN WORK NOW????) 
+    // NOTE: because of this page, MAYBE I should RETHINK how the toolbar work (BTW, HOW DOES IT EVEN WORK NOW????) 
     // REMEMBER - component are mount from child to parent when page reload (so parent will override child if it use the same context)
     const DeckListToolbarContext = new DeckListToolbarContextClass();
     // This page doesn't need to set the DECK_LIST_TOOLBAR_CONTEXT;
-
     const setToolbar = getContext<ToolbarSetter>(TOOLBAR_SNIPPET_CONTEXT);
+
 
     onMount(() => {
         fetchUserDecks(currentPage, pageLimit)
@@ -53,6 +54,7 @@
         };
     })
 
+    // listen to searchbar on toolbar
     $effect(() => {
         const searchText = DeckListToolbarContext.searchText;
 
@@ -71,42 +73,70 @@
     });
   });
 
-  $effect(() => {
-    const tmpPageChanged = pageChanged;
+    // listen page changed?
+    $effect(() => {
+        const tmpPageChanged = pageChanged;
 
-    if(!tmpPageChanged) return;
+        if(!tmpPageChanged) return;
 
-    untrack(async () => {
-        isLoading = true;
-        try {
-            decks = await fetchUserDecks(currentPage, pageLimit);
-        }
-        finally {
-            isLoading = false;
-            pageChanged = false;
-        }
+        untrack(async () => {
+            isLoading = true;
+            try {
+                decks = await fetchUserDecks(currentPage, pageLimit);
+            }
+            finally {
+                isLoading = false;
+                pageChanged = false;
+            }
+        });
     });
-  });
 
-  function onClickStudy(deckId: string) {
+  function onClickStudy(deckId: string)
+  :void
+  {
     goto("/deck/" + deckId + "/study")
   }
-  function onClickStatus(deckId: string) {
+  function onClickStatus(deckId: string)
+  : void
+  {
     goto("/deck/" + deckId + "/status")
   }
-  function onClickBrowse(deckId: string) {
+  function onClickBrowse(deckId: string)
+  : void
+  {
     goto("/deck/" + deckId + "/browse")
   }
-  function onClickSetting(deckId: string) {
+  function onClickSetting(deckId: string)
+  :void
+  {
     goto("/deck/" + deckId + "/setting")
   }
 
-  function handleAddDeckClick(deckData: DeckEditableData): void {
+  function handleAddDeckClick()
+  : void 
+  {
     isAddModalOpen = true;
-    console.log(deckData)
   }
 
-  function handlePageChange(pageNum: number) {
+  function handleAddDeckSave(deckData: DeckEditableData)
+  : void
+  {
+    createDeck(deckData)
+    .then((fetchResult) => {
+        pageChanged = true;
+        currentPage = 1;
+    })
+    .catch((err) => {
+        throw err;
+    })
+    .finally(() => {
+        pageChanged = false;
+    })
+  }
+
+  function handlePageChange(pageNum: number)
+  : void 
+  {
     currentPage = pageNum;
   }
 
@@ -114,7 +144,7 @@
 
 
 
-<AddModal bind:isOpen={isAddModalOpen} onSave={handleAddDeckClick}/>
+<AddModal bind:isOpen={isAddModalOpen} onSave={handleAddDeckSave}/>
 
 
 <div class="w-full flex justify-center">
@@ -136,7 +166,7 @@
 
 
 {#snippet deckCard()}
-    <div class="w-full">
+    <div class="w-full flex flex-col gap-y-5">
         {#each decks?.result as deck}    
                 {@const due = deck.today_dues}
                 <Card.Root class="w-full py-0 gap-0">
@@ -176,7 +206,7 @@
 
 {#snippet pagination()}
     {#if decks && decks.result.length > 0}
-        <Pagination.Root count={decks.result.length} perPage={pageLimit} class="">
+        <Pagination.Root count={decks.total} perPage={pageLimit} class="">
         {#snippet children({ pages })}  
             <Pagination.Content>
                 <Pagination.Item>

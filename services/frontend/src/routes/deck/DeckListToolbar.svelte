@@ -27,7 +27,7 @@
 </script>
 
 
-<div class="px-2 flex space-x-6">
+<div class="px-2 flex space-x-2">
     <form class="flex space-x-2" onsubmit={(e: Event) => { handleSubmit(e) }}>
         <Searchbar bind:query={toolbarContext.query}/>
     </form>
