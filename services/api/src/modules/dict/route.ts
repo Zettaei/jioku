@@ -58,5 +58,12 @@ routes.get("/entries/:param", async (c) => {
     return c.json<EntriesRouteResponse>(result);
 });
 
+routes.get("/voice/:sentence", async (c) => {
+    const sentence = string.trimOrUndefined(c.req.param("sentence"));
+    const voicename = string.trimOrUndefined(c.req.query("voicename"));
+
+    // TODO: 
+});
+
 
 export { routes };
