@@ -2,10 +2,11 @@ import kuromoji, { type IpadicFeatures, type Tokenizer } from "kuromoji"
 import path from "path";
 import { TranslationLanguage, WordType } from "./type/model.js";
 import { isJapanese, isKana } from "wanakana";
-import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest } from "./type/dto.js";
+import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSRequestOKResponse } from "./type/dto.js";
 import { InternalError } from "src/core/errors/internalError.js";
 import { ENV_VARS } from "src/config.js";
 import { BadRequestError } from "src/core/errors/httpError.js";
+import { AzureTTSVoiceName } from "./type/azureTTS.js";
 
 const DICT_PATH = path.join("node_modules", "kuromoji", "dict");
 
@@ -97,6 +98,17 @@ async function sendToAzureTranslator(toLang: TranslationLanguage, payload: Array
     return data;
 }
 
+async function sendToAzureTextToSpeech(sentence: string) 
+: Promise<AzureTTSRequestOKResponse>
+{
+
+}
+
+async function fetchAzureTTSAccessToken()
+: Promise<string> {
+    await 
+}
+
 function validateTranslationLanguage(translationLang: string | undefined)
 : asserts translationLang is TranslationLanguage 
 {
@@ -114,6 +126,14 @@ function validateQuery(paramQuery: string | undefined)
     }
 }
 
+function validateVoicename(voicename: string | undefined)
+: asserts voicename is AzureTTSVoiceName 
+{
+    if(!voicename || Object.values<string>(AzureTTSVoiceName).includes(voicename)) {
+        throw new BadRequestError("Incorrect voice name");
+    }  
+}
+
 
 export {
     initializeTokenizer,
@@ -121,5 +141,6 @@ export {
     getWordType,
     sendToAzureTranslator,
     validateTranslationLanguage,
-    validateQuery
+    validateQuery,
+    validateVoicename
 }

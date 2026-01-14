@@ -2,11 +2,13 @@ import type { IpadicFeatures } from "kuromoji";
 import * as utils from "./util.js"; 
 import { TranslationLanguage, type Entry, type TokenFeatures } from "./type/model.js";
 import type { FtSearchResult } from "src/core/redisstack/type.js";
-import type { AzureTranslationRequest } from "./type/dto.js";
+import type { AzureTranslationRequest, VoiceRouteResponse } from "./type/dto.js";
 
 const tokenizer = await utils.initializeTokenizer();
 
-async function processTokenization(paramQuery: string): Promise<Array<TokenFeatures>> {
+async function processTokenization(paramQuery: string)
+: Promise<Array<TokenFeatures>> 
+{
     const tokens = tokenizer.tokenize(paramQuery);
 
     for(const token of tokens) {
@@ -16,7 +18,9 @@ async function processTokenization(paramQuery: string): Promise<Array<TokenFeatu
     return tokens as Array<TokenFeatures>;
 }
 
-async function processQuickTranslation(paramQuery: string, paramTranslation: TranslationLanguage): Promise<string> {
+async function processQuickTranslation(paramQuery: string, paramTranslation: TranslationLanguage)
+: Promise<string> 
+{
     try {
         return (await utils.sendToAzureTranslator(
             paramTranslation, 
@@ -40,8 +44,8 @@ async function processQuickTranslation(paramQuery: string, paramTranslation: Tra
 async function processRedisResultTranslation(
     paramTranslation: TranslationLanguage, 
     searchResult: FtSearchResult<Entry>
-): Promise<void> {
-
+): Promise<void> 
+{
     if( // en don't need to be translate
         (searchResult.documents.length > 0) &&
         (paramTranslation === TranslationLanguage.Thai)
@@ -61,7 +65,7 @@ async function processRedisResultTranslation(
         try {
             const translationResult = await utils.sendToAzureTranslator(paramTranslation, translationTexts);
 
-            let j = 0;  // <-- post-increment
+            let j = 0;
             for(const document of searchResult.documents) {
                 for (const sense of document.value.sense ?? []) {
                     for (const gloss of sense.gloss ?? []) {
@@ -77,6 +81,16 @@ async function processRedisResultTranslation(
 
         return;
     }
+}
+
+
+async function processVoiceGeneration(
+    paramSentence: string, 
+    voicename: string
+): Promise<VoiceRouteResponse>
+{
+    const voice = await 
+    // TODO:
 }
 
 

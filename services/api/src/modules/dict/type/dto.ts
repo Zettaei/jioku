@@ -4,6 +4,7 @@ import type { FtSearchResult } from "core/redisstack/index.js";
 import type { Entry, TokenFeatures, TranslationLanguage } from "./model.js";
 import * as Ocr from "modules/ocr/index.js";
 import type { PaginatedResponse } from "modules/deck/type/dto.js";
+import type { AzureTTSVoiceName, AzureTTSVoiceNameEN } from "./azureTTS.js";
 
 
 ////////////////////////////////////////////// TOKENS
@@ -46,12 +47,39 @@ export interface EntriesRouteHandler {
     query: EntriesRouteHandlerQuery;
 }
 
-export type EntriesRouteResponse = PaginatedResponse<Entry> & {
+export interface EntriesRouteResponse 
+extends PaginatedResponse<Entry> {
     param: string;
     language: TranslationLanguage;
     total: number;
 }
 
+////////////////////////////////////////////// VOICES
+export type VoiceRouteHandlerQuery = {
+    voicename: AzureTTSVoiceName
+}
+
+export interface VoiceRouteHandler {
+    sentence: string
+    query: VoiceRouteHandlerQuery
+}
+
+export interface VoiceRouteResponse {
+
+}
+
+
+
+
+
+
+// AZURE
+export interface AzureErrorResponse {
+    error: {
+        code: number,
+        message: string
+    }
+}
 
 ////////////////////////////////////////////// AZURE TRANSLATOR
 export type AzureTranslationRequest = { text: string };
@@ -67,9 +95,21 @@ export interface AzureTranslationOKResponse {
     }>
 }
 
-export interface AzureTranslationErrorResponse {
-    error: {
-        code: number,
-        message: string
-    }
-}
+export interface AzureTranslationErrorResponse 
+extends AzureErrorResponse 
+{}
+
+////////////////////////////////////////////// AZURE TEXT TO SPEECH
+export type AzureTTSRequest = { text: string, voicename: string };
+
+export interface AzureTTSRequestOKResponse {
+
+};
+
+export interface AzureTTSAccessTokenErrorRespone
+extends AzureErrorResponse 
+{};
+
+export interface AzureTTSRequestErrorResponse
+extends AzureErrorResponse
+{};

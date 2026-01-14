@@ -61,8 +61,14 @@ routes.get("/entries/:param", async (c) => {
 routes.get("/voice/:sentence", async (c) => {
     const sentence = string.trimOrUndefined(c.req.param("sentence"));
     const voicename = string.trimOrUndefined(c.req.query("voicename"));
+    const voicelang = string.trimOrUndefined(c.req.query("voicename"));
 
-    // TODO: 
+    const result = await voiceRouteHandler({
+        sentence,
+        query: {
+            voicename
+        }
+    });
 });
 
 

@@ -28,7 +28,7 @@ function escapeRedisSearch(query: string)
 async function getWord(word: string, wordType: WordType, from: number = 0, size: number = DICT_OPTIONS.RESULT_LIMIT)
 : Promise<FtSearchResult<Entry>> 
 {
-    const redis = await getRedisClient()!;
+    const redis = await getRedisClient();
 
     let searchKey = escapeRedisSearch(word);
     if(wordType !== WordType.meaning) {
@@ -53,6 +53,13 @@ async function getWord(word: string, wordType: WordType, from: number = 0, size:
     ) as unknown as FtSearchResult<Entry>;
 
     return result;
+}
+
+async function getAccessToken()
+: string
+{
+    const redis = await getRedisClient();
+    await 
 }
 
 export {

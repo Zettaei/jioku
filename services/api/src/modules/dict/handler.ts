@@ -3,12 +3,15 @@ import * as service from  "./service.js";
 import * as repository from "./repository.js";
 import * as Ocr from "modules/ocr/index.js";
 import { DICT_OPTIONS } from "src/config.js";
-import type { EntriesRouteHandler, EntriesRouteResponse, TokensOcrRouteHandler, TokensRouteHandler, TokensRouteResponse } from "./type/dto.js";
+import type { EntriesRouteHandler, EntriesRouteResponse, TokensOcrRouteHandler, TokensRouteHandler, TokensRouteResponse, VoiceRouteHandler, VoiceRouteResponse } from "./type/dto.js";
 import { BadRequestError } from "src/core/errors/httpError.js";
 import { TranslationLanguage } from "./type/model.js";
+import { AzureTTSVoiceName } from "./type/azureTTS.js";
 
 
-async function tokensRouteHandler(req: TokensRouteHandler): Promise<TokensRouteResponse> {
+async function tokensRouteHandler(req: TokensRouteHandler)
+: Promise<TokensRouteResponse> 
+{
     const param = req.param;
     const queryTranslation = req.query.translation ?? TranslationLanguage.English;
 
@@ -44,7 +47,9 @@ async function tokensRouteHandler(req: TokensRouteHandler): Promise<TokensRouteR
 }
 
 
-async function tokensOcrRouteHandler(req: TokensOcrRouteHandler): Promise<TokensRouteResponse> {
+async function tokensOcrRouteHandler(req: TokensOcrRouteHandler)
+: Promise<TokensRouteResponse> 
+{
     const ocrImage = req.ocr.image;
     const ocrQuery = req.ocr.query;
     const tokensTranslation = req.tokens.query.translation ?? TranslationLanguage.English;
@@ -70,7 +75,9 @@ async function tokensOcrRouteHandler(req: TokensOcrRouteHandler): Promise<Tokens
 }
 
 
-async function entriesRouteHandler(req: EntriesRouteHandler): Promise<EntriesRouteResponse> {
+async function entriesRouteHandler(req: EntriesRouteHandler)
+: Promise<EntriesRouteResponse> 
+{
     const param = req.param;
     const queryTranslation = req.query.translation ?? TranslationLanguage.English;
     const page = req.query.page ?? 1;
@@ -107,9 +114,21 @@ async function entriesRouteHandler(req: EntriesRouteHandler): Promise<EntriesRou
     };
 }
 
+async function voiceRouteHandler(req: VoiceRouteHandler) 
+: Promise<VoiceRouteResponse>
+{
+    const sentence = req.sentence;
+    const voicenameQuery = req.query.voicename ?? AzureTTSVoiceName.nanami;
+    
+    util.validateVoicename(voicenameQuery);
+
+    const voiceResult = await 
+}
+
 
 export {
     tokensRouteHandler,
     tokensOcrRouteHandler,
     entriesRouteHandler
+    voiceRouteHandler
 }
