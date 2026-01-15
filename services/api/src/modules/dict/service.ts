@@ -3,6 +3,9 @@ import * as utils from "./util.js";
 import { TranslationLanguage, type Entry, type TokenFeatures } from "./type/model.js";
 import type { FtSearchResult } from "src/core/redisstack/type.js";
 import type { AzureTranslationRequest, VoiceRouteResponse } from "./type/dto.js";
+import * as repository from "./repository.js";
+import type { AzureTTSVoiceName } from "./type/azureTTS.js";
+import type { InternalError } from "src/core/errors/internalError.js";
 
 const tokenizer = await utils.initializeTokenizer();
 
@@ -83,19 +86,37 @@ async function processRedisResultTranslation(
     }
 }
 
-
+// FIXME: condition race for accesstoken
 async function processVoiceGeneration(
     paramSentence: string, 
-    voicename: string
+    voicename: AzureTTSVoiceName
 ): Promise<VoiceRouteResponse>
 {
-    const voice = await 
-    // TODO:
+    let accesstoken = await repository.getAzureTTSAccessToken() ?? '';
+
+    let voiceBuffer: ArrayBuffer;
+    try {
+        voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, paramSentence, voicename)
+    }
+    catch(err) {
+        // failed because accessToken expired -> retry with new token
+        if((err as InternalError)?.status === 401) {
+            accesstoken = await utils.fetchNewAzureTTSAccessToken();
+            repository.setAzureTTSAccessToken(accesstoken); // not await!!!
+
+            voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, paramSentence, voicename)
+        }
+
+        throw err;
+    }
+
+    return voiceBuffer;
 }
 
 
 export {
     processTokenization,
     processRedisResultTranslation,
-    processQuickTranslation
+    processQuickTranslation,
+    processVoiceGeneration
 }

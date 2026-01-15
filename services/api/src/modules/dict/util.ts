@@ -2,9 +2,9 @@ import kuromoji, { type IpadicFeatures, type Tokenizer } from "kuromoji"
 import path from "path";
 import { TranslationLanguage, WordType } from "./type/model.js";
 import { isJapanese, isKana } from "wanakana";
-import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSRequestOKResponse } from "./type/dto.js";
+import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSAccessTokenErrorRespone, AzureTTSRequestOKResponse } from "./type/dto.js";
 import { InternalError } from "src/core/errors/internalError.js";
-import { ENV_VARS } from "src/config.js";
+import { DICT_OPTIONS, ENV_VARS } from "src/config.js";
 import { BadRequestError } from "src/core/errors/httpError.js";
 import { AzureTTSVoiceName } from "./type/azureTTS.js";
 
@@ -98,15 +98,74 @@ async function sendToAzureTranslator(toLang: TranslationLanguage, payload: Array
     return data;
 }
 
-async function sendToAzureTextToSpeech(sentence: string) 
-: Promise<AzureTTSRequestOKResponse>
-{
 
+async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, voicename: AzureTTSVoiceName) 
+: Promise<ArrayBuffer>
+{
+    // !!! vvv if this get updated be sure to update Content-Type in response of route.ts as well
+    const AZURE_VOICE_OUTPUT_FORMAT = "ogg-24khz-16bit-mono-opus"
+
+    const payload = `
+    <speak version='1.0' xml:lang='ja-JP'>
+        <voice xml:lang='jp-JP' name=${voicename}>
+            ${sentence}
+        </voice>
+    </speak>
+    `
+    
+    const response = await fetch(`${ENV_VARS.AZURE_TTS_URL.value}`,{
+        method: "POST",
+        headers: {
+            "X-Microsoft-OutputFormat": AZURE_VOICE_OUTPUT_FORMAT,
+            "Content-Type": "application/ssml+xml",
+            "Authorization": "Bearer " + accesstoken
+        }
+    });
+
+    if(!response.ok) {
+        const body = await response.json() as AzureTTSAccessTokenErrorRespone;
+        const err = body.error;
+        throw new InternalError(
+            "Failed request from Azure Speech Services code: " + err.code, 
+            err.message, 
+            {
+                status: response.status,
+                headers: response.headers
+            }
+        );
+    }
+
+    const data = await response.arrayBuffer();
+    return data;
 }
 
-async function fetchAzureTTSAccessToken()
+
+async function fetchNewAzureTTSAccessToken()
 : Promise<string> {
-    await 
+
+    const response = await fetch(`${ENV_VARS.AZURE_TTS_TOKEN_URL.value}`, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Ocp-Apim-Subscription-Key": ENV_VARS.AZURE_TRANSLATOR_KEY.value,
+        }
+    });
+
+    if(!response.ok) {
+        const body = await response.json() as AzureTTSAccessTokenErrorRespone;
+        const err = body.error;
+        throw new InternalError(
+            "Failed request from Azure Speech Services code: " + err.code, 
+            err.message, 
+            {
+                status: response.status,
+                headers: response.headers
+            }
+        );
+    }
+
+    const data = await response.text()
+    return data;
 }
 
 function validateTranslationLanguage(translationLang: string | undefined)
@@ -140,6 +199,8 @@ export {
     isUsefulToken,
     getWordType,
     sendToAzureTranslator,
+    fetchNewAzureTTSAccessToken,
+    sendToAzureTextToSpeech,
     validateTranslationLanguage,
     validateQuery,
     validateVoicename

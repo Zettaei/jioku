@@ -4,7 +4,7 @@ import type { FtSearchResult } from "core/redisstack/index.js";
 import type { Entry, TokenFeatures, TranslationLanguage } from "./model.js";
 import * as Ocr from "modules/ocr/index.js";
 import type { PaginatedResponse } from "modules/deck/type/dto.js";
-import type { AzureTTSVoiceName, AzureTTSVoiceNameEN } from "./azureTTS.js";
+import type { AzureTTSVoiceName } from "./azureTTS.js";
 
 
 ////////////////////////////////////////////// TOKENS
@@ -56,19 +56,15 @@ extends PaginatedResponse<Entry> {
 
 ////////////////////////////////////////////// VOICES
 export type VoiceRouteHandlerQuery = {
-    voicename: AzureTTSVoiceName
+    voicename: string | undefined
 }
 
 export interface VoiceRouteHandler {
-    sentence: string
+    sentence: string | undefined
     query: VoiceRouteHandlerQuery
 }
 
-export interface VoiceRouteResponse {
-
-}
-
-
+export type VoiceRouteResponse = ArrayBuffer;
 
 
 

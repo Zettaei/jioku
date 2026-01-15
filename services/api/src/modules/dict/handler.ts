@@ -117,18 +117,21 @@ async function entriesRouteHandler(req: EntriesRouteHandler)
 async function voiceRouteHandler(req: VoiceRouteHandler) 
 : Promise<VoiceRouteResponse>
 {
-    const sentence = req.sentence;
+    const sentence = req.sentence ?? '';
+    // vv default to Nanami if undefined
     const voicenameQuery = req.query.voicename ?? AzureTTSVoiceName.nanami;
     
     util.validateVoicename(voicenameQuery);
 
-    const voiceResult = await 
+    const voiceResult = await service.processVoiceGeneration(sentence, voicenameQuery);
+
+    return voiceResult;
 }
 
 
 export {
     tokensRouteHandler,
     tokensOcrRouteHandler,
-    entriesRouteHandler
+    entriesRouteHandler,
     voiceRouteHandler
 }
