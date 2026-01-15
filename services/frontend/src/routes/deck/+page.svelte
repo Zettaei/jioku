@@ -11,11 +11,8 @@
     import { DECK_OPTIONS } from '$lib/constant/options.js';
     import Loading from '../Loading.svelte';
     import DeckListToolbar from './DeckListToolbar.svelte';
-    import Button from '$lib/components/ui/button/button.svelte';
-    import { PlusIcon } from '@lucide/svelte';
     import AddModal from './AddDeckModal.svelte';
     import type { DeckEditableData } from '$lib/types/deck.js';
-    import { errorState } from '$lib/global/errorState.svelte.js';
     
     const SUB_BUTTON_STYLE = cn("flex-4 py-2 hover:bg-accent cursor-pointer");
     const STUDY_BUTTON_STYLE = cn("flex-4 rounded-tr-2xl hover:bg-accent cursor-pointer");
@@ -24,7 +21,6 @@
     let isLoading = $state<boolean>(true);
     let currentPage = $state(1);
     let pageLimit = $state(DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT);
-    let pageChanged = $state(false);
 
     let isAddModalOpen = $state(false);
 
@@ -75,9 +71,7 @@
 
     // listen page changed?
     $effect(() => {
-        const tmpPageChanged = pageChanged;
-
-        if(!tmpPageChanged) return;
+        const curpage = currentPage;
 
         untrack(async () => {
             isLoading = true;
@@ -86,7 +80,6 @@
             }
             finally {
                 isLoading = false;
-                pageChanged = false;
             }
         });
     });
@@ -116,7 +109,6 @@
   : void
   {
     isAddModalOpen = false
-    pageChanged = true;
 
     createDeck(deckData)
     .then((fetchResult) => {
@@ -124,9 +116,6 @@
     })
     .catch((err) => {
         throw err;
-    })
-    .finally(() => {
-        pageChanged = false;
     })
   }
 
@@ -206,7 +195,7 @@
     </div>
 {/snippet}
 
-
+<!-- BUG: don't know why but next and previous buttons not workin -->
 {#snippet pagination()}
     {#if decks && decks.result.length > 0}
         <Pagination.Root count={decks.total} perPage={pageLimit} class="">

@@ -60,7 +60,7 @@ export async function createDeck(deckData: DeckEditableData)
 : Promise<void>
 {
     if(!deckData.headersdata || !deckData.headersorder || !deckData.name) {
-        throw new BadRequestError("Missing deck id to fetching cards data");
+        throw new BadRequestError("Missing atleast one input");
     }
 
     try {

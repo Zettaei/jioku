@@ -3,7 +3,7 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import type { DeckEditableData } from "$lib/types/deck";
     import { XIcon, PlusIcon, GripVerticalIcon } from "@lucide/svelte";
-    import { deckDefaultHeader } from "$lib/constant/deck";
+    import { DECK_DEFAULT_HEADER } from "$lib/constant/deck";
     import { untrack } from "svelte";
 
     interface Header {
@@ -21,7 +21,7 @@
     }
 
     const MAX_HEADERS = 8;
-    const HEADERS = deckDefaultHeader.map((header, i) => {
+    const HEADERS = DECK_DEFAULT_HEADER.map((header, i) => {
         return {
             key: (i+1).toString(),
             label: header
@@ -39,7 +39,7 @@
     let headers = $state<Array<Header>>(HEADERS);
     let draggedIndex = $state<number | null>(null);
     let dragOverIndex = $state<number | null>(null);
-    let columnCounter = $state(HEADERS.length);
+    let columnCounter = $state(headers.length);
 
 
     $effect(() => {
@@ -51,9 +51,25 @@
                     label: (deck.headersdata as unknown as Record<string, string>)[key]
                 }));
                 headers = headersArray;
+                columnCounter = headers.length;
             } 
             draggedIndex = null;
         })
+    });
+
+
+    // sync changes back to bound deck object
+    $effect(() => {
+        if (deck && mode === 'edit') {
+            const headersData: Record<string, string> = {};
+            headers.forEach(header => {
+                headersData[header.key] = header.label;
+            });
+            
+            deck.name = deckName;
+            deck.headersdata = headersData;
+            deck.headersorder = headers.map((h) => h.key);
+        }
     });
 
     
@@ -132,6 +148,14 @@
         headers.forEach(header => {
             headersData[header.key] = header.label;
         });
+        
+        // Update the bound deck object directly
+        if (deck) {
+            deck.name = deckName;
+            deck.headersdata = headersData;
+            deck.headersorder = headers.map((h) => h.key);
+        }
+
         const deckData: DeckEditableData = {
             name: deckName,
             headersdata: headersData,
