@@ -5,7 +5,7 @@ import { isJapanese, isKana } from "wanakana";
 import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSAccessTokenErrorRespone, AzureTTSRequestOKResponse } from "./type/dto.js";
 import { InternalError } from "src/core/errors/internalError.js";
 import { DICT_OPTIONS, ENV_VARS } from "src/config.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError, UnauthorizedError } from "src/core/errors/httpError.js";
 import { AzureTTSVoiceName } from "./type/azureTTS.js";
 
 const DICT_PATH = path.join("node_modules", "kuromoji", "dict");
@@ -105,29 +105,36 @@ async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, vo
     // !!! vvv if this get updated be sure to update Content-Type in response of route.ts as well
     const AZURE_VOICE_OUTPUT_FORMAT = "ogg-24khz-16bit-mono-opus"
 
-    const payload = `
-    <speak version='1.0' xml:lang='ja-JP'>
-        <voice xml:lang='jp-JP' name=${voicename}>
+    const body = 
+    `<speak version='1.0' xml:lang='ja-JP'>
+        <voice xml:lang='ja-JP' name='${voicename}'>
             ${sentence}
         </voice>
-    </speak>
-    `
-    
+    </speak>`;
+
+    // FIXME: CONFIRMED I TRIED HARDCODE THE ACCESS TOKEN AND IT WORKED!,
+    // THIS ACCESS TOKEN IS FAULTY SOMEHOW
     const response = await fetch(`${ENV_VARS.AZURE_TTS_URL.value}`,{
         method: "POST",
         headers: {
             "X-Microsoft-OutputFormat": AZURE_VOICE_OUTPUT_FORMAT,
-            "Content-Type": "application/ssml+xml",
-            "Authorization": "Bearer " + accesstoken
-        }
+            "Content-Type": "application/ssml+xml; charset=utf-8",
+            "Authorization": `Bearer ${accesstoken}`,
+            "User-Agent": "jioku_server",
+        },
+        body: body
     });
 
+    console.log(response)
+
     if(!response.ok) {
-        const body = await response.json() as AzureTTSAccessTokenErrorRespone;
-        const err = body.error;
+        if(response.status === 401) {
+            throw new UnauthorizedError("Invalid or Missing Access Token");
+        }
+
         throw new InternalError(
-            "Failed request from Azure Speech Services code: " + err.code, 
-            err.message, 
+            "Failed request from Azure Speech Services code: " + response.status, 
+            response.statusText, 
             {
                 status: response.status,
                 headers: response.headers
@@ -152,11 +159,9 @@ async function fetchNewAzureTTSAccessToken()
     });
 
     if(!response.ok) {
-        const body = await response.json() as AzureTTSAccessTokenErrorRespone;
-        const err = body.error;
         throw new InternalError(
-            "Failed request from Azure Speech Services code: " + err.code, 
-            err.message, 
+            "Failed request from Azure Speech Services code: " + response.status, 
+            response.statusText, 
             {
                 status: response.status,
                 headers: response.headers
@@ -164,8 +169,8 @@ async function fetchNewAzureTTSAccessToken()
         );
     }
 
-    const data = await response.text()
-    return data;
+    const data = await response.text();
+    return data.trim();
 }
 
 function validateTranslationLanguage(translationLang: string | undefined)
@@ -188,7 +193,7 @@ function validateQuery(paramQuery: string | undefined)
 function validateVoicename(voicename: string | undefined)
 : asserts voicename is AzureTTSVoiceName 
 {
-    if(!voicename || Object.values<string>(AzureTTSVoiceName).includes(voicename)) {
+    if(!voicename || !Object.values<string>(AzureTTSVoiceName).includes(voicename)) {
         throw new BadRequestError("Incorrect voice name");
     }  
 }

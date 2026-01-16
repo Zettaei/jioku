@@ -8,6 +8,7 @@ import type { AzureTTSVoiceName } from "./type/azureTTS.js";
 import type { InternalError } from "src/core/errors/internalError.js";
 
 const tokenizer = await utils.initializeTokenizer();
+let reservedAccessToken: string = '';
 
 async function processTokenization(paramQuery: string)
 : Promise<Array<TokenFeatures>> 
@@ -92,7 +93,20 @@ async function processVoiceGeneration(
     voicename: AzureTTSVoiceName
 ): Promise<VoiceRouteResponse>
 {
-    let accesstoken = await repository.getAzureTTSAccessToken() ?? '';
+    let accesstoken: string = "";
+    let isRedisAvailable: boolean = true;
+
+    try {
+        if(isRedisAvailable) {
+            accesstoken = await repository.getAzureTTSAccessToken() ?? '';
+        }
+    }
+    catch(err) {
+        console.error("Cannot connect to Redis, skipping global access token")
+        isRedisAvailable = false;
+        accesstoken = reservedAccessToken;
+    }
+
 
     let voiceBuffer: ArrayBuffer;
     try {
@@ -102,7 +116,13 @@ async function processVoiceGeneration(
         // failed because accessToken expired -> retry with new token
         if((err as InternalError)?.status === 401) {
             accesstoken = await utils.fetchNewAzureTTSAccessToken();
-            repository.setAzureTTSAccessToken(accesstoken); // not await!!!
+            // if redis available store in Redis, else store in this server memory 
+            if(isRedisAvailable) {
+                repository.setAzureTTSAccessToken(accesstoken); // not await!!!
+            }
+            else {
+                reservedAccessToken = accesstoken;
+            }
 
             voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, paramSentence, voicename)
         }

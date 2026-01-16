@@ -61,7 +61,7 @@ async function getAzureTTSAccessToken()
     const redis = await getRedisClient();
     const result = await redis.get(DICT_OPTIONS.AZURE_ACCESSTOKEN_KEY);
     
-    return result;
+    return result?.trim() ?? null;
 }
 
 async function setAzureTTSAccessToken(token: string)

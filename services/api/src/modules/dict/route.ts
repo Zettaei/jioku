@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { string } from "core/utils/index.js";
 import { TranslationLanguage } from "./type/model.js";
-import { type TokensRouteResponse, type EntriesRouteResponse, type TokensOcrRouteHandler, VoiceRouteResponse } from "./type/dto.js";
+import { type TokensRouteResponse, type EntriesRouteResponse } from "./type/dto.js";
 import { entriesRouteHandler, tokensOcrRouteHandler, tokensRouteHandler, voiceRouteHandler } from "./handler.js";
-import { DECK_OPTIONS, DICT_OPTIONS } from "src/config.js";
+import { DICT_OPTIONS } from "src/config.js";
 
 const routes = new Hono();
 
@@ -69,7 +69,7 @@ routes.get("/voice/:sentence", async (c) => {
         }
     });
 
-    // !!! vvv Content-Type in follow whatever output format in utils.sendToAzureTextToSpeech
+    // !!! vvv Content-Type in follow the output format in utils.sendToAzureTextToSpeech()
     return c.body<ArrayBuffer, 200>(result, 200, {
         "Content-Type": "audio/ogg; codecs=opus; rate=24000"
     });

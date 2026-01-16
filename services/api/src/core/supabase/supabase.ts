@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { ENV_VARS } from "src/config.js";
-import { InternalError } from "../errors/internalError.js";
+import { ConnectionError, InternalError } from "../errors/internalError.js";
 
 let supabaseAdmin: SupabaseClient<any, any, string, any, any> | null = null;
 
@@ -24,7 +24,7 @@ function getSupabaseAdminClient(): SupabaseClient<any, any, string, any, any> {
             }
         );
     }catch (error) {
-        throw new InternalError("Failed to connect to Supabase", "", error);
+        throw new ConnectionError("Failed to connect to Supabase", "", error);
     }
 
     return supabaseAdmin;

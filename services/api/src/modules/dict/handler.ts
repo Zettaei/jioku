@@ -120,7 +120,7 @@ async function voiceRouteHandler(req: VoiceRouteHandler)
     const sentence = req.sentence ?? '';
     // vv default to Nanami if undefined
     const voicenameQuery = req.query.voicename ?? AzureTTSVoiceName.nanami;
-    
+
     util.validateVoicename(voicenameQuery);
 
     const voiceResult = await service.processVoiceGeneration(sentence, voicenameQuery);
