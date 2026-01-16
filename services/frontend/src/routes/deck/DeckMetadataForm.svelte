@@ -21,10 +21,10 @@
     }
 
     const MAX_HEADERS = 8;
-    const HEADERS = DECK_DEFAULT_HEADER.map((header, i) => {
+    const HEADERS = Object.keys(DECK_DEFAULT_HEADER).map((key) => {
         return {
-            key: (i+1).toString(),
-            label: header
+            key,
+            label: DECK_DEFAULT_HEADER[key]
         }
     });
 
@@ -41,7 +41,7 @@
     let dragOverIndex = $state<number | null>(null);
     let columnCounter = $state(headers.length);
 
-
+    // Initial
     $effect(() => {
         untrack(() => {
             if (mode === 'edit' && deck && deck?.headersorder) {
@@ -60,7 +60,7 @@
 
     // sync changes back to bound deck object
     $effect(() => {
-        if (deck && mode === 'edit') {
+        if (mode === 'edit' && deck) {
             const headersData: Record<string, string> = {};
             headers.forEach(header => {
                 headersData[header.key] = header.label;
@@ -192,7 +192,7 @@
                 <div class="text-xs text-accent-foreground">* the first column is the front side/question side of the card</div>
                 <div class="space-y-3">
                     {#each headers as header, index}
-                        {@const isDefault = header.key === "1" || header.key === "2" || header.key === "3"}
+                        {@const isDefault = Object.keys(DECK_DEFAULT_HEADER).includes(header.key)}
                         <div 
                             class="flex gap-2 items-end p-3 border rounded-md {index === 0 ? "border-accent-foreground" : ''} transition-all {draggedIndex === index ? 'opacity-50 bg-muted' : dragOverIndex === index ? 'border-2 border-primary bg-primary/5 scale-105' : ''} {isDefault ? 'bg-muted/30' : ''}"
                             role="listitem"

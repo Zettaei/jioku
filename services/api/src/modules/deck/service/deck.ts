@@ -27,12 +27,30 @@ async function getDeckById(userId: string, deckId: string)
 async function createDeck(userId: string, newDeck: DeckInsert)
 : Promise<Omit<DeckRow, DeckResponseHiddenColumn>> 
 {
-    const deckWithUserId: DeckInsert = {
-        ...newDeck,
-        users_id: userId
-    };
-    const data = await repository.createDeck(deckWithUserId);
-    
+    const deck: DeckInsert = { ...newDeck, users_id: userId };
+
+    const oldData = deck.headersdata as Record<string, string>;
+    const oldOrder = deck.headersorder as Array<string>;
+
+    const newData: Record<string, string> = {};
+    const newOrder: Array<string> = [];
+
+
+    for (const header of oldOrder) {
+        // If it's a number(whic is a temp ID), generate a new ID
+        const finalId = isNaN(Number(header)) ? header : util.generateCardId();
+        
+        newOrder.push(finalId);
+        
+        if (header in oldData) {
+            newData[finalId] = oldData[header]!;
+        }
+    }
+
+    deck.headersorder = newOrder;
+    deck.headersdata = newData;
+
+    const data = await repository.createDeck(deck);
     return util.removeHiddenColumn(data);
 }
 
