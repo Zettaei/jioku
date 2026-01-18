@@ -6,20 +6,34 @@
     import * as Accordion from '$lib/components/ui/accordion/index';
     import { DECK_EXTRA_SETTING_DEFAULT_HEADER, DECK_EXTRA_SETTING_DEFAULT_VALUE } from '$lib/constant/deck.js';
     import { untrack } from 'svelte';
-    import { updateDeck } from './services';
+    import { deleteDeck, updateDeck } from './services';
     import type { Json } from '$lib/types/server/core/supabase/generatedType.js';
     import { BadRequestError } from '$lib/errors/HttpError.js';
-    import { CheckIcon } from '@lucide/svelte';
+    import { ArrowLeftIcon, CheckIcon, ClosedCaptionIcon, CrossIcon, SaveIcon, TrashIcon, XIcon } from '@lucide/svelte';
     import { goto } from '$app/navigation';
+    import { useSidebar } from '$lib/components/ui/sidebar/index.js';
+    import Confirmation from '$lib/components/Confirmation.svelte';
+    import { page } from '$app/state';
+    import { fetchDeckByDeckId } from '../../services.js';
+    import { error } from '@sveltejs/kit';
 
 
     let { data } = $props();
 
+    const sidebar = useSidebar()
     let deckId = $derived(data.deckId);
     let deck = $state(data.deck);
     let setting = $state<DeckExtraSetting>((deck?.settings as unknown as DeckExtraSetting) ?? {});
-    let isSaving = $state(false);
+    let isLoading = $state(false);
     let isSaved = $state(false);
+    let isDeleted = $state(false);
+    let isError = $state(false);
+
+    let confirmationDialogText = $state({
+        title: "", message: ""
+    });
+    let showDeleteConfirmation = $state<boolean>(false);
+   
 
     // SETTING STUFF
     let newCardLimitPerDay = $state<number>(setting.newLimit !== undefined ?
@@ -31,15 +45,27 @@
 
     // listen to url change
     $effect(() => {
-        const listen = data;
+        const deckId = page.params.deckId;
+        if(!deckId) return;
+
+        isLoading = true;
 
         untrack(() => {
-            deck = listen.deck;
-            setting = deck?.settings as unknown as DeckExtraSetting ?? {};
+            fetchDeckByDeckId(deckId)
+            .then((deckResult) => {
+                deck = deckResult;
+                setting = deck?.settings as unknown as DeckExtraSetting ?? {};
+            })
+            .finally(() => {
+                isLoading = false;
+            });
+
         })
     })
 
-    function handleSettingSave() {
+    function handleSettingSave()
+    : void
+    {
             const settings: DeckExtraSetting = {
                 newLimit: newCardLimitPerDay
             };
@@ -55,15 +81,37 @@
                 settings: (settings as unknown as Json)
             };
             
-            isSaving = true
+            isLoading = true
             updateDeck(deckId, updatedDeck)
             .then(() => {
                 isSaved = true;
             })
-            .catch(() => {
-                isSaving = false;
+            .catch((err) => {
+                isLoading = false;
+                throw err;
             })
             
+    }
+
+    function handleDeleteClick()
+    : void 
+    {
+        confirmationDialogText = {
+            title: "Delete Deck", message: `do you want to delete deck "${deck?.name}"?, process cannot be undone.`
+        }
+        showDeleteConfirmation = true;
+    }
+
+    function confirmDelete() {
+        isLoading = true;
+        deleteDeck(deckId)
+        .then(() => {
+            isDeleted = true;
+        })
+        .catch((err) => {
+            isLoading = false;
+            throw err
+        })
     }
 
     function goToDeck() {
@@ -71,19 +119,27 @@
     }
 </script>
 
+<Confirmation 
+    bind:open={showDeleteConfirmation}
+    title={confirmationDialogText.title}
+    message={confirmationDialogText.message}
+    onConfirm={confirmDelete}
+    onCancel={() => {}}
+/>
+
 <div class="flex justify-center gap-0">
     <Card.Root class="text-center px-auto max-w-xl w-full">
-    {#if isSaving}
+    {#if isLoading}
         <Card.Content>
-            {#if isSaved}
+            {#if isSaved || isDeleted}
                 <div class="flex w-full justify-center text-center mb-5">
-                    <CheckIcon class="text-green-500 me-2"/> Deck<span class="font-bold px-2">{deck?.name}</span>has been updated.
+                    <CheckIcon class="text-green-500 me-2"/> Deck<span class="font-bold px-2">{deck?.name}</span>has been {isDeleted ? "deleted" : "updated"}.
                 </div>
                 <div>
                     <Button variant="outline" class="px-10 py-3" onclick={goToDeck}>Go to Deck</Button>
                 </div>
             {:else}
-                <div>Saving</div>
+                <div>Loading</div>
             {/if}
         </Card.Content>
     {:else}
@@ -123,12 +179,12 @@
                                             type="number"
                                             min="0"
                                             placeholder="Enter new card limit"
-                                            class="border rounded-md text-sm dark:text-black"
+                                            class="rounded-md text-sm dark:text-black"
                                         />
                                     </div>
 
                                     <div class="flex-6/12">
-
+                                        
                                     </div>
                                     
                                 </div>
@@ -139,21 +195,35 @@
                     </Accordion.AccordionItem>
                 </Accordion.Root>
 
-                <div class="flex justify-end mt-12 gap-2">
-                    <Button 
-                        onclick={goToDeck}
-                        class="cursor-pointer py-5 px-5"
-                        variant="outline"
-                    >
-                        Cancel
-                    </Button>
-                    <Button 
-                        onclick={handleSettingSave}
-                        class="cursor-pointer py-5 px-5"
-                        variant="default"
-                    >
-                        Save
-                    </Button>
+                <div class="flex justify-between mt-12">
+                    <div class="flex">
+                        <Button 
+                            onclick={handleDeleteClick}
+                            class="cursor-pointer py-5"
+                            variant="destructive"
+                        >
+                            <TrashIcon/>
+                            {#if !sidebar.isMobile}
+                                Delete
+                            {/if}
+                        </Button>
+                    </div>
+                    <div class="flex gap-2">
+                        <Button 
+                            onclick={goToDeck}
+                            class="cursor-pointer py-5"
+                            variant="outline"
+                        >
+                            <ArrowLeftIcon/> Cancel
+                        </Button>
+                        <Button 
+                            onclick={handleSettingSave}
+                            class="cursor-pointer py-5"
+                            variant="default"
+                        >
+                            <SaveIcon/> Save
+                        </Button>
+                    </div>
                 </div>
             </Card.Content>
         {/if}

@@ -13,6 +13,8 @@
     import DeckListToolbar from './DeckListToolbar.svelte';
     import AddModal from './AddDeckModal.svelte';
     import type { DeckEditableData } from '$lib/types/deck.js';
+    import Button from '$lib/components/ui/button/button.svelte';
+    import { RefreshCwIcon } from '@lucide/svelte';
     
     const SUB_BUTTON_STYLE = cn("flex-4 py-2 hover:bg-accent cursor-pointer");
     const STUDY_BUTTON_STYLE = cn("flex-4 rounded-tr-2xl hover:bg-accent cursor-pointer");
@@ -22,6 +24,7 @@
     let currentPage = $state(1);
     let pageLimit = $state(DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT);
 
+    let pageChanged = $state(false);
     let isAddModalOpen = $state(false);
 
     // NOTE: because of this page, MAYBE I should RETHINK how the toolbar work (BTW, HOW DOES IT EVEN WORK NOW????) 
@@ -31,7 +34,11 @@
     const setToolbar = getContext<ToolbarSetter>(TOOLBAR_SNIPPET_CONTEXT);
 
 
-    onMount(() => {
+    function loadDeck() 
+    : void 
+    {
+        isLoading = true;
+
         fetchUserDecks(currentPage, pageLimit)
         .then((result) => {
             decks = result;
@@ -42,6 +49,10 @@
         .finally(() => {
             isLoading = false;
         });
+    }
+
+    onMount(() => {
+        loadDeck();
 
         setToolbar(toolbarSnippet);
 
@@ -54,24 +65,20 @@
     $effect(() => {
         const searchText = DeckListToolbarContext.searchText;
 
-        if(searchText === "") {
-            return;
-        }
-
-        untrack(async () => {
-            isLoading = true;
-            try {
-                decks = await fetchUserDecks(currentPage, pageLimit);
-            }
-            finally {
-                isLoading = false;
-        }
+        // untrack(async () => {
+        //     isLoading = true;
+        //     try {
+        //         decks = await fetchUserDecks(currentPage, pageLimit);
+        //     }
+        //     finally {
+        //         isLoading = false;
+        // }
+        // });
     });
-  });
 
     // listen page changed?
     $effect(() => {
-        const curpage = currentPage;
+        const tmpPageChanged = !pageChanged;
 
         untrack(async () => {
             isLoading = true;
@@ -112,14 +119,16 @@
 
     createDeck(deckData)
     .then((fetchResult) => {
-        currentPage = 1;
+        pageChanged = !pageChanged
     })
     .catch((err) => {
         throw err;
     })
   }
 
-  function handleAddDeckClick() {
+  function handleAddDeckClick()
+  : void 
+  {
     isAddModalOpen = true;
   }
 
@@ -127,6 +136,12 @@
   : void 
   {
     currentPage = pageNum;
+  }
+
+  function handleRefreshClick()
+  : void
+  {
+    loadDeck();
   }
 
 </script>
@@ -141,8 +156,23 @@
 
 <div class="w-full flex justify-center">
     <div class="flex flex-col items-center gap-y-10 w-full max-w-160">
-        <div class="text-2xl font-bold">
-            Deck List
+        <div class="w-full flex justify-between">
+            <div>
+                <Button
+                    class="cursor-pointer {isLoading ? "invisible" : ""}"
+                    variant="outline" onclick={handleRefreshClick}
+                >
+                    <RefreshCwIcon/>
+                </Button>
+            </div>
+            <div class="text-2xl font-bold">
+                Deck List
+            </div>
+            <div>
+                <Button class="invisible">
+
+                </Button>
+            </div>
         </div>
 
         {#if !isLoading}

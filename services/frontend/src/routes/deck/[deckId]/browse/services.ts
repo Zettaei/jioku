@@ -1,6 +1,6 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
-import type { CardRow } from "$lib/types/server/core/supabase/type";
+import type { CardInsert, CardRow, CardUpdate, DeckRow } from "$lib/types/server/core/supabase/type";
 import type { GetCardsByDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/card_dto";
 import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 
@@ -30,17 +30,19 @@ export async function fetchCardsByDeckId(deckId: string, page: number = 0, limit
         }
 }
 
-export async function addCardToDeckId(deckId: string | undefined, cardData: Pick<CardRow, "data">)
+export async function addCardToDeckId(deckId: string | undefined, card: Record<string, string>)
 : Promise<void>
 {
-    if(!deckId || !cardData) throw new BadRequestError("Missing deck id");
+    if(!deckId || !card) throw new BadRequestError("Missing deck id");
 
     try {
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards`,
                 {
                     method: "POST",
-                    body: JSON.stringify(cardData)
+                    body: JSON.stringify({
+                        card
+                    })
                 }
             )
     
@@ -58,17 +60,20 @@ export async function addCardToDeckId(deckId: string | undefined, cardData: Pick
 }
 
 
-export async function updateCard(deckId: string, cardId: string, cardData: Pick<CardRow, "data">)
+export async function updateCard(deckId: string, cardId: string, card: CardUpdate, deckHeaderOrder: Array<string>)
 : Promise<void>
 {
-    if(!deckId || !cardId || !cardData) throw new BadRequestError("Missing deck id, card id, or card data");
+    if(!deckId || !cardId || !card || !deckHeaderOrder) throw new BadRequestError("Missing deck id, card id, or card data");
 
     try {
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards/${cardId}`,
                 {
                     method: "PUT",
-                    body: JSON.stringify(cardData)
+                    body: JSON.stringify({
+                        card,
+                        deckHeaderOrder
+                    })
                 }
             )
     

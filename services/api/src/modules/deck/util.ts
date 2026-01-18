@@ -101,10 +101,10 @@ function assertAuthorized<T>(data: T | null, message: string)
 }
 
 const idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-function generateCardId()
+function generateColumnId()
 : string
 {
-    const len = 6;
+    const len = 5;
     return Array.from({length: len}, () => idCharacters[Math.floor(Math.random() * idCharacters.length)]).join('');
 }
 
@@ -112,5 +112,5 @@ export {
     removeHiddenColumn,
     throwSupabaseErrorIfExist,
     assertAuthorized,
-    generateCardId
+    generateColumnId
 };

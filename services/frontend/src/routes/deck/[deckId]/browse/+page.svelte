@@ -13,7 +13,7 @@
     import { cardExtraHeaderName, cardExtraHeaderOrder } from "$lib/constant/cardExtraRows";
     import type { Json } from "$lib/types/server/core/supabase/generatedType";
     import { userState } from "$lib/global/userState.svelte";
-    import type { CardRow } from "$lib/types/server/core/supabase/type";
+    import type { CardInsert, CardRow, CardUpdate } from "$lib/types/server/core/supabase/type";
     import { getCardExtraValue, isJsonObject } from "./utils";
     import EditModal from "./EditModal.svelte";
     import AppCardDataAddModal from "./AddModal.svelte";
@@ -157,23 +157,28 @@
         isAddModalOpen = true;
     }
 
-    function handleAddCardSave(data: Pick<CardRow, "data">)
+    function handleAddCardSave(data: {
+        card: Record<string, string>
+    })
     : void 
     {
         rowIsLoading = true;
-        addCardToDeckId(deckId, data)
+        addCardToDeckId(deckId, data.card)
         .finally(() => {
             pageChanged = !pageChanged; // Refresh list
             rowIsLoading = false;
         });
     }
 
-    // Handle updating existing card from edit modal
-    function handleUpdatedCardSave(cardId: string, data: Pick<CardRow, "data">)
+
+    function handleUpdatedCardSave(cardId: string, data: {
+        card: CardUpdate,
+        deckHeaderOrder: Array<string>
+    })
     : void 
     {
         rowIsLoading = true;
-        updateCard(deckId!, cardId, data)
+        updateCard(deckId!, cardId, data.card, data.deckHeaderOrder)
         .finally(() => {
             pageChanged = !pageChanged; // Refresh list
             rowIsLoading = false;

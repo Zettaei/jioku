@@ -12,6 +12,7 @@ import type {
     DeleteCardsRouteHandler,
     DeleteCardsRouteResponse
 } from "../type/card_dto.js";
+import { BadRequestError } from "src/core/errors/httpError.js";
 
 
 async function getCardsByDeckIdRouteHandler(req: GetCardsByDeckIdRouteHandler)
@@ -44,7 +45,11 @@ async function getCardByIdRouteHandler(req: GetCardByIdRouteHandler)
 async function createCardRouteHandler(req: CreateCardRouteHandler)
 : Promise<CreateCardRouteResponse>
 {
-    const card = await service.createCard(req.userId, req.deckId, req.data);
+    if(!req.body.card) {
+        throw new BadRequestError("Invalid JSON")
+    }
+
+    const card = await service.createCard(req.userId, req.deckId, req.body.card);
     return card;
 }
 
@@ -52,7 +57,11 @@ async function createCardRouteHandler(req: CreateCardRouteHandler)
 async function updateCardRouteHandler(req: UpdateCardRouteHandler)
 : Promise<UpdateCardRouteResponse>
 {
-    const card = await service.updateCard(req.userId, req.cardId, req.deckId, req.data);
+    if(!req.body.card || !req.body.deckHeaderOrder) {
+        throw new BadRequestError("Invalid JSON")
+    }
+
+    const card = await service.updateCard(req.userId, req.cardId, req.deckId, req.body.card, req.body.deckHeaderOrder);
     return card;
 }
 

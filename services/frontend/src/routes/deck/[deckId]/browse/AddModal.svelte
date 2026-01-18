@@ -11,8 +11,10 @@
 
     interface Props {
         isOpen: boolean;
-        headers: Header[] | undefined;
-        onSave: (data: Pick<CardRow, "data">) => void;
+        headers: Array<Header>;
+        onSave: (data: {
+            card: Record<string, string>
+        }) => void;
     }
 
     // @ts-expect-error
@@ -22,6 +24,7 @@
       data: {} as Record<string, string>
     });
     let lastIsOpen = $state(false);
+
 
     $effect(() => {
         // Only initialize when isOpen changes from false to true
@@ -42,8 +45,11 @@
     });
 
     function handleSave() {
+        console.log(editingData);
         if (onSave) {
-            onSave(editingData);
+            onSave({
+                card: editingData as Record<string, string>
+            });
         }
         isOpen = false;
     }
@@ -51,6 +57,7 @@
     function handleCancel() {
         isOpen = false;
     }
+
 </script>
 
 <Dialog.Root bind:open={isOpen}>

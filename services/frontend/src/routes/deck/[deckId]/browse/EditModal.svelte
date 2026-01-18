@@ -1,11 +1,10 @@
 <script lang="ts">
     import * as Dialog from "$lib/components/ui/dialog/index";
     import * as Accordion from "$lib/components/ui/accordion/index";
-    import type { CardRow } from "$lib/types/server/core/supabase/type";
+    import type { CardRow, CardUpdate, DeckRow } from "$lib/types/server/core/supabase/type";
     import { cardExtraHeaderName, cardExtraHeaderOrder } from "$lib/constant/cardExtraRows";
     import { getCardExtraValue, isJsonObject, convertTimeToUser } from "./utils";
     import Button from "$lib/components/ui/button/button.svelte";
-    import { Trash2Icon } from "@lucide/svelte";
 
     interface Header {
         key: string;
@@ -14,8 +13,11 @@
 
     interface Props {
       selectedCard: CardRow | null;
-      headers: Header[] | undefined;
-      onSave?: (cardId: string, data: Pick<CardRow, "data">) => void;
+      headers: Array<Header>;
+      onSave?: (cardId: string, data: {
+        card: Record<string, any>,
+        deckHeaderOrder: Array<string>
+      }) => void;
     }
 
 
@@ -24,18 +26,23 @@
 
 
     let open = $derived(!!selectedCard);  // convert to boolean
-    let editingData = $state<Record<string, any>>({});
+    let columnData = $state<Record<string, string>>({});
 
     $effect(() => {
         if (open && selectedCard) {
-            editingData = { ...selectedCard.data as {} };
+            columnData = {...selectedCard.data as Record<string, string>};
         }
     });
 
     function handleSave() {
         if (selectedCard) {
             if (onSave) {
-                onSave(selectedCard.id, { data: editingData });
+                onSave(selectedCard.id, {
+                  card: {
+                    data: columnData
+                  },
+                  deckHeaderOrder: headers.map((h) => h.key)
+                });
             }
             selectedCard = null;
         }
@@ -70,13 +77,17 @@
                       </label>
                       <textarea
                         id={header.key}
-                        bind:value={editingData[header.key]}
+                        bind:value={columnData[header.key]}
                         class="w-full min-h-9 px-3 py-2 border rounded-md text-sm resize-y dark:text-black"
                         rows="1"
                       >
                       </textarea>
                     </div>
                   {/each}
+
+                {:else}
+                    <div>Corrupted Card Data</div>
+
                 {/if}
               </div>
             </Accordion.Content>
