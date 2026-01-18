@@ -112,20 +112,16 @@ async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, vo
         </voice>
     </speak>`;
 
-    // FIXME: CONFIRMED I TRIED HARDCODE THE ACCESS TOKEN AND IT WORKED!,
-    // THIS ACCESS TOKEN IS FAULTY SOMEHOW
     const response = await fetch(`${ENV_VARS.AZURE_TTS_URL.value}`,{
         method: "POST",
         headers: {
             "X-Microsoft-OutputFormat": AZURE_VOICE_OUTPUT_FORMAT,
             "Content-Type": "application/ssml+xml; charset=utf-8",
-            "Authorization": `Bearer ${accesstoken}`,
-            "User-Agent": "jioku_server",
+            "Authorization": `Bearer ${accesstoken}`
         },
         body: body
     });
 
-    console.log(response)
 
     if(!response.ok) {
         if(response.status === 401) {
@@ -154,7 +150,7 @@ async function fetchNewAzureTTSAccessToken()
         method: 'POST',
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Ocp-Apim-Subscription-Key": ENV_VARS.AZURE_TRANSLATOR_KEY.value,
+            "Ocp-Apim-Subscription-Key": ENV_VARS.AZURE_TTS_KEY.value,
         }
     });
 
@@ -169,8 +165,8 @@ async function fetchNewAzureTTSAccessToken()
         );
     }
 
-    const data = await response.text();
-    return data.trim();
+    const data = (await response.text()).trim();
+    return data;
 }
 
 function validateTranslationLanguage(translationLang: string | undefined)
