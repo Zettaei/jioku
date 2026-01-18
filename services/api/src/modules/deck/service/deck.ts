@@ -3,6 +3,8 @@ import * as repository from "../repository/deck.js";
 import * as util from "../util.js";
 import type { DeckResponseHiddenColumn } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
+import { InternalError } from "src/core/errors/internalError.js";
+import type { Json } from "src/core/supabase/generatedType.js";
 
 async function getDecksByUserId(userId: string, page: number | undefined, limit: number | undefined)
 : Promise<PaginatedResponse<Omit<DeckRow, DeckResponseHiddenColumn>>>
@@ -24,15 +26,52 @@ async function getDeckById(userId: string, deckId: string)
 }
 
 
+/**
+ * convert the column Id uses in deck.headersData, deck.headerOrder and card.data(?)
+ * @sideeffect mutate the object being passe as a parameter
+ */
+function convertDeckColumnId(deck: Pick<DeckInsert, "headersdata" | "headersorder">) 
+: void
+{
+    const oldData = deck.headersdata as Record<string, string>;
+    const oldOrder = deck.headersorder as Array<string>;
+
+    const newData: Record<string, string> = {};
+    const newOrder: Array<string> = [];
+
+    const retryGenIdTimes = 3;
+
+    for (const header of oldOrder) {
+        // If it's a number(whic is a temp ID), generate a new ID
+        let finalId = isNaN(Number(header)) ? header : util.generateColumnId();
+        
+        // if it somehow collide, very less likely tho
+        for(let i = 1; newOrder.includes(finalId); ++i) {
+            if(i === retryGenIdTimes) { 
+                throw new InternalError("An Error occured") 
+            }
+            finalId = util.generateColumnId();
+        }
+        newOrder.push(finalId);
+        
+        if (header in oldData) {
+            newData[finalId] = oldData[header]!;
+        }
+    }
+
+    deck.headersorder = newOrder;
+    deck.headersdata = newData;
+}
+
+
 async function createDeck(userId: string, newDeck: DeckInsert)
 : Promise<Omit<DeckRow, DeckResponseHiddenColumn>> 
 {
-    const deckWithUserId: DeckInsert = {
-        ...newDeck,
-        users_id: userId
-    };
-    const data = await repository.createDeck(deckWithUserId);
-    
+    const deck: DeckInsert = { ...newDeck, users_id: userId };
+
+    convertDeckColumnId(deck);
+
+    const data = await repository.createDeck(deck);
     return util.removeHiddenColumn(data);
 }
 
@@ -40,6 +79,8 @@ async function createDeck(userId: string, newDeck: DeckInsert)
 async function updateDeck(userId: string, deckId: string, updates: DeckUpdate)
 : Promise<Omit<DeckRow, DeckResponseHiddenColumn>> 
 {
+    convertDeckColumnId(updates);
+
     const data = await repository.updateDeck(deckId, userId, updates);
     return util.removeHiddenColumn(data);
 }

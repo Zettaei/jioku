@@ -1,4 +1,4 @@
-import type { CardInsert, CardUpdate, CardRow } from "src/core/supabase/type.js";
+import type { CardInsert, CardUpdate, CardRow, DeckRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/card.js";
 import type { PaginatedResponseWithTotalCount } from "../type/dto.js";
 
@@ -26,11 +26,34 @@ async function createCard(userId: string, deckId: string, newCardData: CardInser
 }
 
 
-async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: CardUpdate)
+/**
+ * convert the column Id uses in deck.headersData, deck.headerOrder and card.data(?)
+ * @sideeffect mutate "cardData" that being passed as a parameter
+ */
+function removePrunedCardColumn(cardData: CardUpdate, deckHeaderOrder: DeckRow["headersorder"]) 
+: void
+{
+    const currentCardData = cardData as Record<string, string>;
+    const newCardData: Record<string, string> = {};
+
+    (deckHeaderOrder as Array<string>).forEach((headerKey) => {
+        const val = currentCardData[headerKey];
+
+        if(val === undefined) return;
+
+        newCardData[headerKey] = val;
+    })
+
+    cardData = newCardData;
+}
+
+async function updateCard(userId: string, cardId: string, deckId: string, updatedCardData: CardUpdate, deckHeaderOrder: DeckRow["headersorder"])
 : Promise<CardRow> 
 {
+    if(updatedCardData.data) {
+        removePrunedCardColumn(updatedCardData, deckHeaderOrder);
+    }
     return await repository.updateCard(userId, cardId, deckId, updatedCardData);
-
 }
 
 
