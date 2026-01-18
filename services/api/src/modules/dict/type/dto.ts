@@ -98,9 +98,7 @@ extends AzureErrorResponse
 ////////////////////////////////////////////// AZURE TEXT TO SPEECH
 export type AzureTTSRequest = { text: string, voicename: string };
 
-export interface AzureTTSRequestOKResponse {
-
-};
+export type AzureTTSRequestOKResponse = ArrayBuffer
 
 export interface AzureTTSAccessTokenErrorRespone
 extends AzureErrorResponse 
