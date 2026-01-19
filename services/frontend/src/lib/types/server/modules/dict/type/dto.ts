@@ -46,12 +46,35 @@ export interface EntriesRouteHandler {
     query: EntriesRouteHandlerQuery;
 }
 
-export type EntriesRouteResponse = PaginatedResponse<Entry> & {
+export interface EntriesRouteResponse 
+extends PaginatedResponse<Entry> {
     param: string;
     language: TranslationLanguage;
     total: number;
 }
 
+////////////////////////////////////////////// VOICES
+export type VoiceRouteHandlerQuery = {
+    voicename: string | undefined
+}
+
+export interface VoiceRouteHandler {
+    sentence: string | undefined
+    query: VoiceRouteHandlerQuery
+}
+
+export type VoiceRouteResponse = ArrayBuffer;
+
+
+
+
+// AZURE
+export interface AzureErrorResponse {
+    error: {
+        code: number,
+        message: string
+    }
+}
 
 ////////////////////////////////////////////// AZURE TRANSLATOR
 export type AzureTranslationRequest = { text: string };
@@ -67,9 +90,19 @@ export interface AzureTranslationOKResponse {
     }>
 }
 
-export interface AzureTranslationErrorResponse {
-    error: {
-        code: number,
-        message: string
-    }
-}
+export interface AzureTranslationErrorResponse 
+extends AzureErrorResponse 
+{}
+
+////////////////////////////////////////////// AZURE TEXT TO SPEECH
+export type AzureTTSRequest = { text: string, voicename: string };
+
+export type AzureTTSRequestOKResponse = ArrayBuffer
+
+export interface AzureTTSAccessTokenErrorRespone
+extends AzureErrorResponse 
+{};
+
+export interface AzureTTSRequestErrorResponse
+extends AzureErrorResponse
+{};

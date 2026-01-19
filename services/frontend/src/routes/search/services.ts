@@ -1,7 +1,8 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import type { TranslationLanguage } from "$lib/types/server/modules/dict/type/model";
 import { ConnectionError, HttpError } from "$lib/errors/HttpError";
-import type { EntriesRouteResponse, TokensRouteResponse } from "$lib/types/server/modules/dict/type/dto";
+import type { EntriesRouteResponse, TokensRouteResponse, VoiceRouteResponse } from "$lib/types/server/modules/dict/type/dto";
+import { AzureTTSVoiceName } from "$lib/types/server/modules/dict/type/azureTTS";
 
 
 export function getDefaultSelectedWord(tokens: TokensRouteResponse)
@@ -86,4 +87,37 @@ export async function fetchTokensOCR(image: File, translationLang: TranslationLa
 
         throw new ConnectionError();
     }
+}
+
+
+export async function fetchVoice(text: string = "")
+: Promise<VoiceRouteResponse> 
+{
+    try {
+        const fetchData = await fetch(
+            `${PUBLIC_BACKEND_URL}/dict/voice/${text}`,
+            {
+                method: "GET",
+            }
+        )
+
+        if (!fetchData.ok) {
+            throw new HttpError(fetchData.status);
+        }
+
+        return await fetchData.arrayBuffer();
+
+    } catch (err) {
+        if (err instanceof HttpError) throw err;
+
+        throw new ConnectionError();
+    }
+}
+
+export async function playVoice(AudioContext: AudioContext, decodeAudioBuffer: AudioBuffer) {
+    const source = AudioContext.createBufferSource();
+    source.buffer = decodeAudioBuffer;
+    source.connect(AudioContext.destination);
+
+    source.start(0)
 }

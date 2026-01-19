@@ -97,9 +97,7 @@ async function processVoiceGeneration(
     let isRedisAvailable: boolean = true;
 
     try {
-        if(isRedisAvailable) {
-            accesstoken = await repository.getAzureTTSAccessToken() ?? '';
-        }
+        accesstoken = await repository.getAzureTTSAccessToken() ?? '';
     }
     catch(err) {
         console.error("Cannot connect to Redis, skipping global access token")
@@ -126,8 +124,9 @@ async function processVoiceGeneration(
 
             voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, paramSentence, voicename)
         }
-
-        throw err;
+        else {
+            throw err;
+        }
     }
 
     return voiceBuffer;
