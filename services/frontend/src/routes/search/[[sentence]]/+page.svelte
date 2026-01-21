@@ -155,20 +155,21 @@
   }
 
   // SEND THIS FUNC TO UPPER CARD AND LOWER CARD AND ADD THE SPEAKER BUTTON ON THERE
-  function handleVoiceClick(text: string)
+  function handleVoiceClick(text: string, reading: string | undefined)
   : void 
   {
     if(!AudioContext) {
       throw new Error("Speech unavailable")
     }
 
-    let decodedVoiceBuffer = voiceCache.get(text);
     // check the page cache
+    let decodedVoiceBuffer = voiceCache.get(text);
     if(decodedVoiceBuffer) {
-      playVoice(AudioContext, decodedVoiceBuffer)
+      playVoice(AudioContext, decodedVoiceBuffer);
+
     }
     else {
-      fetchVoice(text)
+      fetchVoice(text, reading)
       .then(async (voiceArrayBuffer) => {
         decodedVoiceBuffer = await AudioContext.decodeAudioData(voiceArrayBuffer);
         playVoice(AudioContext, decodedVoiceBuffer);
@@ -203,7 +204,7 @@
     {#if lowercardIsLoading}
         <Loading />
     {:else if entries}
-        <LowerCard entries={entries} />
+        <LowerCard entries={entries} handleVoiceClick={handleVoiceClick} />
         
         {#if entries.result.length > 0}
             <Pagination.Root count={entries.total} perPage={pageLimit} bind:page={currentPage}>

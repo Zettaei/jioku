@@ -56,12 +56,13 @@ extends PaginatedResponse<Entry> {
 
 ////////////////////////////////////////////// VOICES
 export type VoiceRouteHandlerQuery = {
-    voicename: string | undefined
+    voicename: string | undefined,
+    reading: string | undefined
 }
 
 export interface VoiceRouteHandler {
-    sentence: string | undefined
-    query: VoiceRouteHandlerQuery
+    sentence: string | undefined;
+    query: VoiceRouteHandlerQuery;
 }
 
 export type VoiceRouteResponse = ArrayBuffer;

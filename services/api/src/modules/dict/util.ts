@@ -99,16 +99,21 @@ async function sendToAzureTranslator(toLang: TranslationLanguage, payload: Array
 }
 
 
-async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, voicename: AzureTTSVoiceName) 
+async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, reading: string, voicename: AzureTTSVoiceName) 
 : Promise<ArrayBuffer>
 {
     // !!! vvv if this get updated be sure to update Content-Type in response of route.ts as well
     const AZURE_VOICE_OUTPUT_FORMAT = "ogg-24khz-16bit-mono-opus"
 
+    const item = reading !== '' ?
+        `<phoneme alphabet="sapi" ph="${reading}">${sentence}</phoneme>`
+        :
+        sentence
+
     const body = 
     `<speak version='1.0' xml:lang='ja-JP'>
         <voice xml:lang='ja-JP' name='${voicename}'>
-            ${sentence}
+            ${item}
         </voice>
     </speak>`;
 
@@ -194,6 +199,30 @@ function validateVoicename(voicename: string | undefined)
     }  
 }
 
+/**
+ * convert to katakana arithmetically
+ * @note supposed to be use for sending reading to Azure Speech, but may as well use for other things.
+ */
+function convertToKatakana(text: string)
+: string
+{
+    let result = "";
+
+    for(let i = 0; i < text.length; ++i) {
+        const code = text.charCodeAt(i);
+        // 0x3041 = 'ぁ' (small あ) / 0x3096 = 'ゖ' (small け)　- ?????????
+        if(code >= 0x3041 && code <= 0x3096) {
+            // +96 (0x60) to make it katakana
+            result += String.fromCharCode(code + 96);
+        }
+        else {
+            result += text[i]
+        }
+    }
+
+    return result;
+}
+
 
 export {
     initializeTokenizer,
@@ -204,5 +233,6 @@ export {
     sendToAzureTextToSpeech,
     validateTranslationLanguage,
     validateQuery,
-    validateVoicename
+    validateVoicename,
+    convertToKatakana
 }

@@ -87,10 +87,12 @@ async function processRedisResultTranslation(
     }
 }
 
-// FIXME: condition race for accesstoken
+
+// NOTE: a bit of condition race for accesstoken, not really breaking
 async function processVoiceGeneration(
-    paramSentence: string, 
-    voicename: AzureTTSVoiceName
+    sentence: string, 
+    paramReading: string,
+    paramVoicename: AzureTTSVoiceName
 ): Promise<VoiceRouteResponse>
 {
     let accesstoken: string = "";
@@ -105,10 +107,12 @@ async function processVoiceGeneration(
         accesstoken = reservedAccessToken;
     }
 
+    const katakanaReading = utils.convertToKatakana(paramReading)
+
 
     let voiceBuffer: ArrayBuffer;
     try {
-        voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, paramSentence, voicename)
+        voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, sentence, katakanaReading, paramVoicename)
     }
     catch(err) {
         // failed because accessToken expired -> retry with new token
@@ -122,7 +126,7 @@ async function processVoiceGeneration(
                 reservedAccessToken = accesstoken;
             }
 
-            voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, paramSentence, voicename)
+            voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, sentence, katakanaReading, paramVoicename)
         }
         else {
             throw err;

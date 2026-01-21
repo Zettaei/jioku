@@ -7,16 +7,15 @@
     import EllipsisButton from "./EllipsisButton.svelte";
     import HighlightBox from "./HighlightBox.svelte";
   import { getEntryMetadata } from "./LowerCard";
-  import { DotIcon, Ellipsis } from "@lucide/svelte";
+  import { Volume2Icon } from "@lucide/svelte";
 
   interface Props {
     entries: EntriesRouteResponse | null;
+    handleVoiceClick: (text: string, reading: string | undefined) => void;
   }
 
-  const voicesCache: Record<string, ArrayBuffer> = {}
-
   // @ts-expect-error
-  let { entries }: Props = $props<Props>();
+  let { entries, handleVoiceClick }: Props = $props<Props>();
 
   $inspect(entries);
 
@@ -48,9 +47,10 @@
               <!-- <div class="text-md">{metadata.meaning}</div> -->
 
             </div>
-            <div class="flex items-center rounded-md gap-4">
-              <EllipsisButton entryText={metadata.kanji ?? metadata.reading}/>
-              <Accordion.Trigger class="pe-4 cursor-pointer" />
+            <div class="flex items-center rounded-md gap-4 pe-4">
+              <Volume2Icon class="cursor-pointer h-full" onclick={() => handleVoiceClick(metadata.kanji, metadata.reading)}/>
+              <EllipsisButton class="cursor-pointer h-full" entryText={metadata.kanji ?? metadata.reading}/>
+              <Accordion.Trigger class="cursor-pointer" />
             </div>
           </div>
           <Accordion.Content class="text-lg flex flex-col ps-2 gap-3 bg-background">
@@ -73,7 +73,9 @@
     <span class="font-bold">{"Alternatives:"}</span> 
     <div class="ms-3 mt-1">
       {#each kanji as text}
-        <span class="me-3">{text}</span>
+        <span class="flex me-3 gap-2 items-center">
+          {text}
+        </span>
       {/each}
     </div>
   </div>
@@ -83,7 +85,9 @@
     <span class="font-bold">{"Reading:"}</span> 
     <div class="ms-3 mt-1">
       {#each reading as text}
-        <span class="me-3">{text}</span>
+        <span class="flex me-3">
+          {text}
+        </span>
       {/each}
     </div>
   </div>

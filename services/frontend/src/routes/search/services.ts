@@ -90,12 +90,13 @@ export async function fetchTokensOCR(image: File, translationLang: TranslationLa
 }
 
 
-export async function fetchVoice(text: string = "")
+export async function fetchVoice(text: string = "", reading: string | undefined)
 : Promise<VoiceRouteResponse> 
 {
+    const readingParam = reading ? `?reading=${reading}` : '';
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/voice/${text}`,
+            `${PUBLIC_BACKEND_URL}/dict/voice/${text}${readingParam}`,
             {
                 method: "GET",
             }
