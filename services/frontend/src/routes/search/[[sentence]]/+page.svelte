@@ -198,6 +198,7 @@
             tokens={tokens}
             bind:selectedWord
             bind:selectedIndex
+            handleVoiceClick={handleVoiceClick}
         />
     {/if}
 
