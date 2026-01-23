@@ -132,3 +132,9 @@
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 }
+
+input:focus {
+  outline: none;
+  border-color: gold;
+  box-shadow: 0 0 0 2px gold;
+}

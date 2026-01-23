@@ -8,7 +8,9 @@ import { BadRequestError, ConflictError, UnauthorizedError } from "src/core/erro
  * Removes hidden columns (like users_id) from a deck object.
  * Returns a new object without the specified hidden columns.
  */
-function removeHiddenColumn(deck: DeckRow): Omit<DeckRow, DeckResponseHiddenColumn> {
+function removeHiddenColumn(deck: DeckRow)
+: Omit<DeckRow, DeckResponseHiddenColumn> 
+{
     const { users_id, ...result } = deck;
     return result;
 }
@@ -17,7 +19,9 @@ function removeHiddenColumn(deck: DeckRow): Omit<DeckRow, DeckResponseHiddenColu
  * Throws a typed error if a Supabase/PostgREST error exists.
  * Groups errors by SQLSTATE code prefix.
  */
-function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string): asserts error is null {
+function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string)
+: asserts error is null 
+{
     if (!error) return;
 
     const code = error.code;
@@ -88,14 +92,25 @@ function throwSupabaseErrorIfExist(error: PostgrestError | null, message: string
  * Asserts that authorization check passed (data exists).
  * Throws UnauthorizedError if data is null/falsy.
  */
-function assertAuthorized<T>(data: T | null, message: string): asserts data is T {
+function assertAuthorized<T>(data: T | null, message: string)
+: asserts data is T 
+{
     if (!data) {
         throw new UnauthorizedError(message);
     }
 }
 
+const idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function generateColumnId()
+: string
+{
+    const len = 5;
+    return Array.from({length: len}, () => idCharacters[Math.floor(Math.random() * idCharacters.length)]).join('');
+}
+
 export { 
     removeHiddenColumn,
     throwSupabaseErrorIfExist,
-    assertAuthorized
+    assertAuthorized,
+    generateColumnId
 };

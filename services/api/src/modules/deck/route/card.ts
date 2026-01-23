@@ -48,13 +48,14 @@ routes.get("/decks/:deckId/cards/:cardId", async (c) => {
 routes.post("/decks/:deckId/cards", async (c) => {
     const userId = c.get("userId");
     const deckId = c.req.param("deckId");
-    let data;
+    let body;
 
     try {
-        data = await c.req.json();
+        
+        body = await c.req.json();
     } catch (err) { throw new BadRequestError("Invalid JSON") };
 
-    const result = await createCardRouteHandler({ userId, deckId, data });
+    const result = await createCardRouteHandler({ userId, deckId, body });
 
     return c.json<CreateCardRouteResponse>(result);
 });
@@ -63,13 +64,13 @@ routes.put("/decks/:deckId/cards/:cardId", async (c) => {
     const userId = c.get("userId");
     const deckId = c.req.param("deckId");
     const cardId = c.req.param("cardId");
-    let data;
+    let body;
 
     try {
-        data = await c.req.json();
+        body = await c.req.json();
     } catch (err) { throw new BadRequestError("Invalid JSON") };
 
-    const result = await updateCardRouteHandler({ userId, deckId, cardId, data });
+    const result = await updateCardRouteHandler({ userId, deckId, cardId, body });
 
     return c.json<UpdateCardRouteResponse>(result);
 });
