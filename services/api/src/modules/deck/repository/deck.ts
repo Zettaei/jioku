@@ -2,7 +2,7 @@ import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
-import type { DeckResponseHiddenColumn } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
 
 async function getDecksByUserId(userId: string, page: number = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
@@ -110,10 +110,29 @@ async function deleteDeck(deckId: string, userId: string)
         
     return;
 }
+
+
+async function getDeckStatusById(userId: string, deckId: string, timezone: string | undefined = undefined)
+: Promise<GetDeckStatusByIdRouteResponse>
+{
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase.rpc("get_deck_status", {
+        param_decks_id: deckId,
+        param_users_id: userId,
+        param_timezone: timezone
+    });
+
+    util.throwSupabaseErrorIfExist(error, "Failed to get deck status from Supabase");
+
+    return data;
+}
+
 export {
     getDecksByUserId,
     getDeckById,
     createDeck,
     updateDeck,
-    deleteDeck
+    deleteDeck,
+    getDeckStatusById
 }

@@ -3,6 +3,7 @@ import { userIdMiddleware } from "core/middleware/index.js";
 import {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
+    getDeckStatusByIdRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler
@@ -10,6 +11,7 @@ import {
 import type {
     GetDecksRouteResponse,
     GetDeckByIdRouteResponse,
+    GetDeckStatusByIdRouteResponse,
     CreateDeckRouteResponse,
     UpdateDeckRouteResponse,
     DeleteDeckRouteResponse
@@ -42,6 +44,17 @@ routes.get("/decks/:deckId", async (c) => {
     
     
     return c.json<GetDeckByIdRouteResponse>(result);
+});
+
+routes.get("/decks/:deckId/status", async (c) => {
+    const userId = c.get("userId");
+    const deckId = c.req.param("deckId");
+    const timezoneQuery = c.req.query("timezone");
+
+    const result = await getDeckStatusByIdRouteHandler({ userId, deckId, timezone: timezoneQuery });
+    
+    
+    return c.json<GetDeckStatusByIdRouteResponse>(result);
 });
 
 routes.post("/decks", async (c) => {

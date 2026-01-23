@@ -1,7 +1,7 @@
 import type { DeckInsert, DeckUpdate, DeckRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/deck.js";
 import * as util from "../util.js";
-import type { DeckResponseHiddenColumn } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
 import { InternalError } from "src/core/errors/internalError.js";
 import type { Json } from "src/core/supabase/generatedType.js";
@@ -23,6 +23,17 @@ async function getDeckById(userId: string, deckId: string)
 {
     const data = await repository.getDeckById(userId, deckId);
     return data ? util.removeHiddenColumn(data) : null;
+}
+
+
+async function getDeckStatusById(userId: string, deckId: string, timezone: string | undefined = undefined)
+: Promise<GetDeckStatusByIdRouteResponse>
+{
+    const data = await repository.getDeckStatusById(userId, deckId, timezone);
+    if (!data || !Array.isArray(data) || data.length === 0) {
+        return null;
+    }
+    return data[0];
 }
 
 
@@ -99,5 +110,6 @@ export {
     getDeckById,
     createDeck,
     updateDeck,
-    deleteDeck
+    deleteDeck,
+    getDeckStatusById
 }

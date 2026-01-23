@@ -16,14 +16,13 @@
     import { page } from '$app/state';
     import { fetchDeckByDeckId } from '../../services.js';
     import { error } from '@sveltejs/kit';
+    import type { GetDeckByIdRouteResponse } from '$lib/types/server/modules/deck/type/deck_dto.js';
 
+    const sidebar = useSidebar();
 
-    let { data } = $props();
-
-    const sidebar = useSidebar()
-    let deckId = $derived(data.deckId);
-    let deck = $state(data.deck);
-    let setting = $state<DeckExtraSetting>((deck?.settings as unknown as DeckExtraSetting) ?? {});
+    let deckId = $state<string>();
+    let deck = $state<GetDeckByIdRouteResponse>();
+    let setting = $state<DeckExtraSetting>();
     let isLoading = $state(false);
     let isSaved = $state(false);
     let isDeleted = $state(false);
@@ -36,9 +35,7 @@
    
 
     // SETTING STUFF
-    let newCardLimitPerDay = $state<number>(setting.newLimit !== undefined ?
-        setting.newLimit : (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number)
-    );
+    let newCardLimitPerDay = $state<number>(DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number);
 
     ////////////////
     
@@ -54,7 +51,8 @@
             fetchDeckByDeckId(deckId)
             .then((deckResult) => {
                 deck = deckResult;
-                setting = deck?.settings as unknown as DeckExtraSetting ?? {};
+                setting = (deck?.settings as unknown as DeckExtraSetting) ?? {};
+                newCardLimitPerDay = (setting.newLimit as number) ?? (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number)
             })
             .finally(() => {
                 isLoading = false;
@@ -82,7 +80,7 @@
             };
             
             isLoading = true
-            updateDeck(deckId, updatedDeck)
+            updateDeck(deckId!, updatedDeck)
             .then(() => {
                 isSaved = true;
             })
@@ -104,7 +102,7 @@
 
     function confirmDelete() {
         isLoading = true;
-        deleteDeck(deckId)
+        deleteDeck(deckId!)
         .then(() => {
             isDeleted = true;
         })

@@ -4,7 +4,7 @@ export class InternalError extends Error {
   status: ContentfulStatusCode;
   subMessage: string | undefined;
 
-  constructor(message: string, subMessage: string | undefined, rawResponse: unknown | undefined, statusCode: ContentfulStatusCode = 500) {
+  constructor(message: string, subMessage?: string | undefined, rawResponse?: unknown | undefined, statusCode: ContentfulStatusCode = 500) {
     super(message, { cause: rawResponse });
     this.subMessage = subMessage;
     this.status = statusCode

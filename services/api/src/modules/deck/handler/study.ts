@@ -20,6 +20,10 @@ async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
     const limitNum = Number(req.limit);
     const timezoneStr = req.timezone;
 
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
     const safePage =
         (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
         ? pageNum : undefined;
@@ -28,10 +32,8 @@ async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
         (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
         ? limitNum : undefined;
 
-    const safeTimezone =
-        typeof timezoneStr === "string" && timezoneStr.length > 0 ? timezoneStr : undefined;
     
-    return await service.getStudyDecks(req.userId, safePage, safeLimit, safeTimezone);
+    return await service.getStudyDecks(req.userId, safePage, safeLimit, timezoneStr);
 }
 
 
@@ -62,8 +64,9 @@ async function getStudyCardsByStatusDeckIdRouteHandler(req: GetStudyCardsByStatu
     const limitNum = Number(req.limit);
     const offsetNum = Number(req.offset);
 
-    const safeTimezone =
-        typeof timezoneStr === "string" && timezoneStr.length > 0 ? timezoneStr : undefined;
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
 
     const safeStatus =
         Number.isInteger(statusNum) && statusNum >= 0 ? statusNum : undefined;
@@ -74,7 +77,7 @@ async function getStudyCardsByStatusDeckIdRouteHandler(req: GetStudyCardsByStatu
     const safeOffset =
         Number.isInteger(offsetNum) && offsetNum >= 0 ? offsetNum : undefined;
     
-    return await service.getStudyCardsByStatusAndDeckId(req.userId, req.deckId, safeTimezone, safeStatus, safeLimit, safeOffset);
+    return await service.getStudyCardsByStatusAndDeckId(req.userId, req.deckId, timezoneStr, safeStatus, safeLimit, safeOffset);
 }
 
 async function updateCardAndReviewRouteHandler(req: UpdateCardAndReviewRouteHandler)

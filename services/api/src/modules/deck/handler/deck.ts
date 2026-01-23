@@ -1,7 +1,8 @@
 import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
-import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, CreateDeckRouteHandler,
+import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
+import { BadRequestError } from "src/core/errors/httpError.js";
 import * as util from "../util.js";
 
 async function getDecksRouteHandler(req: GetDecksRouteHandler)
@@ -27,6 +28,20 @@ async function getDeckByIdRouteHandler(req: GetDeckByIdRouteHandler)
 {
     const deck = await service.getDeckById(req.userId, req.deckId);
     if (!deck) return null;
+    return deck;
+}
+
+
+async function getDeckStatusByIdRouteHandler(req: GetDeckStatusByIdRouteHandler)
+: Promise<GetDeckStatusByIdRouteResponse> 
+{
+    const timezoneStr = req.timezone;
+
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
+    const deck = await service.getDeckStatusById(req.userId, req.deckId, timezoneStr);
     return deck;
 }
 
@@ -61,6 +76,7 @@ async function deleteDeckRouteHandler(req: DeleteDeckRouteHandler)
 export {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
+    getDeckStatusByIdRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler

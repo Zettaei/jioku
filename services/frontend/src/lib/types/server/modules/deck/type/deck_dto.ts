@@ -1,4 +1,4 @@
-import type { DeckInsert, DeckRow, DeckUpdate } from "$lib/types/server/core/supabase/type.js";
+import type { DeckRow, DeckInsert, DeckUpdate } from "../../../core/supabase/type.js" 
 import type { PaginatedResponse } from "./dto.js";
 
 export const DeckResponseHiddenColumn = { "users_id": "users_id" } as const;
@@ -49,3 +49,38 @@ export interface DeleteDeckRouteHandler {
 }
 
 export type DeleteDeckRouteResponse = {};
+
+
+////////////////////////////////////////////// GET DECK STATUS BY ID
+export interface GetDeckStatusByIdRouteHandler {
+    userId: string;
+    deckId: string;
+    timezone: string | undefined;
+}
+
+export interface DeckStatus {
+    cards_status_distribution: {
+        due: number;
+        new: number;
+        retry: number;
+    };
+    cards_maturity_distribution: {
+        young: number;
+        master: number;
+        mature: number;
+        unseen: number;
+        learning: number;
+    };
+    cards_due_distribution: Array<{
+        due: string;
+        count: number;
+    }>;
+    cards_overdue_total: number;
+    review_retention_rate: {
+        failed: number;
+        passed: number;
+    };
+    cards_total: number;
+}
+
+export type GetDeckStatusByIdRouteResponse = DeckStatus | null;

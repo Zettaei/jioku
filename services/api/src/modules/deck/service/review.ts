@@ -1,7 +1,6 @@
 import type { ReviewInsert, ReviewRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/index.js";
 import type { PaginatedResponse } from "../type/dto.js";
-import { calculateSuperMemo2 } from "./algorithm.js";
 
 
 async function getReviewsByCardId(userId: string, deckId: string, cardId: string, page: number | undefined, limit: number | undefined)
