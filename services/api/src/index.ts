@@ -34,12 +34,12 @@ app.route("/deck", deck.routes);
 app.onError((err, c) => {
     try {
         if (err instanceof HttpError) {
-            console.error(err);
+            console.error(err.status, err.message);
             return c.text(err.message, err.status);
         }
 
         if (err instanceof InternalError) {
-            console.error(err);
+            console.error(err.status, err.message);
             return c.text("Internal Server Error", err.status);
         }
 

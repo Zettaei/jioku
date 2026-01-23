@@ -28,7 +28,7 @@ function escapeRedisSearch(query: string)
 async function getWord(word: string, wordType: WordType, from: number = 0, size: number = DICT_OPTIONS.RESULT_LIMIT)
 : Promise<FtSearchResult<Entry>> 
 {
-    const redis = await getRedisClient()!;
+    const redis = await getRedisClient();
 
     let searchKey = escapeRedisSearch(word);
     if(wordType !== WordType.meaning) {
@@ -55,6 +55,31 @@ async function getWord(word: string, wordType: WordType, from: number = 0, size:
     return result;
 }
 
+async function getAzureTTSAccessToken()
+: Promise<string | null>
+{
+    const redis = await getRedisClient();
+    const result = await redis.get(DICT_OPTIONS.AZURE_ACCESSTOKEN_KEY);
+    
+    return result?.trim() ?? null;
+}
+
+async function setAzureTTSAccessToken(token: string)
+: Promise<void>
+{
+    const redis = await getRedisClient();
+    await redis.set(DICT_OPTIONS.AZURE_ACCESSTOKEN_KEY, token, {
+        expiration: {
+            type: "EX", // seconds
+            value: DICT_OPTIONS.AZURE_ACCESSTOKEN_EXPIREIN_SECONDS
+        }
+    });
+    
+    return;
+}
+
 export {
-    getWord
+    getWord,
+    getAzureTTSAccessToken,
+    setAzureTTSAccessToken
 }

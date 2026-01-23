@@ -35,6 +35,5 @@ export type TokenFeatures = IpadicFeatures & { isUseful: boolean };
 export const TranslationLanguage = { English: "en", Thai: "th" } as const;
 export type TranslationLanguage = typeof TranslationLanguage[keyof typeof TranslationLanguage];
 
-// avoid enums in typescript
 export const WordType = { kanji: 0, kana: 1, meaning: 2 } as const;
 export type WordType = typeof WordType[keyof typeof WordType];

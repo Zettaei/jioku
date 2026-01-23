@@ -3,27 +3,30 @@
     import { cardPos } from "$lib/constant/cardPos";
   import type { EntriesRouteResponse } from "$lib/types/server/modules/dict/type/dto";
   import type { Entry } from "$lib/types/server/modules/dict/type/model";
+    import { fetchVoice } from "../services";
     import EllipsisButton from "./EllipsisButton.svelte";
     import HighlightBox from "./HighlightBox.svelte";
   import { getEntryMetadata } from "./LowerCard";
-  import { DotIcon, Ellipsis } from "@lucide/svelte";
+  import { Volume2Icon } from "@lucide/svelte";
 
   interface Props {
     entries: EntriesRouteResponse | null;
+    handleVoiceClick: (text: string, reading: string | undefined) => void;
   }
 
   // @ts-expect-error
-  let { entries }: Props = $props<Props>();
+  let { entries, handleVoiceClick }: Props = $props<Props>();
 
   $inspect(entries);
 
   let allItemIds = $derived(
     entries?.result.map((entry) => `item-${entry.ent_seq}`) ?? [],
   );
+
+
 </script>
 
 <!-- OPTIMIZE: Add close all, open all button/option -->
-<!-- TODO: I FORGOR THE PAGINATION OR INFINTIE SCROLL OR WHATEVER -->
 
 <div>
   <div class="text-lg mb-4 border-x-8 border-zinc-500 px-4">
@@ -44,9 +47,10 @@
               <!-- <div class="text-md">{metadata.meaning}</div> -->
 
             </div>
-            <div class="flex items-center rounded-md gap-4">
-              <EllipsisButton entryText={metadata.kanji ?? metadata.reading}/>
-              <Accordion.Trigger class="pe-4 cursor-pointer" />
+            <div class="flex items-center rounded-md gap-4 pe-4">
+              <Volume2Icon class="cursor-pointer h-full" onclick={() => handleVoiceClick(metadata.kanji, metadata.reading)}/>
+              <EllipsisButton class="cursor-pointer h-full" entryText={metadata.kanji ?? metadata.reading}/>
+              <Accordion.Trigger class="cursor-pointer" />
             </div>
           </div>
           <Accordion.Content class="text-lg flex flex-col ps-2 gap-3 bg-background">
@@ -64,9 +68,31 @@
   {@const reading = entry.r_ele.map((r_ele) => r_ele.reb)}
   <!-- {@const meaning = entry.sense.map((sense) => sense.gloss.map((gloss) => gloss.text[0]))} -->
 
-  
-  {@render section("Alternatives:", kanji)}
-  {@render section("Reading:", reading)}
+  <!-- ALTERNATIVES -->
+  <div>
+    <span class="font-bold">{"Alternatives:"}</span> 
+    <div class="ms-3 mt-1">
+      {#each kanji as text}
+        <span class="flex me-3 gap-2 items-center">
+          {text}
+        </span>
+      {/each}
+    </div>
+  </div>
+
+  <!-- READING -->
+  <div>
+    <span class="font-bold">{"Reading:"}</span> 
+    <div class="ms-3 mt-1">
+      {#each reading as text}
+        <span class="flex me-3">
+          {text}
+        </span>
+      {/each}
+    </div>
+  </div>
+
+  <!-- MEANING -->
   <div>
     <div class="font-bold">Meaning:</div>
     <div class="ms-3">
@@ -89,16 +115,4 @@
     </div>
   </div>
 
-  
-  
-  {#snippet section(title: string, content: Array<string>)}
-  <div>
-    <span class="font-bold">{title}</span> 
-    <div class="ms-3 mt-1">
-      {#each content as text}
-        <span class="me-3">{text}</span>
-      {/each}
-    </div>
-  </div>
-  {/snippet}
 {/snippet}

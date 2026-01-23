@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { EntriesRouteResponse, TokensRouteResponse } from "$lib/types/server/modules/dict/type/dto";
-    import { fetchSearchWords, fetchTokens, fetchTokensOCR, getDefaultSelectedWord } from "../services";
+    import { fetchSearchWords, fetchTokens, fetchTokensOCR, fetchVoice, getDefaultSelectedWord, playVoice } from "../services";
     import { page } from "$app/state";
     import { TranslationLanguage } from "$lib/types/server/modules/dict/type/model";
     import { LocalStorageKey } from "$lib/localStorage";
@@ -21,6 +21,10 @@
     // BUG: after changing language, user can't enter the same sentence again for some reason
 
   const SearchToolbarContext = getContext<SearchToolbarContextInterface>(SEARCH_TOOLBAR_CONTEXT);
+  const MAX_VOICE_CACHES_LENGTH = 20;
+  let AudioContext: AudioContext;
+  const voiceCache = new Map<string, AudioBuffer>();
+  
   
   let uppercardIsLoading = $state<boolean>(false);
   let lowercardIsLoading = $state<boolean>(false);
@@ -49,11 +53,20 @@
 
 
   onMount(() => {
+    AudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
     localStorage.getItem(LocalStorageKey.SearchTranslationLang) as TranslationLanguage 
     ?? 
     TranslationLanguage.English
 
     selectedWord = getDefaultSelectedWord(tokens!);
+
+    return (() => {
+      if(AudioContext) {
+        AudioContext.close();
+        voiceCache.clear();
+      }
+    })
   });
 
   // OCR listening
@@ -141,6 +154,30 @@
     }
   }
 
+  // SEND THIS FUNC TO UPPER CARD AND LOWER CARD AND ADD THE SPEAKER BUTTON ON THERE
+  function handleVoiceClick(text: string, reading: string | undefined)
+  : void 
+  {
+    if(!AudioContext) {
+      throw new Error("Speech unavailable")
+    }
+
+    // check the page cache
+    let decodedVoiceBuffer = voiceCache.get(text);
+    if(decodedVoiceBuffer) {
+      playVoice(AudioContext, decodedVoiceBuffer);
+
+    }
+    else {
+      fetchVoice(text, reading)
+      .then(async (voiceArrayBuffer) => {
+        decodedVoiceBuffer = await AudioContext.decodeAudioData(voiceArrayBuffer);
+        playVoice(AudioContext, decodedVoiceBuffer);
+        voiceCache.set(text, decodedVoiceBuffer)
+      })
+    }
+  }
+
 </script>
 
 <div class="w-full max-w-4xl flex flex-col space-y-5">
@@ -161,13 +198,14 @@
             tokens={tokens}
             bind:selectedWord
             bind:selectedIndex
+            handleVoiceClick={handleVoiceClick}
         />
     {/if}
 
     {#if lowercardIsLoading}
         <Loading />
     {:else if entries}
-        <LowerCard entries={entries} />
+        <LowerCard entries={entries} handleVoiceClick={handleVoiceClick} />
         
         {#if entries.result.length > 0}
             <Pagination.Root count={entries.total} perPage={pageLimit} bind:page={currentPage}>

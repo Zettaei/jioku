@@ -2,6 +2,8 @@
     import { Ellipsis, EllipsisIcon } from "@lucide/svelte";
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import { goto } from "$app/navigation";
+    let className = "";
+    export { className as class }
 
     let { entryText } = $props<string>();
 
@@ -19,10 +21,10 @@
 </script>
 
 
-<div class="ps-4 mt-2">
+<div class="{className}">
     <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-            <EllipsisIcon class="cursor-pointer"/>
+            <EllipsisIcon/>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
          <DropdownMenu.Group>

@@ -1,16 +1,21 @@
 <script lang="ts">
+    import Button from "$lib/components/ui/button/button.svelte";
 import * as Card from "$lib/components/ui/card/index.js";
     import type { TokensRouteResponse } from "$lib/types/server/modules/dict/type/dto";
+    import { Volume2Icon } from "@lucide/svelte";
 
     interface Props {
         tokens: TokensRouteResponse | null;
         selectedWord: string | null;
         selectedIndex: string;
+        handleVoiceClick: (text: string, reading?: string) => void;
     };
 
     // @ts-expect-error
-    let { tokens, selectedWord = $bindable(), selectedIndex = $bindable() }: Props = $props<Props>();
-    
+    let { tokens, selectedWord = $bindable(), selectedIndex = $bindable(), handleVoiceClick }: Props = $props<Props>();
+    let searchFullWord = $derived<string>(tokens?.tokens.map((token) => token.surface_form).join('') ?? '');
+
+
     function handleWordClick(e: MouseEvent) {
       const target = e.target as HTMLSpanElement;
       selectedWord = target.innerText;
@@ -19,16 +24,23 @@ import * as Card from "$lib/components/ui/card/index.js";
 
 </script>
 
-<Card.Root>
+<Card.Root class="text-lg">
     <Card.Header>
-      <Card.Title class="font-bold">Quick Translation:</Card.Title>
+      <Card.Title class="font-bold">
+        Quick Translation:
+      </Card.Title>
     </Card.Header>
     <Card.Content>
-      <p class="text-center text-lg">{tokens?.quickTranslation.text}</p>
+      <p class="text-center">{tokens?.quickTranslation.text}</p>
     </Card.Content>
 
-    <Card.Header>
-      <Card.Title class="font-bold">Search:</Card.Title>
+    <Card.Header class="py-0 my-0">
+      <Card.Title class="font-bold flex">
+        Search:
+        <span class="px-2 cursor-pointer" onclick={() => handleVoiceClick(searchFullWord)}>
+          <Volume2Icon/>
+      </span>
+      </Card.Title>
     </Card.Header>
     <Card.Content class="text-xl">
       {#each tokens?.tokens as token, index}

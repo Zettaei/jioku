@@ -2,10 +2,11 @@ import kuromoji, { type IpadicFeatures, type Tokenizer } from "kuromoji"
 import path from "path";
 import { TranslationLanguage, WordType } from "./type/model.js";
 import { isJapanese, isKana } from "wanakana";
-import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest } from "./type/dto.js";
+import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSAccessTokenErrorRespone, AzureTTSRequestOKResponse } from "./type/dto.js";
 import { InternalError } from "src/core/errors/internalError.js";
-import { ENV_VARS } from "src/config.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { DICT_OPTIONS, ENV_VARS } from "src/config.js";
+import { BadRequestError, UnauthorizedError } from "src/core/errors/httpError.js";
+import { AzureTTSVoiceName } from "./type/azureTTS.js";
 
 const DICT_PATH = path.join("node_modules", "kuromoji", "dict");
 
@@ -97,6 +98,82 @@ async function sendToAzureTranslator(toLang: TranslationLanguage, payload: Array
     return data;
 }
 
+
+async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, reading: string, voicename: AzureTTSVoiceName) 
+: Promise<ArrayBuffer>
+{
+    // !!! vvv if this get updated be sure to update Content-Type in response of route.ts as well
+    const AZURE_VOICE_OUTPUT_FORMAT = "ogg-24khz-16bit-mono-opus"
+
+    const item = reading !== '' ?
+        `<phoneme alphabet="sapi" ph="${reading}">${sentence}</phoneme>`
+        :
+        sentence
+
+    const body = 
+    `<speak version='1.0' xml:lang='ja-JP'>
+        <voice xml:lang='ja-JP' name='${voicename}'>
+            ${item}
+        </voice>
+    </speak>`;
+
+    const response = await fetch(`${ENV_VARS.AZURE_TTS_URL.value}`,{
+        method: "POST",
+        headers: {
+            "X-Microsoft-OutputFormat": AZURE_VOICE_OUTPUT_FORMAT,
+            "Content-Type": "application/ssml+xml; charset=utf-8",
+            "Authorization": `Bearer ${accesstoken}`
+        },
+        body: body
+    });
+
+
+    if(!response.ok) {
+        if(response.status === 401) {
+            throw new UnauthorizedError("Invalid or Missing Access Token");
+        }
+
+        throw new InternalError(
+            "Failed request from Azure Speech Services code: " + response.status, 
+            response.statusText, 
+            {
+                status: response.status,
+                headers: response.headers
+            }
+        );
+    }
+
+    const data = await response.arrayBuffer();
+    return data;
+}
+
+
+async function fetchNewAzureTTSAccessToken()
+: Promise<string> {
+
+    const response = await fetch(`${ENV_VARS.AZURE_TTS_TOKEN_URL.value}`, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Ocp-Apim-Subscription-Key": ENV_VARS.AZURE_TTS_KEY.value,
+        }
+    });
+
+    if(!response.ok) {
+        throw new InternalError(
+            "Failed request from Azure Speech Services code: " + response.status, 
+            response.statusText, 
+            {
+                status: response.status,
+                headers: response.headers
+            }
+        );
+    }
+
+    const data = (await response.text()).trim();
+    return data;
+}
+
 function validateTranslationLanguage(translationLang: string | undefined)
 : asserts translationLang is TranslationLanguage 
 {
@@ -114,12 +191,48 @@ function validateQuery(paramQuery: string | undefined)
     }
 }
 
+function validateVoicename(voicename: string | undefined)
+: asserts voicename is AzureTTSVoiceName 
+{
+    if(!voicename || !Object.values<string>(AzureTTSVoiceName).includes(voicename)) {
+        throw new BadRequestError("Incorrect voice name");
+    }  
+}
+
+/**
+ * convert to katakana arithmetically
+ * @note supposed to be use for sending reading to Azure Speech, but may as well use for other things.
+ */
+function convertToKatakana(text: string)
+: string
+{
+    let result = "";
+
+    for(let i = 0; i < text.length; ++i) {
+        const code = text.charCodeAt(i);
+        // 0x3041 = 'ぁ' (small あ) / 0x3096 = 'ゖ' (small け)　- ?????????
+        if(code >= 0x3041 && code <= 0x3096) {
+            // +96 (0x60) to make it katakana
+            result += String.fromCharCode(code + 96);
+        }
+        else {
+            result += text[i]
+        }
+    }
+
+    return result;
+}
+
 
 export {
     initializeTokenizer,
     isUsefulToken,
     getWordType,
     sendToAzureTranslator,
+    fetchNewAzureTTSAccessToken,
+    sendToAzureTextToSpeech,
     validateTranslationLanguage,
-    validateQuery
+    validateQuery,
+    validateVoicename,
+    convertToKatakana
 }
