@@ -13,6 +13,7 @@ import type {
     DeleteCardsRouteResponse
 } from "../type/card_dto.js";
 import { BadRequestError } from "src/core/errors/httpError.js";
+import type { DeckRow } from "src/core/supabase/type.js";
 
 
 async function getCardsByDeckIdRouteHandler(req: GetCardsByDeckIdRouteHandler)
@@ -21,15 +22,20 @@ async function getCardsByDeckIdRouteHandler(req: GetCardsByDeckIdRouteHandler)
     const pageNum = Number(req.page);
     const limitNum = Number(req.limit);
 
+    const search = req.search ?? "";
+    // (string & {}) don't interfere with intellisense somehow???
+    const sortby: keyof DeckRow | (string & {}) = req.sortby ?? "updatedat";
+    const sortasc: boolean = req.sortasc;
+
     const safePage =
         (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
-        ? pageNum : undefined;
+        ? pageNum : 1;
 
     const safeLimit =
         (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT)
-        ? limitNum : undefined;
+        ? limitNum : DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT;
     
-    return await service.getCardsByDeckId(req.userId, req.deckId, safePage, safeLimit);
+    return await service.getCardsByDeckId(req.userId, req.deckId, safePage, safeLimit, search, sortby, sortasc);
 }
 
 

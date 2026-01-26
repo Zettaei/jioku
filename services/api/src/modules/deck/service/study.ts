@@ -1,6 +1,5 @@
 import * as repository from "../repository/study.js";
 import * as cardRepository from "../repository/card.js";
-import { calculateSuperMemo2 } from "./algorithm.js";
 import type { GetDecksStudyRouteResponse, GetStudyCardsByDeckIdRouteResponse, GetStudyCardsByStatusAndDeckIdRouteResponse, UpdateCardAndReviewRouteResponse } from "../type/study_dto.js";
 
 

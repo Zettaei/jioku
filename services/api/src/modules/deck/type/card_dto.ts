@@ -7,6 +7,9 @@ export interface GetCardsByDeckIdRouteHandler {
     deckId: string;
     page: string | undefined;
     limit: string | undefined;
+    search: string | undefined;
+    sortby: string | undefined;
+    sortasc: boolean;
 }
 
 export type GetCardsByDeckIdRouteResponse = PaginatedResponseWithTotalCount<CardRow>;

@@ -1,21 +1,24 @@
 import { getSupabaseAdminClient } from "core/supabase/supabase.js";
-import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
+import type { CardRow, CardInsert, CardUpdate, DeckRow } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
 import type { PaginatedResponseWithTotalCount } from "../type/dto.js";
 
 //
-// OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
+// OPTIMIZE: deal with this ugly double db calls, maybe using SQL RPC
 //
 
-async function getCardsByDeckId(userId: string, deckId: string, page: number = 1, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT)
+async function getCardsByDeckId(userId: string, deckId: string, 
+    page: number = 1, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT,
+    search: string, sortby: keyof CardRow | (string & {}), sortasc: boolean
+)
 : Promise<PaginatedResponseWithTotalCount<CardRow>>
 {
     const supabase = getSupabaseAdminClient();
 
     const offset = (page - 1) * limit;
 
-    const { data, error, count } = await supabase
+    let query = supabase
         .from("cards")
         .select(`
             *,
@@ -24,9 +27,18 @@ async function getCardsByDeckId(userId: string, deckId: string, page: number = 1
             { count: "exact" }
         )
         .eq("decks_id", deckId)
-        .eq("decks.users_id", userId)
-        .order("createdat", { ascending: false })
+        .eq("decks.users_id", userId);
+
+        // use rpc might be better
+    if(search && search !== "") {
+        query = query.filter("data::text", "ilike", `%${search}%`);
+    }
+
+    const { data, error, count } = await query
+        .order(sortby, { ascending: sortasc })
         .range(offset, offset + (limit-1));
+
+        console.error(error);
 
     util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
 

@@ -27,9 +27,16 @@ routes.get("/decks/:deckId/cards", async (c) => {
     const pageQuery = c.req.query("page");
     const limitQuery = c.req.query("limit");
 
+    const searchQuery = c.req.query("search");
+    const sortbyQuery = c.req.query("sortby");
+    const sortascQuery = c.req.query("sortasc") === "true";
+
     const result = await getCardsByDeckIdRouteHandler({ userId, deckId,
         page: pageQuery,
-        limit: limitQuery
+        limit: limitQuery,
+        search: searchQuery,
+        sortby: sortbyQuery,
+        sortasc: sortascQuery
     });
 
     return c.json<GetCardsByDeckIdRouteResponse>(result);
