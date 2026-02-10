@@ -19,7 +19,9 @@ async function shutdown(signal?: string) {
 }
 
 function setupShutdown() {
+    // Signal Interrupt, Manual Terminate (like Ctrl + C)
     process.on("SIGINT", shutdown);
+    // Signal Terminate (like Docker stop???)
     process.on("SIGTERM", shutdown);
 }
 

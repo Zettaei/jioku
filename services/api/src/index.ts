@@ -52,7 +52,7 @@ app.onError((err, c) => {
     }
 });
 
-setupShutdown();
+// setupShutdown();
 
 const HOST = "localhost";
 const PORT = 8787;
