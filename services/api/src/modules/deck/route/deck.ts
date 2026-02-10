@@ -4,6 +4,7 @@ import {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
     getDeckStatusByIdRouteHandler,
+    getRetentionRateByDateRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler
@@ -12,6 +13,7 @@ import type {
     GetDecksRouteResponse,
     GetDeckByIdRouteResponse,
     GetDeckStatusByIdRouteResponse,
+    GetRetentionRateByDateRouteResponse,
     CreateDeckRouteResponse,
     UpdateDeckRouteResponse,
     DeleteDeckRouteResponse
@@ -55,6 +57,17 @@ routes.get("/decks/:deckId/status", async (c) => {
     
     
     return c.json<GetDeckStatusByIdRouteResponse>(result);
+});
+
+routes.get("/decks/:deckId/status/retentionrate/:date", async (c) => {
+    const userId = c.get("userId");
+    const deckId = c.req.param("deckId");
+    const timezoneQuery = c.req.query("timezone");
+    const date = c.req.param("date");
+
+    const result = await getRetentionRateByDateRouteHandler({ userId, deckId, timezone: timezoneQuery, date });
+    
+    return c.json<GetRetentionRateByDateRouteResponse>(result);
 });
 
 routes.post("/decks", async (c) => {

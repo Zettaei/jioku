@@ -84,3 +84,17 @@ export interface DeckStatus {
 }
 
 export type GetDeckStatusByIdRouteResponse = DeckStatus | null;
+
+
+////////////////////////////////////////////// GET RETENTION RATE BY DATE
+export interface GetRetentionRateByDateRouteHandler {
+    userId: string;
+    deckId: string;
+    timezone: string | undefined;
+    date: string | undefined;
+}
+
+export type GetRetentionRateByDateRouteResponse = {
+    failed: number;
+    passed: number;
+} | null;

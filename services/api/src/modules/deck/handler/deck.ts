@@ -1,6 +1,6 @@
 import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
-import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, CreateDeckRouteHandler,
+import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteHandler, GetRetentionRateByDateRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
 import { BadRequestError } from "src/core/errors/httpError.js";
 import * as util from "../util.js";
@@ -46,6 +46,25 @@ async function getDeckStatusByIdRouteHandler(req: GetDeckStatusByIdRouteHandler)
 }
 
 
+async function getRetentionRateByDateRouteHandler(req: GetRetentionRateByDateRouteHandler)
+: Promise<GetRetentionRateByDateRouteResponse> 
+{
+    const timezoneStr = req.timezone;
+    const dateStr = req.date;
+
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
+    if (!dateStr || typeof dateStr !== "string" || dateStr.length !== 10) {
+        throw new BadRequestError("Missing dateoffset parameter");
+    }
+
+    const result = await service.getRetentionRateByDate(req.userId, req.deckId, timezoneStr, dateStr);
+    return result;
+}
+
+
 async function createDeckRouteHandler(req: CreateDeckRouteHandler)
 : Promise<CreateDeckRouteResponse> 
 {
@@ -77,6 +96,7 @@ export {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
     getDeckStatusByIdRouteHandler,
+    getRetentionRateByDateRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler
