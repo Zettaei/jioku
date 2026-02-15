@@ -18,28 +18,18 @@ async function getCardsByDeckId(userId: string, deckId: string,
 
     const offset = (page - 1) * limit;
 
-    //////////// use Supabase RPC instead
-    // let query = supabase
-    //     .from("cards")
-    //     .select(`
-    //         *,
-    //         decks!cards_decks_id_fkey!inner()
-    //         `, 
-    //         { count: "exact" }
-    //     )
-    //     .eq("decks_id", deckId)
-    //     .eq("decks.users_id", userId);
-
-    //     // use rpc might be better
-    // if(search && search !== "") {
-    //     query = query.filter("data::text", "ilike", `%${search}%`);
-    // }
-
-    // const { data, error, count } = await query
-    //     .order(sortby, { ascending: sortasc })
-    //     .range(offset, offset + (limit-1));
-
-    //     console.error(error);
+    // FIXME: search text is searching the entire json which include the key, "d" catches "rea'd'ing"
+    const { data, error, count } = await supabase.rpc("get_cards", {
+        param_decks_id: deckId,
+        param_users_id: userId,
+        param_searchtext: search,
+        param_sortby: sortby,
+        param_sortby_direction: sortasc ? "ASC" : "DESC",
+        param_offset: offset,
+        param_limit: limit
+    }, {   
+        count: 'exact'  
+    });
 
     util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
 

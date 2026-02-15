@@ -18,6 +18,9 @@ async function getStudyDecks(userId: string, page: number | undefined = 1, limit
     const { data, error } = await supabase.rpc("get_decks_with_card_counts", {
         param_users_id: userId,
         param_timezone: timezone,
+        param_searchtext: '',
+        param_sortby: 'createdat',
+        param_sortby_direction: 'ASC',
         param_offset: offset,
         param_limit: limit
     });
