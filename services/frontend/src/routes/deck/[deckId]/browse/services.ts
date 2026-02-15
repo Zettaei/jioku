@@ -4,14 +4,19 @@ import type { CardInsert, CardRow, CardUpdate, DeckRow } from "$lib/types/server
 import type { GetCardsByDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/card_dto";
 import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 
-export async function fetchCardsByDeckId(deckId: string, page: number = 0, limit: number | undefined)
+export async function fetchCardsByDeckId(deckId: string, page: number = 0, limit: number | undefined, search: string, sortBy: string | undefined, sortAsc: boolean | undefined)
 : Promise< GetCardsByDeckIdRouteResponse >
 {
     if(!deckId) throw new BadRequestError("Missing deck id to fetching cards data");
 
+    const optionalParams = (limit ? `&limit=${limit}` : '') + 
+                        (search ? `&search=${search}` : '') +
+                        (sortBy ? `&sortby=${sortBy}` : '') +
+                        (sortAsc !== undefined ? `&sortasc=${sortAsc}` : '');
+
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + (limit ? `&limit=${limit}` : ''),
+                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + optionalParams,
                 // {
                 //     credentials: "include",
                 // }

@@ -5,14 +5,16 @@ export const DECK_OPTIONS = {
     DECK_RESULT_FETCH_LIMIT: 5,
     CARD_RESULT_FETCH_LIMIT: 15,
     REVIEW_RESULT_FETCH_LIMIT: 15,
-}
+    CARD_DEFAULT_SORTBY: "createdat",
+    CARD_DEFAULT_SORTASC: false
+} as const;
 
 export const DICT_OPTIONS = {
     MAX_QUERY_LENGTH: 300,
     MAX_RESULTS_PER_PAGE: 20,
-}
+} as const;
 
 export const STUDY_OPTIONS = {
     FETCH_NEW_CARD_WHEN_LENGTH: 10,
     CARD_FETCH_LIMIT: 40
-}
+} as const;
