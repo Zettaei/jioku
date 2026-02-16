@@ -1,8 +1,8 @@
-import { SupabaseError } from "src/core/errors/internalError.js";
+import { SupabaseError } from "src/errors/internalError.js";
 import { DeckResponseHiddenColumn } from "./type/deck_dto.js";
 import type { DeckRow } from "src/core/supabase/type.js";
 import { PostgrestError } from "@supabase/supabase-js";
-import { BadRequestError, ConflictError, UnauthorizedError } from "src/core/errors/index.js";
+import { BadRequestError, ConflictError, UnauthorizedError } from "src/errors/index.js";
 
 /**
  * Removes hidden columns (like users_id) from a deck object.

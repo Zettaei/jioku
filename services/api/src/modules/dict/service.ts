@@ -5,7 +5,7 @@ import type { FtSearchResult } from "src/core/redisstack/type.js";
 import type { AzureTranslationRequest, VoiceRouteResponse } from "./type/dto.js";
 import * as repository from "./repository.js";
 import type { AzureTTSVoiceName } from "./type/azureTTS.js";
-import type { InternalError } from "src/core/errors/internalError.js";
+import type { InternalError } from "src/errors/internalError.js";
 
 const tokenizer = await utils.initializeTokenizer();
 let reservedAccessToken: string = '';

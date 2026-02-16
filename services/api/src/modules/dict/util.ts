@@ -3,9 +3,9 @@ import path from "path";
 import { TranslationLanguage, WordType } from "./type/model.js";
 import { isJapanese, isKana } from "wanakana";
 import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSAccessTokenErrorRespone, AzureTTSRequestOKResponse } from "./type/dto.js";
-import { InternalError } from "src/core/errors/internalError.js";
+import { InternalError } from "src/errors/internalError.js";
 import { DICT_OPTIONS, ENV_VARS } from "src/config.js";
-import { BadRequestError, UnauthorizedError } from "src/core/errors/httpError.js";
+import { BadRequestError, UnauthorizedError } from "src/errors/httpError.js";
 import { AzureTTSVoiceName } from "./type/azureTTS.js";
 
 const DICT_PATH = path.join("node_modules", "kuromoji", "dict");

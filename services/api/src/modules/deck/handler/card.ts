@@ -12,8 +12,8 @@ import type {
     DeleteCardsRouteHandler,
     DeleteCardsRouteResponse
 } from "../type/card_dto.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
-import type { DeckRow } from "src/core/supabase/type.js";
+import { BadRequestError } from "src/errors/httpError.js";
+import type { CardRow } from "src/core/supabase/type.js";
 
 
 async function getCardsByDeckIdRouteHandler(req: GetCardsByDeckIdRouteHandler)
@@ -22,9 +22,10 @@ async function getCardsByDeckIdRouteHandler(req: GetCardsByDeckIdRouteHandler)
     const pageNum = Number(req.page);
     const limitNum = Number(req.limit);
 
+    // NOTE: better to validate the sortby somehow
     const search = req.search ?? "";
     // (string & {}) don't interfere with intellisense somehow???
-    const sortby: keyof DeckRow | (string & {}) = req.sortby ?? "updatedat";
+    const sortby: keyof CardRow | (string & {}) = req.sortby ?? "updatedat";
     const sortasc: boolean = req.sortasc;
 
     const safePage =

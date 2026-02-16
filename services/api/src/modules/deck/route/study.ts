@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { userIdMiddleware } from "core/middleware/index.js";
+import { userIdMiddleware } from "src/middleware/index.js";
 import {
     getDecksStudyRouteHandler,
     getStudyCardsByDeckIdRouteHandler,
@@ -25,11 +25,17 @@ routes.get("/study/decks", async (c) => {
     const pageQuery = c.req.query("page");
     const limitQuery = c.req.query("limit");
     const timezoneQuery = c.req.query("timezone");
+    const searchQuery = c.req.query("search");
+    const sortbyQuery = c.req.query("sortby");
+    const sortascQuery = (c.req.query("sortasc") === "true");
 
     const result = await getDecksStudyRouteHandler({ userId, 
         page: pageQuery, 
         limit: limitQuery,
-        timezone: timezoneQuery
+        timezone: timezoneQuery,
+        search: searchQuery,
+        sortby: sortbyQuery,
+        sortasc: sortascQuery
     });
 
     return c.json<GetDecksStudyRouteResponse>(result);

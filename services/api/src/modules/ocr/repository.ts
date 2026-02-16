@@ -2,6 +2,7 @@ import { getRedisClient } from "src/core/redisstack/redisstack.js";
 import type { OcrResult } from "./type/model.js";
 import { OCR_OPTIONS } from "src/config.js";
 
+// NOTE: better to take this vvv to a yaml file or something
 const REDIS_CACHE_KEY = "ocr:result:" as const;
 
 async function getCacheOcrResult(imgHash: string)

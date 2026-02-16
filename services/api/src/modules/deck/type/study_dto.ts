@@ -16,6 +16,9 @@ export interface GetDecksStudyRouteHandler {
     page: string | undefined;
     limit: string | undefined;
     timezone: string | undefined;
+    search: string | undefined;
+    sortby: string | undefined;
+    sortasc: boolean;
 }
 
 export type GetDecksStudyRouteResponse = PaginatedResponseWithTotalCount<DeckRow & {

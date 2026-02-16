@@ -4,12 +4,11 @@ import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js"
 import type { GetDecksStudyRouteResponse, GetStudyCardsByDeckIdRouteResponse, GetStudyCardsByStatusAndDeckIdRouteResponse } from "../type/study_dto.js";
 
-//
-// NOTE: parameters "timezone" and "status" type is maybe too flexible, MIGHT do something with it later
-// TODO: pagination for deck
-//
-async function getStudyDecks(userId: string, page: number | undefined = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT, timezone: string | undefined = undefined)
-: Promise<GetDecksStudyRouteResponse>
+
+async function getStudyDecks(userId: string, 
+    page: number | undefined = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT, timezone: string | undefined = undefined, 
+    search: string = "", sortby: string = "createdat", sortasc: boolean
+): Promise<GetDecksStudyRouteResponse>
 {
     const supabase = getSupabaseAdminClient();
 
@@ -18,9 +17,9 @@ async function getStudyDecks(userId: string, page: number | undefined = 1, limit
     const { data, error } = await supabase.rpc("get_decks_with_card_counts", {
         param_users_id: userId,
         param_timezone: timezone,
-        param_searchtext: '',
-        param_sortby: 'createdat',
-        param_sortby_direction: 'ASC',
+        param_searchtext: search,
+        param_sortby: sortby,
+        param_sortby_direction: sortasc ? "ASC" : "DESC",
         param_offset: offset,
         param_limit: limit
     });

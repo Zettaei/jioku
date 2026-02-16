@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { userIdMiddleware } from "core/middleware/index.js";
+import { userIdMiddleware } from "src/middleware/index.js";
 import {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
@@ -14,7 +14,7 @@ import type {
     UpdateDeckRouteResponse,
     DeleteDeckRouteResponse
 } from "../type/deck_dto.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError } from "src/errors/httpError.js";
 
 
 const routes = new Hono();
