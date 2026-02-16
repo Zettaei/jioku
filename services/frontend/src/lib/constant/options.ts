@@ -5,8 +5,10 @@ export const DECK_OPTIONS = {
     DECK_RESULT_FETCH_LIMIT: 5,
     CARD_RESULT_FETCH_LIMIT: 15,
     REVIEW_RESULT_FETCH_LIMIT: 15,
-    CARD_DEFAULT_SORTBY: "createdat",
-    CARD_DEFAULT_SORTASC: false
+    DECK_DEFAULT_SORTBY: "name",
+    DECK_DEFAULT_SORTASC: false,
+    CARD_DEFAULT_SORTBY: "status",
+    CARD_DEFAULT_SORTASC: true
 } as const;
 
 export const DICT_OPTIONS = {

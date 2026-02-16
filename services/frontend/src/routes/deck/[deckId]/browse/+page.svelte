@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { GetCardsByDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/card_dto";
-    import { getContext, untrack } from "svelte";
+    import { getContext, onMount, untrack } from "svelte";
     import { addCardToDeckId, deleteCard, fetchCardsByDeckId, updateCard } from "./services";
     import { page } from "$app/state";
     import { BROWSE_DECK_TOOLBAR_CONTEXT, BROWSE_DECK_TOOLBAR_DELETE_HANDLER, BROWSE_DECK_TOOLBAR_CANCEL_HANDLER, BROWSE_DECK_TOOLBAR_ADD_HANDLER, type BrowseDeckToolbarContextInterface, BROWSE_DECK_TOOLBAR_SEARCH_HANDLER } from "$lib/context/deckToolbar.svelte";
@@ -17,9 +17,13 @@
     import Confirmation from "$lib/components/Confirmation.svelte";
     import { DECK_OPTIONS } from "$lib/constant/options";
     import { fetchDeckByDeckId } from "../../services";
-    import SortDropdown from "./SortDropdown.svelte";
+    import SortDropdown from "./CardSortDropdown.svelte";
     import { goto } from "$app/navigation";
     import BackButton from "$lib/components/BackButton.svelte";
+    import CardSortDropdown from "./CardSortDropdown.svelte";
+    import Button from "$lib/components/ui/button/button.svelte";
+    import { XIcon } from "@lucide/svelte";
+    import { SESSIONSTORAGE_PREV_DECK_LIST } from "$lib/constant/sessionStorageKey";
 
     let BrowseToolbarContext = getContext<BrowseDeckToolbarContextInterface>(BROWSE_DECK_TOOLBAR_CONTEXT);
     let setOnDelete: (handler: (() => void) | null) => void = getContext(BROWSE_DECK_TOOLBAR_DELETE_HANDLER);
@@ -28,7 +32,11 @@
     let setOnSearch: (handler: (() => void) | null) => void = getContext(BROWSE_DECK_TOOLBAR_SEARCH_HANDLER);
     let headerIsLoading = $state(true);
     let rowIsLoading = $state(true);
-    
+
+    onMount(() => {
+        page.url.searchParams.set("sortby", DECK_OPTIONS.CARD_DEFAULT_SORTBY);
+        page.url.searchParams.set("sortasc", (DECK_OPTIONS.CARD_DEFAULT_SORTASC).toString());
+    })
 
     let isAddModalOpen = $state(false);
     
@@ -51,6 +59,7 @@
         else if(sortAscParam === "false")   return false
         else                                return DECK_OPTIONS.CARD_DEFAULT_SORTASC;
     });
+
     let currentPage = $state(1);
     let pageLimit = $state(DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT);
     let pageChanged = $state(false);
@@ -67,7 +76,8 @@
         url.searchParams.set("search", BrowseToolbarContext.query);
 
         goto(url, {
-            keepFocus: true
+            keepFocus: true,
+            replaceState: true
         })
     })
 
@@ -106,7 +116,6 @@
 
         untrack(() => {
             headerIsLoading = true;
-
             fetchDeckByDeckId(tmpDeckId)
             .then((deckData) => {
                 deck = deckData;
@@ -119,26 +128,20 @@
 
     // deckId/param deckId listening also page, probably
     $effect(() => {
-        const tmpDeckId = deckId;
         const tmpPageChanged = pageChanged;
-        const tmpCurrentPage = currentPage;
-        const tmpPageLimit = pageLimit;
-        const url = page.url;
 
-        if(!tmpDeckId) return;
+        if(!deckId) return;
 
-        untrack(() => {
-            rowIsLoading = true
+        rowIsLoading = true
 
-            fetchCardsByDeckId(tmpDeckId, tmpCurrentPage, tmpPageLimit, search, sortBy, sortAsc)
-            .then((response) => {
-                cards = response;
-            })
-            .finally(() => {
-                rowIsLoading = false;
-            });
-
+        fetchCardsByDeckId(deckId, currentPage, pageLimit, search, sortBy, sortAsc)
+        .then((response) => {
+            cards = response;
         })
+        .finally(() => {
+            rowIsLoading = false;
+        });
+
     })
     
 
@@ -246,27 +249,49 @@
     <div class="flex flex-col gap-4">
         <div class="text-center">
             <div>
-
-                <div class="flex justify-center items-center relative">
-                    <BackButton onclick={() => goto("/deck")}/>
+                <div class="flex items-center justify-between w-full">
+                    <div class="flex-1 flex justify-start">
+                        <BackButton destination={"/deck"} sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}/>
+                    </div>
                     
-                    <div>
-                        <div class="font-bold text-lg">Deck Browsing</div>
-                        <div class="text-muted-foreground text-xl mb-5">{deck?.name}</div>
+                    <div class="flex-1 flex justify-center">
+                        <div class="text-center">
+                            <div class="font-bold text-lg">Deck Browsing</div>
+                            <div class="text-muted-foreground text-xl mb-5">{deck?.name}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex justify-end">
+                        <CardSortDropdown sortBy={sortBy} sortAsc={sortAsc}/>
                     </div>
                 </div>
 
-                <div class="flex justify-between items-end">
+                <div class="flex justify-between items-end text-start">
                     {#if headerIsLoading}
                         <div></div>
                     {:else}
                         {#if !search}
                             <div class="text-muted-foreground text-lg">Total: {totalCardCount} card(s)</div>
                         {:else}
-                            <div class="text-muted-foreground text-lg">Search for '<span class="font-bold">{search}</span>', found: {totalCardCount} card(s)</div>
+                        <div class="text-muted-foreground text-lg">
+                            Search for '<span class="font-bold">{search}</span>', found: {totalCardCount} card(s)
+                            <Button variant="ghost" class="cursor-pointer"
+                                onclick={() => {
+                                    BrowseToolbarContext.query = "";
+                                    const url = page.url;
+                                    url.searchParams.delete("search");
+
+                                    goto(url, {
+                                        keepFocus: true
+                                    })
+                                    console.log(page.url.searchParams.get("search"))
+                                }
+                            }>
+                                <XIcon/>Clear
+                            </Button>
+                        </div>
                         {/if}
                     {/if}
-                    <SortDropdown bind:sortBy bind:sortAsc/>
                 </div>
             </div>
         </div>

@@ -4,7 +4,7 @@
     import type { DeckEditableData, DeckExtraSetting } from '$lib/types/deck';
     import DeckMetadataForm from '../../DeckMetadataForm.svelte';
     import * as Accordion from '$lib/components/ui/accordion/index';
-    import { DECK_EXTRA_SETTING_DEFAULT_HEADER, DECK_EXTRA_SETTING_DEFAULT_VALUE } from '$lib/constant/deck.js';
+    import { DECK_EXTRA_SETTING_DEFAULT_VALUE } from '$lib/constant/deck.js';
     import { untrack } from 'svelte';
     import { deleteDeck, updateDeck } from './services';
     import type { Json } from '$lib/types/server/core/supabase/generatedType.js';
@@ -16,14 +16,19 @@
     import { page } from '$app/state';
     import { fetchDeckByDeckId } from '../../services.js';
     import { error } from '@sveltejs/kit';
+    import { type DeckRow } from '$lib/types/server/core/supabase/type.js';
+    import BackButton from '$lib/components/BackButton.svelte';
+    import { SESSIONSTORAGE_PREV_DECK_LIST } from '$lib/constant/sessionStorageKey.js';
 
 
-    let { data } = $props();
+    // let { data } = $props();
 
     const sidebar = useSidebar()
-    let deckId = $derived(data.deckId);
-    let deck = $state(data.deck);
-    let setting = $state<DeckExtraSetting>((deck?.settings as unknown as DeckExtraSetting) ?? {});
+    let backButtonRef: { click: () => void } | undefined = $state();
+
+    let deckId = $state<string>('');
+    let deck = $state<DeckRow>();
+    let setting = $state<DeckExtraSetting>({} as DeckExtraSetting);
     let isLoading = $state(false);
     let isSaved = $state(false);
     let isDeleted = $state(false);
@@ -53,7 +58,7 @@
         untrack(() => {
             fetchDeckByDeckId(deckId)
             .then((deckResult) => {
-                deck = deckResult;
+                deck = deckResult as DeckRow;
                 setting = deck?.settings as unknown as DeckExtraSetting ?? {};
             })
             .finally(() => {
@@ -114,9 +119,11 @@
         })
     }
 
+    const backDestination = "/deck";
     function goToDeck() {
         goto("/deck");
     }
+
 </script>
 
 <Confirmation 
@@ -130,27 +137,23 @@
 <div class="flex justify-center gap-0">
     <Card.Root class="text-center px-auto max-w-xl w-full">
     {#if isLoading}
-        <Card.Content>
-            {#if isSaved || isDeleted}
-                <div class="flex w-full justify-center text-center mb-5">
-                    <CheckIcon class="text-green-500 me-2"/> Deck<span class="font-bold px-2">{deck?.name}</span>has been {isDeleted ? "deleted" : "updated"}.
-                </div>
-                <div>
-                    <Button variant="outline" class="px-10 py-3" onclick={goToDeck}>Go to Deck</Button>
-                </div>
-            {:else}
-                <div>Loading</div>
-            {/if}
-        </Card.Content>
+        {@render Submitted()}
     {:else}
         {#if !deck}
             <div>Deck Not Founded or Incorrect Permission</div>
         {:else}
             <Card.Header>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <span class="text-xl font-bold">Deck:</span> <span class="text-lg">{deck?.name}</span>
+                <div class="flex items-center">
+                    <div class="flex flex-1 justify-start">
+                        <BackButton bind:this={backButtonRef} 
+                            destination={backDestination} sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
+                        />
                     </div>
+                    <div class="flex-1">
+                        <div class="text-xl font-bold">Deck</div>
+                        <div class="text-lg">{deck?.name}</div>
+                    </div>
+                    <div class="flex flex-1 justify-end"></div>
                 </div>
             </Card.Header>
             <Card.Content>
@@ -210,7 +213,7 @@
                     </div>
                     <div class="flex gap-2">
                         <Button 
-                            onclick={goToDeck}
+                            onclick={() => backButtonRef?.click() }
                             class="cursor-pointer py-5"
                             variant="outline"
                         >
@@ -230,3 +233,18 @@
     {/if}
     </Card.Root>
 </div>
+
+{#snippet Submitted()}
+    <Card.Content>
+            {#if isSaved || isDeleted}
+                <div class="flex w-full justify-center text-center mb-5">
+                    <CheckIcon class="text-green-500 me-2"/> Deck<span class="font-bold px-2">{deck?.name}</span>has been {isDeleted ? "deleted" : "updated"}.
+                </div>
+                <div>
+                    <Button variant="outline" class="px-10 py-3" onclick={() => backButtonRef?.click()}>Go to Deck</Button>
+                </div>
+            {:else}
+                <div>Loading</div>
+            {/if}
+        </Card.Content>
+{/snippet}

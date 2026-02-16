@@ -9,7 +9,7 @@ export const cardExtraHeaderOrder: Array<keyof CardRow> = [
     "repetition",
     "updatedat",
     "createdat"
-]
+] as const;
 
 export const cardExtraHeaderName: Partial<Record<keyof CardRow, string>> = {
     status: "Status",
@@ -19,4 +19,4 @@ export const cardExtraHeaderName: Partial<Record<keyof CardRow, string>> = {
     repetition: "Repetition",
     updatedat: "Last Modified",
     createdat: "Created"
-}
+} as const;

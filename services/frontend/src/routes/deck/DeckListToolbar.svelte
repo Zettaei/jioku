@@ -8,17 +8,17 @@
     interface Props {
         toolbarContext: DeckListToolbarContextInterface;
         onAdd: () => void;
+        onSearch: () => void;
     }
 
     const sidebar = useSidebar();
 
-    // @ts-expect-error
-    const  { toolbarContext, onAdd }: Props = $props<Props>();
+    const  { toolbarContext, onAdd, onSearch }: Props = $props();
 
     function handleSubmit(e: Event) {
         e.preventDefault();
 
-        toolbarContext.searchText = toolbarContext.query;
+        onSearch();
     }
 
     function handleAddClick() {

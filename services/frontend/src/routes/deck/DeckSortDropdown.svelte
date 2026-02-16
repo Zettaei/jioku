@@ -1,13 +1,18 @@
 <script lang="ts">
     import { Button } from "$lib/components/ui/button";
     import * as Select from "$lib/components/ui/select/index.js";
-    import { cardExtraHeaderName, cardExtraHeaderOrder } from "$lib/constant/cardExtraRows";
     import { ArrowUp, ArrowDown } from "@lucide/svelte";
     import { page } from "$app/state";
     import { goto } from "$app/navigation";
     import { useSidebar } from "$lib/components/ui/sidebar";
+    import { deckExtraHeaderName, deckExtraHeaderOrder } from "$lib/constant/deckExtraRow";
 
-    let { sortBy = $bindable(), sortAsc = $bindable(true) } = $props();
+    interface Props {
+        sortBy: string;
+        sortAsc: boolean;
+    }
+
+    let { sortBy, sortAsc }: Props = $props();
 
     const sidebar = useSidebar();
 
@@ -35,12 +40,12 @@
     }}
   >
     <Select.Trigger class="rounded-r-none">
-        {cardExtraHeaderName[sortBy as keyof typeof cardExtraHeaderName]}
+        {deckExtraHeaderName[sortBy as keyof typeof deckExtraHeaderName]}
     </Select.Trigger>
     <Select.Content>
-        {#each cardExtraHeaderOrder as header}
+        {#each deckExtraHeaderOrder as header}
             <Select.Item value={header} disabled={sortBy === header}>
-                {cardExtraHeaderName[header]}
+                {deckExtraHeaderName[header]}
             </Select.Item>
         {/each}
     </Select.Content>
