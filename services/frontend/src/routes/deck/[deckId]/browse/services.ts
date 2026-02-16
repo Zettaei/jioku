@@ -1,17 +1,23 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
-import type { CardInsert, CardRow, CardUpdate, DeckRow } from "$lib/types/server/core/supabase/type";
+import type { CardUpdate } from "$lib/types/server/core/supabase/type";
 import type { GetCardsByDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/card_dto";
-import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 
-export async function fetchCardsByDeckId(deckId: string, page: number = 0, limit: number | undefined)
-: Promise< GetCardsByDeckIdRouteResponse >
+export async function fetchCardsByDeckId(
+    deckId: string, page: number = 1, limit: number | undefined, 
+    search: string | undefined, sortBy: string | undefined, sortAsc: boolean | undefined
+): Promise< GetCardsByDeckIdRouteResponse >
 {
     if(!deckId) throw new BadRequestError("Missing deck id to fetching cards data");
 
+    const optionalParams = (limit ? `&limit=${limit}` : '') + 
+                        (search ? `&search=${search}` : '') +
+                        (sortBy ? `&sortby=${sortBy}` : '') +
+                        (sortAsc !== undefined ? `&sortasc=${sortAsc}` : '');
+
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + (limit ? `&limit=${limit}` : ''),
+                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + optionalParams,
                 // {
                 //     credentials: "include",
                 // }

@@ -22,6 +22,7 @@ export const BROWSE_DECK_TOOLBAR_CONTEXT = "browse_deck_toolbar_context" as cons
 export const BROWSE_DECK_TOOLBAR_ADD_HANDLER = "browse_deck_toolbar_add_handler" as const;
 export const BROWSE_DECK_TOOLBAR_DELETE_HANDLER = "browse_deck_toolbar_delete_handler" as const;
 export const BROWSE_DECK_TOOLBAR_CANCEL_HANDLER = "browse_deck_toolbar_cancel_handler" as const;
+export const BROWSE_DECK_TOOLBAR_SEARCH_HANDLER = "browse_deck_toolbar_search_handler" as const;
 
 export interface BrowseDeckToolbarContextInterface {
     query: string;

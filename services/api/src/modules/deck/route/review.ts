@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { userIdMiddleware } from "core/middleware/index.js";
+import { userIdMiddleware } from "src/middleware/index.js";
 import {
     getReviewsByCardIdRouteHandler,
 } from "../handler/review.js";

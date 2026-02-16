@@ -2,8 +2,8 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server" 
 import { cors } from "hono/cors";
-import { HttpError } from "core/errors/httpError.js";
-import { InternalError } from "core/errors/internalError.js";
+import { HttpError } from "src/errors/httpError.js";
+import { InternalError } from "src/errors/internalError.js";
 import * as utils from "core/utils/index.js";
 import * as ocr from "modules/ocr/index.js";
 import * as dict from "modules/dict/index.js";

@@ -1,13 +1,13 @@
 import * as repository from "../repository/study.js";
 import * as cardRepository from "../repository/card.js";
-import { calculateSuperMemo2 } from "./algorithm.js";
 import type { GetDecksStudyRouteResponse, GetStudyCardsByDeckIdRouteResponse, GetStudyCardsByStatusAndDeckIdRouteResponse, UpdateCardAndReviewRouteResponse } from "../type/study_dto.js";
+import type { DeckRow } from "src/core/supabase/type.js";
 
 
-async function getStudyDecks(userId: string, page: number | undefined, limit: number | undefined, timezone: string | undefined)
+async function getStudyDecks(userId: string, page: number | undefined, limit: number | undefined, timezone: string | undefined, search: string = "", sortby: keyof DeckRow | (string & {}), sortasc: boolean)
 : Promise<GetDecksStudyRouteResponse>
 {
-    const data = await repository.getStudyDecks(userId, page, limit, timezone);
+    const data = await repository.getStudyDecks(userId, page, limit, timezone, search, sortby, sortasc);
 
     return data;
 }

@@ -3,10 +3,10 @@ import * as repository from "../repository/card.js";
 import type { PaginatedResponseWithTotalCount } from "../type/dto.js";
 
 
-async function getCardsByDeckId(userId: string, deckId: string, page: number | undefined, limit: number | undefined)
+async function getCardsByDeckId(userId: string, deckId: string, page: number, limit: number, search: string, sortby: keyof CardRow | (string & {}), sortasc: boolean)
 : Promise<PaginatedResponseWithTotalCount<CardRow>>
 {
-    const data = await repository.getCardsByDeckId(userId, deckId, page, limit);
+    const data = await repository.getCardsByDeckId(userId, deckId, page, limit, search, sortby, sortasc);
 
     return data;
 }

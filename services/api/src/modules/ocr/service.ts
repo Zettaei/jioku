@@ -2,8 +2,8 @@ import type { OcrItem, OcrResult } from "./type/model.js"
 import * as utils from "./util.js";
 import type { Sharp } from "sharp";
 import { ENV_VARS } from "src/config.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
-import { InternalError } from "src/core/errors/internalError.js";
+import { BadRequestError } from "src/errors/httpError.js";
+import { InternalError } from "src/errors/internalError.js";
 
 async function processOCR(image: Sharp, filename: string)
 : Promise<OcrResult>

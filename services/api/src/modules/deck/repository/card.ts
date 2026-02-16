@@ -1,32 +1,35 @@
 import { getSupabaseAdminClient } from "core/supabase/supabase.js";
-import type { CardRow, CardInsert, CardUpdate } from "src/core/supabase/type.js";
+import type { CardRow, CardInsert, CardUpdate, DeckRow } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
 import type { PaginatedResponseWithTotalCount } from "../type/dto.js";
 
 //
-// OPTIMIZE: deal with Race Condition and this ugly double db calls, maybe using SQL RPC
+// OPTIMIZE: deal with this ugly double db calls, maybe using SQL RPC
 //
 
-async function getCardsByDeckId(userId: string, deckId: string, page: number = 1, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT)
+async function getCardsByDeckId(userId: string, deckId: string, 
+    page: number = 1, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT,
+    search: string, sortby: keyof CardRow | (string & {}), sortasc: boolean
+)
 : Promise<PaginatedResponseWithTotalCount<CardRow>>
 {
     const supabase = getSupabaseAdminClient();
 
     const offset = (page - 1) * limit;
 
-    const { data, error, count } = await supabase
-        .from("cards")
-        .select(`
-            *,
-            decks!cards_decks_id_fkey!inner()
-            `, 
-            { count: "exact" }
-        )
-        .eq("decks_id", deckId)
-        .eq("decks.users_id", userId)
-        .order("createdat", { ascending: false })
-        .range(offset, offset + (limit-1));
+    // FIXME: search text is searching the entire json which include the key, "d" catches "rea'd'ing"
+    const { data, error, count } = await supabase.rpc("get_cards", {
+        param_decks_id: deckId,
+        param_users_id: userId,
+        param_searchtext: search,
+        param_sortby: sortby,
+        param_sortby_direction: sortasc ? "ASC" : "DESC",
+        param_offset: offset,
+        param_limit: limit
+    }, {   
+        count: 'exact'  
+    });
 
     util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
 

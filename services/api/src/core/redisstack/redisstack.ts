@@ -1,6 +1,6 @@
 import { ENV_VARS, REDIS_OPTIONS } from "src/config.js";
 import { createClient, type RedisClientType } from "redis";
-import { ConnectionError, RedisError } from "../errors/internalError.js";
+import { ConnectionError, RedisError } from "../../errors/internalError.js";
 
 let redis: RedisClientType | null;
 

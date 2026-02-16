@@ -1,5 +1,5 @@
 import { type UUID } from "node:crypto";
-import { BadRequestError } from "../errors/httpError.js";
+import { BadRequestError } from "../../errors/httpError.js";
 
 /**
  * Trim and see if it's empty string.

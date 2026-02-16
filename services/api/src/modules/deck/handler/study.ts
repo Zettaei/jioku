@@ -1,4 +1,4 @@
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError } from "src/errors/httpError.js";
 import * as service from "../service/study.js";
 import type {
     GetDecksStudyRouteHandler,
@@ -11,6 +11,7 @@ import type {
     UpdateCardAndReviewRouteResponse
 } from "../type/study_dto.js";
 import { DECK_OPTIONS } from "src/config.js";
+import type { DeckRow } from "src/core/supabase/type.js";
 
 
 async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
@@ -19,6 +20,10 @@ async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
     const pageNum = Number(req.page);
     const limitNum = Number(req.limit);
     const timezoneStr = req.timezone;
+    const search = req.search ?? "";
+    // (string & {}) don't interfere with intellisense somehow???
+    const sortby: keyof DeckRow | (string & {}) = req.sortby ?? "updatedat";
+    const sortasc: boolean = req.sortasc;
 
     const safePage =
         (Number.isInteger(pageNum) && pageNum > 0 && pageNum)
@@ -27,11 +32,8 @@ async function getDecksStudyRouteHandler(req: GetDecksStudyRouteHandler)
     const safeLimit =
         (Number.isInteger(limitNum) && limitNum > 0 && limitNum <= DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
         ? limitNum : undefined;
-
-    const safeTimezone =
-        typeof timezoneStr === "string" && timezoneStr.length > 0 ? timezoneStr : undefined;
     
-    return await service.getStudyDecks(req.userId, safePage, safeLimit, safeTimezone);
+    return await service.getStudyDecks(req.userId, safePage, safeLimit, timezoneStr, search, sortby, sortasc);
 }
 
 
