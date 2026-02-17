@@ -154,7 +154,7 @@
     }
   }
 
-  // SEND THIS FUNC TO UPPER CARD AND LOWER CARD AND ADD THE SPEAKER BUTTON ON THERE
+  
   function handleVoiceClick(text: string, reading: string | undefined)
   : void 
   {

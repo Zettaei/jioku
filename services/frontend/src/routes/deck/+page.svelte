@@ -26,7 +26,12 @@
     // const sidebar = useSidebar();
     let decks = $state<GetDecksStudyRouteResponse>();
     let isLoading = $state<boolean>(true);
-    let currentPage = $state(1);
+    let currentPage = $derived.by<number>(() => {
+        let p = Number(page.url.searchParams.get("page"));
+        if(!isNaN(p) && p > 0) return p;
+        return 1;
+    });
+
     let pageLimit = $state(DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT);
 
     let search = $derived<string>(page.url.searchParams.get("search") ?? "");
@@ -118,7 +123,12 @@
   function handlePageChange(pageNum: number)
   : void 
   {
-    currentPage = pageNum;
+    const url = page.url;
+    url.searchParams.set("page", pageNum.toString());
+
+    goto(url, {
+        keepFocus: true
+    });
   }
 
   function handleRefreshClick()
@@ -132,7 +142,7 @@
   {
     const url = new URL(page.url);
     url.searchParams.set("search", DeckListToolbarContext.query);
-    url.searchParams.delete("page");    // <== not actually using "page" as param but ok
+    url.searchParams.delete("page");
 
     goto(url, {
         keepFocus: true,
@@ -186,7 +196,6 @@
                     goto(url, {
                         keepFocus: true
                     })
-                    console.log(page.url.searchParams.get("search"))
                 }}>
                     <XIcon/>Clear
                 </Button>
@@ -247,8 +256,7 @@
 
 <!-- BUG: don't know why but next and previous buttons not workin -->
 {#snippet pagination()}
-    {#if decks && decks.result.length > 0}
-        <Pagination.Root count={decks.total} perPage={pageLimit} class="">
+        <Pagination.Root count={decks?.total ?? 0} perPage={pageLimit} class="">
         {#snippet children({ pages })}  
             <Pagination.Content>
                 <Pagination.Item>
@@ -289,7 +297,6 @@
             </Pagination.Content>
         {/snippet}
         </Pagination.Root>
-    {/if}
 {/snippet}
     
 

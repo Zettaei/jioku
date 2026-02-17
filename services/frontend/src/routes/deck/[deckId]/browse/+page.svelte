@@ -60,7 +60,12 @@
         else                                return DECK_OPTIONS.CARD_DEFAULT_SORTASC;
     });
 
-    let currentPage = $state(1);
+    let currentPage = $derived.by<number>(() => {
+        let p = Number(page.url.searchParams.get("page"));
+        if(!isNaN(p) && p > 0) return p;
+        return 1;
+    });
+
     let pageLimit = $state(DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT);
     let pageChanged = $state(false);
 
@@ -219,8 +224,15 @@
     });
 
 
-    function handlePageChange(pageNum: number) {
-        currentPage = pageNum;
+    function handlePageChange(pageNum: number)
+    : void 
+    {
+        const url = page.url;
+        url.searchParams.set("page", pageNum.toString());
+
+        goto(url, {
+            keepFocus: true
+        });
     }
 
 </script>
@@ -375,7 +387,9 @@
                 </div>
             </div>
 
+        {/if}
 
+        {#if !rowIsLoading}
             <Pagination.Root count={totalCardCount} perPage={pageLimit}>
             {#snippet children({ pages, currentPage: paginationCurrentPage })}
                 <Pagination.Content>
@@ -396,7 +410,7 @@
                     <Pagination.Item>
                         <Pagination.Link 
                             class="cursor-pointer"
-                            {page} 
+                            page={page} 
                             isActive={currentPage === page.value}
                             onclick={() => handlePageChange(page.value)}
                         >
