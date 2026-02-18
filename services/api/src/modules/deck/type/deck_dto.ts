@@ -59,6 +59,8 @@ export interface GetDeckStatusByIdRouteHandler {
 }
 
 export interface DeckStatus {
+    date: string,
+    utcdatetime: string,
     cards_status_distribution: {
         due: number;
         new: number;
@@ -72,11 +74,12 @@ export interface DeckStatus {
         learning: number;
     };
     cards_due_distribution: Array<{
-        due: string;
+        due_date: string;
         count: number;
     }>;
     cards_overdue_total: number;
     review_retention_rate: {
+        date: string;
         failed: number;
         passed: number;
     };

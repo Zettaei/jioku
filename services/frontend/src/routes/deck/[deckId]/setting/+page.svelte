@@ -15,19 +15,20 @@
     import Confirmation from '$lib/components/Confirmation.svelte';
     import { page } from '$app/state';
     import { fetchDeckByDeckId } from '../../services.js';
-    import { error } from '@sveltejs/kit';
     import { type DeckRow } from '$lib/types/server/core/supabase/type.js';
     import BackButton from '$lib/components/BackButton.svelte';
     import { SESSIONSTORAGE_PREV_DECK_LIST } from '$lib/constant/sessionStorageKey.js';
+    import type { GetDeckByIdRouteResponse } from '$lib/types/server/modules/deck/type/deck_dto.js';
 
     const sidebar = useSidebar();
 
     // let { data } = $props();
 
+    const backDestination = "/deck";
     let backButtonRef: { click: () => void } | undefined = $state();
 
-    let deckId = $state<string>('');
-    let deck = $state<DeckRow>();
+    let deckId = $derived<string>(page.params.deckId ?? '');
+    let deck = $state<GetDeckByIdRouteResponse>();
     let setting = $state<DeckExtraSetting>({} as DeckExtraSetting);
     let isLoading = $state(false);
     let isSaved = $state(false);
@@ -48,7 +49,6 @@
 
     // listen to url change
     $effect(() => {
-        const deckId = page.params.deckId;
         if(!deckId) return;
 
         isLoading = true;
@@ -116,11 +116,6 @@
             isLoading = false;
             throw err
         })
-    }
-
-    const backDestination = "/deck";
-    function goToDeck() {
-        goto("/deck");
     }
 
 </script>
@@ -240,8 +235,13 @@
                     <CheckIcon class="text-green-500 me-2"/> Deck<span class="font-bold px-2">{deck?.name}</span>has been {isDeleted ? "deleted" : "updated"}.
                 </div>
                 <div>
-                    <Button variant="outline" class="px-10 py-3" onclick={() => backButtonRef?.click()}>Go to Deck</Button>
+                    <Button variant="outline" class="px-10 py-3" onclick={() => backButtonRef?.click()}>Go Back</Button>
                 </div>
+
+                <!-- FAKE IT, FAKE THE BACK BUTTON -->
+                <BackButton bind:this={backButtonRef} 
+                            destination={backDestination} sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
+                        />
             {:else}
                 <div>Loading</div>
             {/if}

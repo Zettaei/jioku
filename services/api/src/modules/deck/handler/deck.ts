@@ -2,7 +2,7 @@ import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
 import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteHandler, GetRetentionRateByDateRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError } from "src/errors/httpError.js";
 import * as util from "../util.js";
 
 async function getDecksRouteHandler(req: GetDecksRouteHandler)

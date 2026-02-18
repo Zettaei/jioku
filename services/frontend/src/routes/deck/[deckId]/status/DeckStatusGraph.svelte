@@ -3,6 +3,12 @@
     import { Chart, registerables } from "chart.js";
     import type { DeckStatus } from "$lib/types/server/modules/deck/type/deck_dto";
     import Card from "$lib/components/ui/card/card.svelte";
+    import Table from "$lib/components/ui/table/table.svelte";
+    import TableHead from "$lib/components/ui/table/table-head.svelte";
+    import TableHeader from "$lib/components/ui/table/table-header.svelte";
+    import TableBody from "$lib/components/ui/table/table-body.svelte";
+    import TableRow from "$lib/components/ui/table/table-row.svelte";
+    import TableCell from "$lib/components/ui/table/table-cell.svelte";
 
     Chart.register(...registerables);
 
@@ -11,16 +17,16 @@
     }
 
     let { deckStatus }: Props = $props();
+    let retentionRate = $derived<DeckStatus["review_retention_rate"]>(deckStatus.review_retention_rate);
 
     let statusChartCanvas: HTMLCanvasElement;
     let maturityChartCanvas: HTMLCanvasElement;
     let dueChartCanvas: HTMLCanvasElement;
-    let retentionChartCanvas: HTMLCanvasElement;
 
     let statusChart: Chart;
     let maturityChart: Chart;
     let dueChart: Chart;
-    let retentionChart: Chart;
+
 
     onMount(() => {
         // Card Status Distribution (Pie)
@@ -107,7 +113,7 @@
         dueChart = new Chart(dueChartCanvas, {
             type: "bar",
             data: {
-                labels: deckStatus.cards_due_distribution.map((item) => item.due),
+                labels: deckStatus.cards_due_distribution.map((item) => item.due_date),
                 datasets: [
                     {
                         label: "Cards Due",
@@ -148,49 +154,10 @@
                 ? ((deckStatus.review_retention_rate.passed / totalReviews) * 100).toFixed(1)
                 : 0;
 
-        retentionChart = new Chart(retentionChartCanvas, {
-            type: "bar",
-            data: {
-                labels: ["Passed", "Failed"],
-                datasets: [
-                    {
-                        label: "Review Results",
-                        data: [
-                            deckStatus.review_retention_rate.passed,
-                            deckStatus.review_retention_rate.failed,
-                        ],
-                        backgroundColor: ["#10b981", "#ef4444"],
-                        borderColor: ["#059669", "#dc2626"],
-                        borderWidth: 2,
-                    },
-                ],
-            },
-            options: {
-                indexAxis: "x",
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                    title: {
-                        display: true,
-                        text: `Review Retention Rate: ${retentionRate}%`,
-                    },
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                    },
-                },
-            },
-        });
-
         return () => {
             statusChart.destroy();
             maturityChart.destroy();
             dueChart.destroy();
-            retentionChart.destroy();
         };
     });
 </script>
@@ -267,11 +234,40 @@
                 <canvas bind:this={dueChartCanvas} class="w-full"></canvas>
             </div>
 
-
-            <!-- Review Retention Rate -->
-            <div>
-                <canvas bind:this={retentionChartCanvas} class="w-full"></canvas>
-            </div>
+            {@render retentionRateChart(retentionRate)}
         </div>
     </Card>
 </div>
+
+
+<!-- Review Retention Rate -->
+{#snippet retentionRateChart(retentionRate: DeckStatus["review_retention_rate"])}
+    {@const date = retentionRate.date}
+    {@const passed = retentionRate.passed}
+    {@const failed = retentionRate.failed}
+    <div>
+        <h3 class="text-sm font-semibold mb-4 text-center">Review Retention Rate</h3>
+        {date}
+        <Table class="text-center">
+            <TableHeader class="text-center">
+                <TableCell>Passed</TableCell>
+                <TableCell>Failed</TableCell>
+                <TableCell>Accuracy</TableCell>
+            </TableHeader>
+            <TableBody>
+                <TableRow>
+                    <TableCell>{passed}</TableCell>
+                    <TableCell>{failed}</TableCell>
+                    <TableCell>
+                        {failed !== 0 ? 
+                            (passed / failed)
+                            :
+                            0
+                        }
+                    </TableCell>
+                </TableRow>
+            </TableBody>
+        </Table>
+        
+    </div>
+{/snippet}
