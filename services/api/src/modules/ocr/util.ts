@@ -1,4 +1,4 @@
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError } from "src/errors/httpError.js";
 import { OCR_OPTIONS } from "src/config.js";
 import type {  Sharp } from "sharp";
 import crypto from "crypto";

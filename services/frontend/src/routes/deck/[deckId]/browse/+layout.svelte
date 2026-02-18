@@ -3,7 +3,7 @@
     import { onMount, setContext } from 'svelte';
     import { getContext } from 'svelte';
     import BrowseDeckToolbar from './BrowseDeckToolbar.svelte';
-    import { BROWSE_DECK_TOOLBAR_CONTEXT, BROWSE_DECK_TOOLBAR_DELETE_HANDLER, BROWSE_DECK_TOOLBAR_CANCEL_HANDLER, BrowseDeckToolbarContextClass, type BrowseDeckToolbarContextInterface, BROWSE_DECK_TOOLBAR_ADD_HANDLER } from '$lib/context/deckToolbar.svelte';
+    import { BROWSE_DECK_TOOLBAR_CONTEXT, BROWSE_DECK_TOOLBAR_DELETE_HANDLER, BROWSE_DECK_TOOLBAR_CANCEL_HANDLER, BrowseDeckToolbarContextClass, type BrowseDeckToolbarContextInterface, BROWSE_DECK_TOOLBAR_ADD_HANDLER, BROWSE_DECK_TOOLBAR_SEARCH_HANDLER } from '$lib/context/deckToolbar.svelte';
 
     let { children } = $props();
 
@@ -17,6 +17,7 @@
     let onAdd: (() => void) = $state(() => {});
     let onCancel: (() => void) = $state(() => {});
     let onDelete: (() => void) = $state(() => {});
+    let onSearch: (() => void) = $state(() => {});
 
     const setOnAdd = (handler: (() => void)) => {
         onAdd = handler;
@@ -27,10 +28,14 @@
     const setOnCancel = (handler: (() => void)) => {
         onCancel = handler;
     };
+    const setOnSearch = (handler: (() => void)) => {
+        onSearch = handler;
+    };
 
     setContext(BROWSE_DECK_TOOLBAR_ADD_HANDLER, setOnAdd);
     setContext(BROWSE_DECK_TOOLBAR_DELETE_HANDLER, setOnDelete);
     setContext(BROWSE_DECK_TOOLBAR_CANCEL_HANDLER, setOnCancel);
+    setContext(BROWSE_DECK_TOOLBAR_SEARCH_HANDLER, setOnSearch);
     ////////////////////////////////////////////////////////////////////////
 
     onMount(() => {
@@ -49,6 +54,7 @@
         onAdd={onAdd}
         onDelete={onDelete}
         onCancel={onCancel}
+        onSearch={onSearch}
     />
 {/snippet}
 

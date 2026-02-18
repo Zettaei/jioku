@@ -4,7 +4,7 @@ import * as repository from "./repository.js";
 import * as Ocr from "modules/ocr/index.js";
 import { DICT_OPTIONS } from "src/config.js";
 import type { EntriesRouteHandler, EntriesRouteResponse, TokensOcrRouteHandler, TokensRouteHandler, TokensRouteResponse, VoiceRouteHandler, VoiceRouteResponse } from "./type/dto.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError } from "src/errors/httpError.js";
 import { TranslationLanguage } from "./type/model.js";
 import { AzureTTSVoiceName } from "./type/azureTTS.js";
 

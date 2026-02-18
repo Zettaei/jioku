@@ -6,16 +6,20 @@ import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/ty
 import type { GetDecksStudyRouteResponse } from "$lib/types/server/modules/deck/type/study_dto";
 
 
-export async function fetchUserDecks(page: number = 0, limit: number | undefined)
-: Promise< GetDecksStudyRouteResponse >
+export async function fetchUserDecks(
+    page: number = 1, limit: number | undefined,
+    search?: string | undefined, sortBy?: string | undefined, sortAsc?: boolean | undefined
+): Promise< GetDecksStudyRouteResponse >
 {
+    const optionalParams = (limit ? `&limit=${limit}` : '') + 
+                        (search ? `&search=${search}` : '') +
+                        (sortBy ? `&sortby=${sortBy}` : '') +
+                        (sortAsc !== undefined ? `&sortasc=${sortAsc}` : '');
+    
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${userState.timezone}` + (page ? `&page=${page}` : '') + (limit ? `&limit=${limit}` : ''),
-                // {
-                //     credentials: "include",
-                // }
-            )
+                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${userState.timezone}&page=${page}` + optionalParams
+            );
     
             if (!fetchData.ok) {
                 throw new HttpError(fetchData.status);

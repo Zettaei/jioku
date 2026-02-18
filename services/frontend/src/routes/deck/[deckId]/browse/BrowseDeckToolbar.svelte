@@ -11,18 +11,18 @@
         onAdd: () => void;
         onDelete: () => void;
         onCancel: () => void;
+        onSearch: () => void;
     }
 
     const sidebar = useSidebar();
 
     // @ts-expect-error
-    const  { toolbarContext, selectedRowsCount = 0, onAdd, onDelete, onCancel }: Props = $props<Props>();
+    const  { toolbarContext, selectedRowsCount = 0, onAdd, onDelete, onCancel, onSearch }: Props = $props<Props>();
 
     function handleSubmit(e: Event) {
         e.preventDefault();
 
-        // TODO: search FUNCTION, I FORGOR OMG
-        toolbarContext.searchText = toolbarContext.query;
+        onSearch();
     }
 
     function handleAddClick() {

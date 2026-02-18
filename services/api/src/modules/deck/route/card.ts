@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { userIdMiddleware } from "core/middleware/index.js";
+import { userIdMiddleware } from "src/middleware/index.js";
 import {
     getCardsByDeckIdRouteHandler,
     getCardByIdRouteHandler,
@@ -14,7 +14,7 @@ import type {
     UpdateCardRouteResponse,
     DeleteCardsRouteResponse
 } from "../type/card_dto.js";
-import { BadRequestError } from "src/core/errors/httpError.js";
+import { BadRequestError } from "src/errors/httpError.js";
 
 
 const routes = new Hono();
@@ -27,9 +27,16 @@ routes.get("/decks/:deckId/cards", async (c) => {
     const pageQuery = c.req.query("page");
     const limitQuery = c.req.query("limit");
 
+    const searchQuery = c.req.query("search");
+    const sortbyQuery = c.req.query("sortby");
+    const sortascQuery = (c.req.query("sortasc") === "true");
+
     const result = await getCardsByDeckIdRouteHandler({ userId, deckId,
         page: pageQuery,
-        limit: limitQuery
+        limit: limitQuery,
+        search: searchQuery,
+        sortby: sortbyQuery,
+        sortasc: sortascQuery
     });
 
     return c.json<GetCardsByDeckIdRouteResponse>(result);

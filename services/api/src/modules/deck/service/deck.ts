@@ -3,7 +3,7 @@ import * as repository from "../repository/deck.js";
 import * as util from "../util.js";
 import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
-import { InternalError } from "src/core/errors/internalError.js";
+import { InternalError } from "src/errors/internalError.js";
 import type { Json } from "src/core/supabase/generatedType.js";
 
 async function getDecksByUserId(userId: string, page: number | undefined, limit: number | undefined)
@@ -64,7 +64,7 @@ function convertDeckColumnId(deck: Pick<DeckInsert, "headersdata" | "headersorde
         // if it somehow collide, very less likely tho
         for(let i = 1; newOrder.includes(finalId); ++i) {
             if(i === retryGenIdTimes) { 
-                throw new InternalError("An Error occured") 
+                throw new InternalError("An Error occured", "") 
             }
             finalId = util.generateColumnId();
         }

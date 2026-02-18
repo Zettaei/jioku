@@ -5,7 +5,7 @@
 </script>
 
 <div>
-    <Card.Root class="text-center pb-10">
+    <Card.Root class="text-center mt-12 border-0 bg-transparent">
     <Card.Header>
       <Card.Title class="font-bold text-2xl">
         Dictionary
