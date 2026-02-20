@@ -129,7 +129,7 @@ async function getDeckStatusById(userId: string, deckId: string, timezone: strin
 }
 
 
-async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, date: string)
+async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, from: string, to: string)
 : Promise<GetRetentionRateByDateRouteResponse>
 {
     const supabase = getSupabaseAdminClient();
@@ -138,7 +138,8 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
         param_decks_id: deckId,
         param_users_id: userId,
         param_timezone: timezone,
-        param_date: date
+        param_from_date: from,
+        param_to_date: to
     });
 
     util.throwSupabaseErrorIfExist(error, "Failed to get retention rate by date from Supabase");

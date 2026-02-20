@@ -59,13 +59,14 @@ routes.get("/decks/:deckId/status", async (c) => {
     return c.json<GetDeckStatusByIdRouteResponse>(result);
 });
 
-routes.get("/decks/:deckId/status/retentionrate/:date", async (c) => {
+routes.get("/decks/:deckId/status/retentionrate", async (c) => {
     const userId = c.get("userId");
     const deckId = c.req.param("deckId");
     const timezoneQuery = c.req.query("timezone");
-    const date = c.req.param("date");
+    const fromQuery = c.req.query("from");
+    const toQuery = c.req.query("to");
 
-    const result = await getRetentionRateByDateRouteHandler({ userId, deckId, timezone: timezoneQuery, date });
+    const result = await getRetentionRateByDateRouteHandler({ userId, deckId, timezone: timezoneQuery, from: fromQuery, to: toQuery });
     
     return c.json<GetRetentionRateByDateRouteResponse>(result);
 });

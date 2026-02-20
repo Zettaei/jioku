@@ -113,7 +113,7 @@
         dueChart = new Chart(dueChartCanvas, {
             type: "bar",
             data: {
-                labels: deckStatus.cards_due_distribution.map((item) => item.due_date),
+                labels: deckStatus.cards_due_distribution.map((item) => item.date),
                 datasets: [
                     {
                         label: "Cards Due",
@@ -242,12 +242,17 @@
 
 <!-- Review Retention Rate -->
 {#snippet retentionRateChart(retentionRate: DeckStatus["review_retention_rate"])}
-    {@const date = retentionRate.date}
+    {@const from = retentionRate.from}
+    {@const to = retentionRate.to}
     {@const passed = retentionRate.passed}
     {@const failed = retentionRate.failed}
     <div>
         <h3 class="text-sm font-semibold mb-4 text-center">Review Retention Rate</h3>
-        {date}
+        {#if from === to}
+            {from}
+        {:else}
+            {from} - {to}
+        {/if}
         <Table class="text-center">
             <TableHeader class="text-center">
                 <TableCell>Passed</TableCell>

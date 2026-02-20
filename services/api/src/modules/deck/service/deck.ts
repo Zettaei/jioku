@@ -34,10 +34,10 @@ async function getDeckStatusById(userId: string, deckId: string, timezone: strin
 }
 
 
-async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, date: string)
+async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, from: string, to: string)
 : Promise<GetRetentionRateByDateRouteResponse>
 {
-    const data = await repository.getRetentionRateByDate(userId, deckId, timezone, date);
+    const data = await repository.getRetentionRateByDate(userId, deckId, timezone, from, to);
     return data;
 }
 

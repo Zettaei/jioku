@@ -50,17 +50,22 @@ async function getRetentionRateByDateRouteHandler(req: GetRetentionRateByDateRou
 : Promise<GetRetentionRateByDateRouteResponse> 
 {
     const timezoneStr = req.timezone;
-    const dateStr = req.date;
+    const fromStr = req.from;
+    const toStr = req.to;
 
     if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
         throw new BadRequestError("Missing or invalid timezone parameter");
     }
 
-    if (!dateStr || typeof dateStr !== "string" || dateStr.length !== 10) {
-        throw new BadRequestError("Missing dateoffset parameter");
+    if (!fromStr || typeof fromStr !== "string" || fromStr.length !== 10) {
+        throw new BadRequestError("Missing or invalid from parameter");
     }
 
-    const result = await service.getRetentionRateByDate(req.userId, req.deckId, timezoneStr, dateStr);
+    if (!toStr || typeof toStr !== "string" || toStr.length !== 10) {
+        throw new BadRequestError("Missing or invalid to parameter");
+    }
+
+    const result = await service.getRetentionRateByDate(req.userId, req.deckId, timezoneStr, fromStr, toStr);
     return result;
 }
 
