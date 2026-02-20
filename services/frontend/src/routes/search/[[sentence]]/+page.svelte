@@ -162,6 +162,8 @@
       throw new Error("Speech unavailable")
     }
 
+    // FIXME: 上(かみ)、上(うえ) it save one and kinda overlapped each other, fix it so multiple pronunciation can be saved
+
     // check the page cache
     let decodedVoiceBuffer = voiceCache.get(text);
     if(decodedVoiceBuffer) {
