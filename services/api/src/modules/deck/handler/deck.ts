@@ -1,6 +1,6 @@
 import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
-import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteHandler, GetRetentionRateByDateRouteResponse, CreateDeckRouteHandler,
+import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteHandler, GetRetentionRateByDateRouteResponse, GetDueDistributionByDateRouteHandler, GetDueDistributionByDateRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
 import { BadRequestError } from "src/errors/httpError.js";
 import * as util from "../util.js";
@@ -70,6 +70,25 @@ async function getRetentionRateByDateRouteHandler(req: GetRetentionRateByDateRou
 }
 
 
+async function getDueDistributionByDateRouteHandler(req: GetDueDistributionByDateRouteHandler)
+: Promise<GetDueDistributionByDateRouteResponse> 
+{
+    const timezoneStr = req.timezone;
+    const aheadDaysNum = req.ahead_days;
+
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
+    if (aheadDaysNum === undefined || typeof aheadDaysNum !== "number" || aheadDaysNum < 0) {
+        throw new BadRequestError("Missing or invalid ahead_days parameter");
+    }
+
+    const result = await service.getDueDistributionByDate(req.userId, req.deckId, timezoneStr, aheadDaysNum);
+    return result;
+}
+
+
 async function createDeckRouteHandler(req: CreateDeckRouteHandler)
 : Promise<CreateDeckRouteResponse> 
 {
@@ -82,9 +101,10 @@ async function updateDeckRouteHandler(req: UpdateDeckRouteHandler)
 : Promise<UpdateDeckRouteResponse> 
 {
     const deck = await service.updateDeck(
-        req.userId, 
+        req.userId,
         req.deckId, 
-        req.data);
+        req.data
+    );
     return deck;
 }
 
@@ -102,6 +122,7 @@ export {
     getDeckByIdRouteHandler,
     getDeckStatusByIdRouteHandler,
     getRetentionRateByDateRouteHandler,
+    getDueDistributionByDateRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler

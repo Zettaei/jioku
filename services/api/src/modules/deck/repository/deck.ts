@@ -2,7 +2,7 @@ import { getSupabaseAdminClient } from "core/supabase/supabase.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
-import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteResponse } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetDueDistributionByDateRouteResponse, GetRetentionRateByDateRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
 
 async function getDecksByUserId(userId: string, page: number = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
@@ -147,6 +147,24 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
     return data;
 }
 
+
+async function getDueDistributionByDate(userId: string, deckId: string, timezone: string, ahead_days: number)
+: Promise<GetDueDistributionByDateRouteResponse>
+{
+    const supabase = getSupabaseAdminClient();
+
+    const { data, error } = await supabase.rpc("get_due_distribution_by_date", {
+        param_decks_id: deckId,
+        param_users_id: userId,
+        param_timezone: timezone,
+        param_ahead_days: ahead_days
+    });
+
+    util.throwSupabaseErrorIfExist(error, "Failed to get retention rate by date from Supabase");
+
+    return data;
+}
+
 export {
     getDecksByUserId,
     getDeckById,
@@ -154,5 +172,6 @@ export {
     updateDeck,
     deleteDeck,
     getDeckStatusById,
-    getRetentionRateByDate
+    getRetentionRateByDate,
+    getDueDistributionByDate
 }

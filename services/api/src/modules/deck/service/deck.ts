@@ -1,7 +1,7 @@
 import type { DeckInsert, DeckUpdate, DeckRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/deck.js";
 import * as util from "../util.js";
-import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteResponse } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteResponse, GetDueDistributionByDateRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
 import { InternalError } from "src/errors/internalError.js";
 import type { Json } from "src/core/supabase/generatedType.js";
@@ -38,6 +38,14 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
 : Promise<GetRetentionRateByDateRouteResponse>
 {
     const data = await repository.getRetentionRateByDate(userId, deckId, timezone, from, to);
+    return data;
+}
+
+
+async function getDueDistributionByDate(userId: string, deckId: string, timezone: string, ahead_days: number)
+: Promise<GetDueDistributionByDateRouteResponse>
+{
+    const data = await repository.getDueDistributionByDate(userId, deckId, timezone, ahead_days);
     return data;
 }
 
@@ -117,5 +125,6 @@ export {
     updateDeck,
     deleteDeck,
     getDeckStatusById,
-    getRetentionRateByDate
+    getRetentionRateByDate,
+    getDueDistributionByDate
 }
