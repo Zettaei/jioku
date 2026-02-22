@@ -78,7 +78,7 @@ routes.get("/decks/:deckId/status/duedistribution", async (c) => {
     const deckId = c.req.param("deckId");
     const timezoneQuery = c.req.query("timezone");
     const aheadDaysQuery = Number(c.req.query("ahead_days"));
-    const aheadDaysNum = !isNaN(aheadDaysQuery) ? aheadDaysQuery : 7;
+    const aheadDaysNum = !isNaN(aheadDaysQuery) ? aheadDaysQuery : undefined;
 
     const result = await getDueDistributionByDateRouteHandler({ userId, deckId, timezone: timezoneQuery, ahead_days: aheadDaysNum });
     

@@ -129,7 +129,7 @@ async function getDeckStatusById(userId: string, deckId: string, timezone: strin
 }
 
 
-async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, from: string, to: string)
+async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, from: string | undefined, to: string | undefined)
 : Promise<GetRetentionRateByDateRouteResponse>
 {
     const supabase = getSupabaseAdminClient();
@@ -138,8 +138,8 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
         param_decks_id: deckId,
         param_users_id: userId,
         param_timezone: timezone,
-        param_from_date: from,
-        param_to_date: to
+        param_from_date: from ?? null,
+        param_to_date: to ?? null
     });
 
     util.throwSupabaseErrorIfExist(error, "Failed to get retention rate by date from Supabase");
@@ -148,7 +148,7 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
 }
 
 
-async function getDueDistributionByDate(userId: string, deckId: string, timezone: string, ahead_days: number)
+async function getDueDistributionByDate(userId: string, deckId: string, timezone: string, ahead_days: number | undefined)
 : Promise<GetDueDistributionByDateRouteResponse>
 {
     const supabase = getSupabaseAdminClient();

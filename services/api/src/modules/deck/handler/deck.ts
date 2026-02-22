@@ -50,22 +50,28 @@ async function getRetentionRateByDateRouteHandler(req: GetRetentionRateByDateRou
 : Promise<GetRetentionRateByDateRouteResponse> 
 {
     const timezoneStr = req.timezone;
-    const fromStr = req.from;
-    const toStr = req.to;
+    const from = req.from;
+    const to = req.to;
 
     if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
         throw new BadRequestError("Missing or invalid timezone parameter");
     }
 
-    if (!fromStr || typeof fromStr !== "string" || fromStr.length !== 10) {
-        throw new BadRequestError("Missing or invalid from parameter");
+    if (from !== undefined) {
+        const fromDate = new Date(from);
+        if (isNaN(fromDate.getTime())) {
+            throw new BadRequestError("Invalid from parameter");
+        }
     }
 
-    if (!toStr || typeof toStr !== "string" || toStr.length !== 10) {
-        throw new BadRequestError("Missing or invalid to parameter");
+    if (to !== undefined) {
+        const toDate = new Date(to);
+        if (isNaN(toDate.getTime())) {
+            throw new BadRequestError("Invalid to parameter");
+        }
     }
 
-    const result = await service.getRetentionRateByDate(req.userId, req.deckId, timezoneStr, fromStr, toStr);
+    const result = await service.getRetentionRateByDate(req.userId, req.deckId, timezoneStr, req.from, req.to);
     return result;
 }
 
@@ -80,8 +86,10 @@ async function getDueDistributionByDateRouteHandler(req: GetDueDistributionByDat
         throw new BadRequestError("Missing or invalid timezone parameter");
     }
 
-    if (aheadDaysNum === undefined || typeof aheadDaysNum !== "number" || aheadDaysNum < 0) {
-        throw new BadRequestError("Missing or invalid ahead_days parameter");
+    // aheadDaysNum will error if it's not undefined or number (with positive value)
+    if (typeof aheadDaysNum !== "undefined" && typeof aheadDaysNum !== "number") {
+        if(typeof aheadDaysNum !== "undefined" && aheadDaysNum < 0)
+            throw new BadRequestError("Missing or invalid ahead_days parameter");
     }
 
     const result = await service.getDueDistributionByDate(req.userId, req.deckId, timezoneStr, aheadDaysNum);
