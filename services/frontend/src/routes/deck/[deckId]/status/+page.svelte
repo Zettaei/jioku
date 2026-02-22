@@ -7,7 +7,7 @@
     import Card from "$lib/components/ui/card/card.svelte";
     import DeckStatusGraph from "./DeckStatusGraph.svelte";
 
-    let deckId: string = $state("");
+    let deckId: string = $derived(page.params.deckId ?? '');
     let deckStatus: GetDeckStatusByIdRouteResponse = $state(null);
 
     let isLoading = $state(true);
@@ -43,7 +43,7 @@
         <p class="text-center">Loading deck status...</p>
     {:else}
         {#if deckStatus}
-            <DeckStatusGraph deckStatus={deckStatus} />
+            <DeckStatusGraph deckId={deckId} deckStatus={deckStatus} />
         {/if}
 
     {/if}
