@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_decks_users_id ON public.decks(users_id);
 -- -------------------------
 -- Cards
 -- -------------------------
--- !!!! OPTIMIZE: MIGHT BE A GOOD IDEA TO INDEX THOSE 3 INDEX AS ONE INDEX TOO, MAYBE IT WILL BE FASTER WHEN FETCH
+-- # OPTIMIZE: MIGHT BE A GOOD IDEA TO INDEX THOSE 3 INDEX AS ONE INDEX TOO, MAYBE IT WILL BE FASTER WHEN FETCH
 CREATE TABLE IF NOT EXISTS public.cards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     decks_id UUID NOT NULL REFERENCES public.decks(id) ON DELETE CASCADE,
@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_cards_due ON public.cards(due);
 
 -- -------------------------
 -- Reviews
--- NOTE: add schedule partitioning later
+-- # NOTE: add schedule partitioning later
 -- -------------------------
 CREATE TABLE IF NOT EXISTS public.reviews (
     decks_id UUID NOT NULL REFERENCES public.decks(id) ON DELETE CASCADE,

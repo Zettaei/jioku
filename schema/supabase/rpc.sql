@@ -1,6 +1,10 @@
+--------------- ### THIS IS FOR SUPABASE ONLY
+--------------- ### copy these code to run on supabase sql query
 
-
--- GetDueDistributionByDate
+  -- param_ahead_days <= 31 THEN day
+  -- param_ahead_days > 31 && param_ahead_days <= 366 THEN month(12)
+  -- param_ahead_days > 366 THEN year
+  -- # NOTE: QUITE A BAD DESIGN I THINK, USING AHEAD_DAYS IS A HUGE MISTAKE, yabai
 CREATE OR REPLACE FUNCTION get_due_distribution_by_date(
   param_decks_id uuid,
   param_users_id uuid,
@@ -37,7 +41,7 @@ BEGIN
 
   group_unit := CASE
     WHEN param_ahead_days <= 31   THEN 'day'
-    WHEN param_ahead_days <= 185  THEN 'week'
+    -- WHEN param_ahead_days <= 185  THEN 'week'
     WHEN param_ahead_days <= 366  THEN 'month'
     ELSE 'year'
   END;
@@ -264,7 +268,7 @@ BEGIN
 
 
   -- Due cards range
-  -- OPTIMIZE: avoid do anything to table col, it cause index unuseable
+  -- # OPTIMIZE: avoid do anything to table col, it cause index unuseable
   SELECT jsonb_agg(dues) INTO tmp_card_due_days_count
   FROM (
     SELECT 
