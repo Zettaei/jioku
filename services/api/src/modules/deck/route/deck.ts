@@ -3,6 +3,9 @@ import { userIdMiddleware } from "src/middleware/index.js";
 import {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
+    getDeckStatusByIdRouteHandler,
+    getRetentionRateByDateRouteHandler,
+    getDueDistributionByDateRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler
@@ -10,6 +13,9 @@ import {
 import type {
     GetDecksRouteResponse,
     GetDeckByIdRouteResponse,
+    GetDeckStatusByIdRouteResponse,
+    GetRetentionRateByDateRouteResponse,
+    GetDueDistributionByDateRouteResponse,
     CreateDeckRouteResponse,
     UpdateDeckRouteResponse,
     DeleteDeckRouteResponse
@@ -42,6 +48,41 @@ routes.get("/decks/:deckId", async (c) => {
     
     
     return c.json<GetDeckByIdRouteResponse>(result);
+});
+
+routes.get("/decks/:deckId/status", async (c) => {
+    const userId = c.get("userId");
+    const deckId = c.req.param("deckId");
+    const timezoneQuery = c.req.query("timezone");
+
+    const result = await getDeckStatusByIdRouteHandler({ userId, deckId, timezone: timezoneQuery });
+    
+    
+    return c.json<GetDeckStatusByIdRouteResponse>(result);
+});
+
+routes.get("/decks/:deckId/status/retentionrate", async (c) => {
+    const userId = c.get("userId");
+    const deckId = c.req.param("deckId");
+    const timezoneQuery = c.req.query("timezone");
+    const fromQuery = c.req.query("from");
+    const toQuery = c.req.query("to");
+
+    const result = await getRetentionRateByDateRouteHandler({ userId, deckId, timezone: timezoneQuery, from: fromQuery, to: toQuery });
+    
+    return c.json<GetRetentionRateByDateRouteResponse>(result);
+});
+
+routes.get("/decks/:deckId/status/duedistribution", async (c) => {
+    const userId = c.get("userId");
+    const deckId = c.req.param("deckId");
+    const timezoneQuery = c.req.query("timezone");
+    const aheadDaysQuery = Number(c.req.query("ahead_days"));
+    const aheadDaysNum = !isNaN(aheadDaysQuery) ? aheadDaysQuery : undefined;
+
+    const result = await getDueDistributionByDateRouteHandler({ userId, deckId, timezone: timezoneQuery, ahead_days: aheadDaysNum });
+    
+    return c.json<GetDueDistributionByDateRouteResponse>(result);
 });
 
 routes.post("/decks", async (c) => {

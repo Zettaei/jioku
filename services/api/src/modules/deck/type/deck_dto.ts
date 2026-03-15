@@ -1,5 +1,6 @@
 import type { DeckRow, DeckInsert, DeckUpdate } from "src/core/supabase/type.js";
 import type { PaginatedResponse } from "./dto.js";
+import type { CardsDueDistribution, CardsMaturityDistribution, CardsStatusDistribution, CardsTotal, ReviewRetentionRate } from "./model.js";
 
 export const DeckResponseHiddenColumn = { "users_id": "users_id" } as const;
 export type DeckResponseHiddenColumn = typeof DeckResponseHiddenColumn[keyof typeof DeckResponseHiddenColumn];
@@ -49,3 +50,45 @@ export interface DeleteDeckRouteHandler {
 }
 
 export type DeleteDeckRouteResponse = {};
+
+
+////////////////////////////////////////////// GET DECK STATUS BY ID
+export interface GetDeckStatusByIdRouteHandler {
+    userId: string;
+    deckId: string;
+    timezone: string | undefined;
+}
+
+export interface DeckStatus {
+    date: string;
+    cards_status_distribution: CardsStatusDistribution;
+    cards_maturity_distribution: CardsMaturityDistribution;
+    cards_due_distribution: CardsDueDistribution;
+    review_retention_rate: ReviewRetentionRate;
+    cards_total: CardsTotal;
+}
+
+export type GetDeckStatusByIdRouteResponse = DeckStatus | null;
+
+
+////////////////////////////////////////////// GET RETENTION RATE BY DATE
+export interface GetRetentionRateByDateRouteHandler {
+    userId: string;
+    deckId: string;
+    timezone: string | undefined;
+    from: string | undefined;
+    to: string | undefined;
+}
+
+export type GetRetentionRateByDateRouteResponse = ReviewRetentionRate;
+
+
+////////////////////////////////////////////// GET DISTRIBUTION BY DATE
+export interface GetDueDistributionByDateRouteHandler{
+    userId: string;
+    deckId: string;
+    timezone: string | undefined;
+    ahead_days: number | undefined;
+}
+
+export type GetDueDistributionByDateRouteResponse = CardsDueDistribution;

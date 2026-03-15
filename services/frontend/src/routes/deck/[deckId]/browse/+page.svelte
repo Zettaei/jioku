@@ -389,6 +389,7 @@
 
         {/if}
 
+        <!-- FIXME: WTF why is next, prev go 2 page at a time -->
         {#if !rowIsLoading}
             <Pagination.Root count={totalCardCount} perPage={pageLimit}>
             {#snippet children({ pages, currentPage: paginationCurrentPage })}

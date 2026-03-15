@@ -15,7 +15,7 @@ async function processOCR(image: Sharp, filename: string)
         response = await fetch(ENV_VARS.OCR_URL.value + "/ocr", {
             method: 'POST',
             headers: {
-                "X-API-KEY": ENV_VARS.OCR_API_KEY.value,
+                "x-api-key": ENV_VARS.OCR_API_KEY.value,
             },
             body: formData
         });
@@ -28,7 +28,7 @@ async function processOCR(image: Sharp, filename: string)
     const body = await response.json();
 
     if(!response.ok) {
-        if(response.status === 400) {
+        if(response.status >= 400 && response.status < 500) {
             throw new BadRequestError("Rejected request from OCR server");
         }
         else {

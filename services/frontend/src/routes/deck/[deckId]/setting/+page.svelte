@@ -9,25 +9,26 @@
     import { deleteDeck, updateDeck } from './services';
     import type { Json } from '$lib/types/server/core/supabase/generatedType.js';
     import { BadRequestError } from '$lib/errors/HttpError.js';
-    import { ArrowLeftIcon, CheckIcon, ClosedCaptionIcon, CrossIcon, SaveIcon, TrashIcon, XIcon } from '@lucide/svelte';
+    import { ArrowLeftIcon, CheckIcon, SaveIcon, TrashIcon } from '@lucide/svelte';
     import { goto } from '$app/navigation';
     import { useSidebar } from '$lib/components/ui/sidebar/index.js';
     import Confirmation from '$lib/components/Confirmation.svelte';
     import { page } from '$app/state';
     import { fetchDeckByDeckId } from '../../services.js';
-    import { error } from '@sveltejs/kit';
     import { type DeckRow } from '$lib/types/server/core/supabase/type.js';
     import BackButton from '$lib/components/BackButton.svelte';
     import { SESSIONSTORAGE_PREV_DECK_LIST } from '$lib/constant/sessionStorageKey.js';
+    import type { GetDeckByIdRouteResponse } from '$lib/types/server/modules/deck/type/deck_dto.js';
 
+    const sidebar = useSidebar();
 
     // let { data } = $props();
 
-    const sidebar = useSidebar()
+    const backDestination = "/deck";
     let backButtonRef: { click: () => void } | undefined = $state();
 
-    let deckId = $state<string>('');
-    let deck = $state<DeckRow>();
+    let deckId = $derived<string>(page.params.deckId ?? '');
+    let deck = $state<GetDeckByIdRouteResponse>();
     let setting = $state<DeckExtraSetting>({} as DeckExtraSetting);
     let isLoading = $state(false);
     let isSaved = $state(false);
@@ -41,16 +42,13 @@
    
 
     // SETTING STUFF
-    let newCardLimitPerDay = $state<number>(setting.newLimit !== undefined ?
-        setting.newLimit : (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number)
-    );
+    let newCardLimitPerDay = $state<number>(DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number);
 
     ////////////////
     
 
     // listen to url change
     $effect(() => {
-        const deckId = page.params.deckId;
         if(!deckId) return;
 
         isLoading = true;
@@ -58,8 +56,9 @@
         untrack(() => {
             fetchDeckByDeckId(deckId)
             .then((deckResult) => {
-                deck = deckResult as DeckRow;
-                setting = deck?.settings as unknown as DeckExtraSetting ?? {};
+                deck = deckResult;
+                setting = (deck?.settings as unknown as DeckExtraSetting) ?? {};
+                newCardLimitPerDay = (setting.newLimit as number) ?? (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number)
             })
             .finally(() => {
                 isLoading = false;
@@ -87,7 +86,7 @@
             };
             
             isLoading = true
-            updateDeck(deckId, updatedDeck)
+            updateDeck(deckId!, updatedDeck)
             .then(() => {
                 isSaved = true;
             })
@@ -109,7 +108,7 @@
 
     function confirmDelete() {
         isLoading = true;
-        deleteDeck(deckId)
+        deleteDeck(deckId!)
         .then(() => {
             isDeleted = true;
         })
@@ -117,11 +116,6 @@
             isLoading = false;
             throw err
         })
-    }
-
-    const backDestination = "/deck";
-    function goToDeck() {
-        goto("/deck");
     }
 
 </script>
@@ -157,6 +151,7 @@
                 </div>
             </Card.Header>
             <Card.Content>
+            <!-- @ts-ignore -->
                 <Accordion.Root value={["extra"]}>
                     <Accordion.AccordionItem>
                         <DeckMetadataForm mode="edit" bind:deck={deck} 
@@ -240,9 +235,11 @@
                 <div class="flex w-full justify-center text-center mb-5">
                     <CheckIcon class="text-green-500 me-2"/> Deck<span class="font-bold px-2">{deck?.name}</span>has been {isDeleted ? "deleted" : "updated"}.
                 </div>
-                <div>
-                    <Button variant="outline" class="px-10 py-3" onclick={() => backButtonRef?.click()}>Go to Deck</Button>
-                </div>
+
+                <!-- FAKE IT, FAKE THE BACK BUTTON -->
+                <BackButton bind:this={backButtonRef} 
+                            destination={backDestination} sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
+                        />
             {:else}
                 <div>Loading</div>
             {/if}

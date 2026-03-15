@@ -1,7 +1,7 @@
 import type { DeckInsert, DeckUpdate, DeckRow } from "src/core/supabase/type.js";
 import * as repository from "../repository/deck.js";
 import * as util from "../util.js";
-import type { DeckResponseHiddenColumn } from "../type/deck_dto.js";
+import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteResponse, GetDueDistributionByDateRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
 import { InternalError } from "src/errors/internalError.js";
 import type { Json } from "src/core/supabase/generatedType.js";
@@ -23,6 +23,30 @@ async function getDeckById(userId: string, deckId: string)
 {
     const data = await repository.getDeckById(userId, deckId);
     return data ? util.removeHiddenColumn(data) : null;
+}
+
+
+async function getDeckStatusById(userId: string, deckId: string, timezone: string | undefined = undefined)
+: Promise<GetDeckStatusByIdRouteResponse>
+{
+    const data = await repository.getDeckStatusById(userId, deckId, timezone);
+    return data;
+}
+
+
+async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, from: string | undefined, to: string | undefined)
+: Promise<GetRetentionRateByDateRouteResponse>
+{
+    const data = await repository.getRetentionRateByDate(userId, deckId, timezone, from, to);
+    return data;
+}
+
+
+async function getDueDistributionByDate(userId: string, deckId: string, timezone: string, ahead_days: number | undefined)
+: Promise<GetDueDistributionByDateRouteResponse>
+{
+    const data = await repository.getDueDistributionByDate(userId, deckId, timezone, ahead_days);
+    return data;
 }
 
 
@@ -99,5 +123,8 @@ export {
     getDeckById,
     createDeck,
     updateDeck,
-    deleteDeck
+    deleteDeck,
+    getDeckStatusById,
+    getRetentionRateByDate,
+    getDueDistributionByDate
 }

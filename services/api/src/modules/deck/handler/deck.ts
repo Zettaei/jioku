@@ -1,7 +1,8 @@
 import { DECK_OPTIONS } from "src/config.js";
 import * as service from "../service/deck.js";
-import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, CreateDeckRouteHandler,
+import type { GetDecksRouteHandler, GetDecksRouteResponse, GetDeckByIdRouteHandler, GetDeckByIdRouteResponse, GetDeckStatusByIdRouteHandler, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteHandler, GetRetentionRateByDateRouteResponse, GetDueDistributionByDateRouteHandler, GetDueDistributionByDateRouteResponse, CreateDeckRouteHandler,
 CreateDeckRouteResponse, UpdateDeckRouteHandler, UpdateDeckRouteResponse, DeleteDeckRouteHandler, DeleteDeckRouteResponse } from "../type/deck_dto.js";
+import { BadRequestError } from "src/errors/httpError.js";
 import * as util from "../util.js";
 
 async function getDecksRouteHandler(req: GetDecksRouteHandler)
@@ -31,6 +32,71 @@ async function getDeckByIdRouteHandler(req: GetDeckByIdRouteHandler)
 }
 
 
+async function getDeckStatusByIdRouteHandler(req: GetDeckStatusByIdRouteHandler)
+: Promise<GetDeckStatusByIdRouteResponse> 
+{
+    const timezoneStr = req.timezone;
+
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
+    const deck = await service.getDeckStatusById(req.userId, req.deckId, timezoneStr);
+    return deck;
+}
+
+
+async function getRetentionRateByDateRouteHandler(req: GetRetentionRateByDateRouteHandler)
+: Promise<GetRetentionRateByDateRouteResponse> 
+{
+    const timezoneStr = req.timezone;
+    const from = req.from;
+    const to = req.to;
+
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
+    if (from !== undefined) {
+        const fromDate = new Date(from);
+        if (isNaN(fromDate.getTime())) {
+            throw new BadRequestError("Invalid from parameter");
+        }
+    }
+
+    if (to !== undefined) {
+        const toDate = new Date(to);
+        if (isNaN(toDate.getTime())) {
+            throw new BadRequestError("Invalid to parameter");
+        }
+    }
+
+    const result = await service.getRetentionRateByDate(req.userId, req.deckId, timezoneStr, req.from, req.to);
+    return result;
+}
+
+
+async function getDueDistributionByDateRouteHandler(req: GetDueDistributionByDateRouteHandler)
+: Promise<GetDueDistributionByDateRouteResponse> 
+{
+    const timezoneStr = req.timezone;
+    const aheadDaysNum = req.ahead_days;
+
+    if (!timezoneStr || typeof timezoneStr !== "string" || timezoneStr.length === 0) {
+        throw new BadRequestError("Missing or invalid timezone parameter");
+    }
+
+    // aheadDaysNum will error if it's not undefined or number (with positive value)
+    if (typeof aheadDaysNum !== "undefined" && typeof aheadDaysNum !== "number") {
+        if(typeof aheadDaysNum !== "undefined" && aheadDaysNum < 0)
+            throw new BadRequestError("Missing or invalid ahead_days parameter");
+    }
+
+    const result = await service.getDueDistributionByDate(req.userId, req.deckId, timezoneStr, aheadDaysNum);
+    return result;
+}
+
+
 async function createDeckRouteHandler(req: CreateDeckRouteHandler)
 : Promise<CreateDeckRouteResponse> 
 {
@@ -43,9 +109,10 @@ async function updateDeckRouteHandler(req: UpdateDeckRouteHandler)
 : Promise<UpdateDeckRouteResponse> 
 {
     const deck = await service.updateDeck(
-        req.userId, 
+        req.userId,
         req.deckId, 
-        req.data);
+        req.data
+    );
     return deck;
 }
 
@@ -61,6 +128,9 @@ async function deleteDeckRouteHandler(req: DeleteDeckRouteHandler)
 export {
     getDecksRouteHandler,
     getDeckByIdRouteHandler,
+    getDeckStatusByIdRouteHandler,
+    getRetentionRateByDateRouteHandler,
+    getDueDistributionByDateRouteHandler,
     createDeckRouteHandler,
     updateDeckRouteHandler,
     deleteDeckRouteHandler

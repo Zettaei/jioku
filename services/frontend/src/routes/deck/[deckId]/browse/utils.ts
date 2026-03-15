@@ -37,7 +37,7 @@ export function getCardExtraValue(card: any, header: keyof typeof cardExtraHeade
 
     if(header === "status") {
         if(CardStatusType.new === value) return "New"
-        else if(CardStatusType.due === value) return "Due"
+        else if(CardStatusType.review === value) return "Due"
         else if(CardStatusType.retry === value) return "Retry"
         else if(CardStatusType.suspend === value) return "Suspend"
         else return "?"

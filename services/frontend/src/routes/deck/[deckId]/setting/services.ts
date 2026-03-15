@@ -1,8 +1,8 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
 import type { DeckEditableData } from "$lib/types/deck";
+import type { DeleteDeckRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 
-// NOTE: make it actually delete the key instead of just leave it there
 export async function updateDeck(deckId: string, deckData: DeckEditableData)
 : Promise<void>
 {
@@ -33,7 +33,9 @@ export async function updateDeck(deckId: string, deckData: DeckEditableData)
 }
 
 
-export async function deleteDeck(deckId: string) {
+export async function deleteDeck(deckId: string)
+: Promise<DeleteDeckRouteResponse>
+{
     if(!deckId) {
         throw new BadRequestError("Missing deckId");
     }
