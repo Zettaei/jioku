@@ -20,7 +20,7 @@ export class NotFoundError extends HttpError {
 }
 
 export class ConnectionError extends HttpError {
-    constructor(message: string = "Cannot connect to server") {
+    constructor(message: string = "Cannot connect to the service") {
         super(503, message);
         this.name = "ConnectionError";
     }

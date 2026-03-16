@@ -13,7 +13,7 @@
         isOpen: boolean;
         headers: Array<Header>;
         onSave: (data: {
-            card: Record<string, string>
+            card: { data: Record<string, string> }
         }) => void;
     }
 
@@ -45,10 +45,10 @@
     });
 
     function handleSave() {
-        console.log(editingData);
+
         if (onSave) {
             onSave({
-                card: editingData as Record<string, string>
+                card:( editingData as { data: Record<string, string>})
             });
         }
         isOpen = false;

@@ -37,6 +37,13 @@
     <Accordion.Root type="multiple" value={allItemIds}>
       {#each entries.result as entry (entry.ent_seq)}
         {@const metadata = getEntryMetadata(entry)}
+        {@const allKanji = entry.k_ele.map(k => k.keb).join("; ")}
+        {@const allReading = entry.r_ele.map(r => r.reb).join("; ")}
+        {@const meaning = entry.sense.map(sense => {
+            const posStr = sense.pos.length > 0 ? `[${sense.pos.map(p => cardPos.pos[p]).join("; ")}]` : "";
+            const glossStr = sense.gloss.flatMap(g => g.text ?? []).join(", ");
+            return posStr ? `${posStr};\n${glossStr};` : `${glossStr};`;
+        }).join("\n")}
         <Accordion.Item value="item-{entry.ent_seq}" class="bg-accent rounded-lg">
           <div class="flex justify-between ps-2 h-12">
             <div class="flex space-x-3 items-center">
@@ -49,7 +56,7 @@
             </div>
             <div class="flex items-center rounded-md gap-4 pe-4">
               <Volume2Icon class="cursor-pointer h-full" onclick={() => handleVoiceClick(metadata.kanji, metadata.reading)}/>
-              <EllipsisButton class="cursor-pointer h-full" entryText={metadata.kanji ?? metadata.reading}/>
+              <EllipsisButton class="cursor-pointer" entryText={allKanji} kanji={allKanji} reading={allReading} meaning={meaning}/>
               <Accordion.Trigger class="cursor-pointer" />
             </div>
           </div>
@@ -102,8 +109,8 @@
           <span class="border-s-8 border-zinc-500 ps-3 text-sm">
             {#each sense.pos as pos}
               <span class="me-3">{cardPos.pos[pos]};</span>
-
             {/each}
+          </span>
         </div>
         {#each sense.gloss as gloss}
           {#each gloss.text as text}

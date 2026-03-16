@@ -8,17 +8,19 @@ import * as Card from "$lib/components/ui/card/index.js";
         tokens: TokensRouteResponse | null;
         selectedWord: string | null;
         selectedIndex: string;
+        onWordSelect: (word: string) => void;
         handleVoiceClick: (text: string, reading?: string) => void;
     };
 
     // @ts-expect-error
-    let { tokens, selectedWord = $bindable(), selectedIndex = $bindable(), handleVoiceClick }: Props = $props<Props>();
+    let { tokens, selectedWord, selectedIndex = $bindable(), onWordSelect, handleVoiceClick }: Props = $props<Props>();
     let searchFullWord = $derived<string>(tokens?.tokens.map((token) => token.surface_form).join('') ?? '');
 
 
     function handleWordClick(e: MouseEvent) {
       const target = e.target as HTMLSpanElement;
-      selectedWord = target.innerText;
+      const word = target.innerText;
+      onWordSelect(word);
       selectedIndex = target.id;
     }
 

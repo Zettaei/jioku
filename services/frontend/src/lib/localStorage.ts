@@ -1,3 +1,6 @@
 export const LocalStorageKey = { 
-    SearchTranslationLang: "SearchTranslationLang" 
+    SearchTranslationLang: "SearchTranslationLang",
+    AddToDeckKanjiMode: "AddToDeckKanjiMode",
+    AddToDeckReadingMode: "AddToDeckReadingMode",
+    AddToDeckMeaningMode: "AddToDeckMeaningMode"
 };

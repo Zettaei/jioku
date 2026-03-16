@@ -36,10 +36,12 @@ export async function fetchCardsByDeckId(
         }
 }
 
-export async function addCardToDeckId(deckId: string | undefined, card: Record<string, string>)
+export async function addCardToDeckId(deckId: string | undefined, card: { data: Record<string, string> })
 : Promise<void>
 {
-    if(!deckId || !card) throw new BadRequestError("Missing deck id");
+    if(!deckId) throw new BadRequestError("Missing deck id");
+
+    // if(card.data)    throw new BadRequestError("Missing data");
 
     try {
             const fetchData = await fetch(

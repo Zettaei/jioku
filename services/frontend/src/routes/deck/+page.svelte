@@ -1,7 +1,7 @@
 <script lang="ts">
     import { DECK_LIST_TOOLBAR_CONTEXT, DeckListToolbarContextClass, type DeckListToolbarContextInterface } from '$lib/context/deckToolbar.svelte.js';
     import { getContext, onMount, setContext, untrack } from 'svelte';
-    import { fetchUserDecks, createDeck } from './services.js';
+    import { createDeck, fetchUserStudyDecks } from './services.js';
     import * as Card from '$lib/components/ui/card/index';
     import * as Pagination from '$lib/components/ui/pagination/index';
     import type { GetDecksStudyRouteResponse } from '$lib/types/server/modules/deck/type/study_dto.js';
@@ -66,7 +66,7 @@
 
         isLoading = true;
 
-        fetchUserDecks(currentPage, pageLimit, search, sortBy, sortAsc)
+        fetchUserStudyDecks(currentPage, pageLimit, search, sortBy, sortAsc)
         .then((res) => {
             decks = res;
         })

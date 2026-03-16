@@ -10,6 +10,7 @@
 	import { userStore } from "$lib/stores/auth";
     import { errorState } from '$lib/global/errorState.svelte';
     import ErrorPopup from "./ErrorPopup.svelte";
+    import SuccessPopup from "./SuccessPopup.svelte";
 
 	let toolbarSnippet: Snippet | null = $state(null);
 
@@ -42,6 +43,7 @@
 <ModeWatcher/>
 
 <ErrorPopup />
+<SuccessPopup />
 
 <Sidebar.Provider bind:open={isOpen}>
 	<AppSidebar />

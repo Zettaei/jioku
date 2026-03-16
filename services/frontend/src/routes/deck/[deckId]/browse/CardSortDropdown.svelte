@@ -32,7 +32,7 @@
     onValueChange={(val) => {
         const url = new URL(page.url);
         url.searchParams.set("sortby", val);
-        url.searchParams.delete("page");    // <== not actually using "page" as param but ok
+        url.searchParams.delete("page");
 
         goto(url, {
             keepFocus: true,

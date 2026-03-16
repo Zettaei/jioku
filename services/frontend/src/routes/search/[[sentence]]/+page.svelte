@@ -21,7 +21,6 @@
     // BUG: after changing language, user can't enter the same sentence again for some reason
 
   const SearchToolbarContext = getContext<SearchToolbarContextInterface>(SEARCH_TOOLBAR_CONTEXT);
-  const MAX_VOICE_CACHES_LENGTH = 20;
   let AudioContext: AudioContext;
   const voiceCache = new Map<string, AudioBuffer>();
   
@@ -38,7 +37,16 @@
   let selectedWord = $state("");
   let selectedIndex = $derived<string>(tokens?.tokens[0] ? "0" : "");
 
-  let currentPage = $state<number>(1);
+  let currentPage = $derived.by<number>(() => {
+    let p = Number(page.url.searchParams.get("page"));
+
+    if(!isNaN(p) && p > 0) return p;
+
+    const url = new URL(page.url);
+    url.searchParams.set("page", '1');
+    goto(url, { keepFocus: true });
+    return 1;
+  });
   let pageLimit = $state<number>(DICT_OPTIONS.MAX_RESULTS_PER_PAGE);
 
   // // DEV: MOCK DATA
@@ -78,14 +86,13 @@
     }
     
     untrack(async () => {
-      goto("/search");
-      SearchToolbarContext.query = "";
-      
       uppercardIsLoading = true;
       try {
         const tokensResult = await fetchTokensOCR(image, SearchToolbarContext.translation);
         tokens = tokensResult;
         selectedWord = getDefaultSelectedWord(tokens);
+        SearchToolbarContext.query = "";
+        goto("/search?page=1");
       }
       finally {
         uppercardIsLoading = false;
@@ -117,9 +124,10 @@
   });
 
 
-  // entry listening
+  // fetch data when currentPage or selectedWord changes
   $effect(() => {
     const word = selectedWord;
+    const pageNum = currentPage;
 
     if(word === "") {
       return;
@@ -127,31 +135,27 @@
 
     untrack(async () => {
       lowercardIsLoading = true;
-      currentPage = 1;
       try {
-        const entryResult = await fetchSearchWords(word, SearchToolbarContext.translation, currentPage, pageLimit)
+        const entryResult = await fetchSearchWords(word, SearchToolbarContext.translation, pageNum, pageLimit)
         entries = entryResult;
       }
       finally {
         lowercardIsLoading = false;
       }
-
     });
   });
 
-  // pagination listening
-  async function handlePageChange(newPage: number) {
-    if (!selectedWord || !entries) return;
-    
-    currentPage = newPage;
-    lowercardIsLoading = true;
-    try {
-      const entryResult = await fetchSearchWords(selectedWord, SearchToolbarContext.translation, newPage, pageLimit);
-      entries = entryResult;
-    }
-    finally {
-      lowercardIsLoading = false;
-    }
+  function handleWordSelect(word: string): void {
+    selectedWord = word;
+    const url = new URL(page.url);
+    url.searchParams.set("page", "1");
+    goto(url, { keepFocus: true });
+  }
+
+  function handlePageChange(newPage: number): void {
+    const url = new URL(page.url);
+    url.searchParams.set("page", newPage.toString());
+    goto(url, { keepFocus: true });
   }
 
   
@@ -162,10 +166,8 @@
       throw new Error("Speech unavailable")
     }
 
-    // FIXME: 上(かみ)、上(うえ) it save one and kinda overlapped each other, fix it so multiple pronunciation can be saved
-
     // check the page cache
-    let decodedVoiceBuffer = voiceCache.get(text);
+    let decodedVoiceBuffer = voiceCache.get(text + reading);
     if(decodedVoiceBuffer) {
       playVoice(AudioContext, decodedVoiceBuffer);
 
@@ -175,7 +177,13 @@
       .then(async (voiceArrayBuffer) => {
         decodedVoiceBuffer = await AudioContext.decodeAudioData(voiceArrayBuffer);
         playVoice(AudioContext, decodedVoiceBuffer);
-        voiceCache.set(text, decodedVoiceBuffer)
+        
+        if (voiceCache.size > DICT_OPTIONS.MAX_VOICE_CACHE_LENGTH) {
+          const firstKey = voiceCache.keys().next().value!;   // <-- // NOTE: probably fine??? I mean there has to be value there right right??
+          voiceCache.delete(firstKey);
+        }
+
+        voiceCache.set(text + reading, decodedVoiceBuffer);
       })
     }
   }
@@ -198,8 +206,9 @@
     {#if tokens}
         <UpperCard
             tokens={tokens}
-            bind:selectedWord
+            selectedWord={selectedWord}
             bind:selectedIndex
+            onWordSelect={handleWordSelect}
             handleVoiceClick={handleVoiceClick}
         />
     {/if}
@@ -209,8 +218,8 @@
     {:else if entries}
         <LowerCard entries={entries} handleVoiceClick={handleVoiceClick} />
         
-        {#if entries.result.length > 0}
-            <Pagination.Root count={entries.total} perPage={pageLimit} bind:page={currentPage}>
+
+            <Pagination.Root count={entries.total} perPage={pageLimit} page={currentPage}>
             {#snippet children({ pages })}
                 <Pagination.Content>
                 <Pagination.Item>
@@ -252,7 +261,7 @@
                 </Pagination.Content>
             {/snippet}
             </Pagination.Root>
-        {/if}
+
     {/if}
 {/if}
 

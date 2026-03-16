@@ -24,6 +24,7 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import { XIcon } from "@lucide/svelte";
     import { SESSIONSTORAGE_PREV_DECK_LIST } from "$lib/constant/sessionStorageKey";
+    import { successState } from "$lib/global/successState.svelte";
 
     let BrowseToolbarContext = getContext<BrowseDeckToolbarContextInterface>(BROWSE_DECK_TOOLBAR_CONTEXT);
     let setOnDelete: (handler: (() => void) | null) => void = getContext(BROWSE_DECK_TOOLBAR_DELETE_HANDLER);
@@ -184,12 +185,15 @@
     }
 
     function handleAddCardSave(data: {
-        card: Record<string, string>
+        card: { data: Record<string, string> }
     })
     : void 
     {
         rowIsLoading = true;
         addCardToDeckId(deckId, data.card)
+        .then(() => {
+            successState.show("Card added");
+        })
         .finally(() => {
             pageChanged = !pageChanged; // Refresh list
             rowIsLoading = false;
@@ -389,7 +393,7 @@
 
         {/if}
 
-        <!-- FIXME: WTF why is next, prev go 2 page at a time -->
+        <!-- BUG: 17 entries but shown 15 and no other page than 1 MIGHT NEED TO CHANGE THE STORED PROCEDURE-->
         {#if !rowIsLoading}
             <Pagination.Root count={totalCardCount} perPage={pageLimit}>
             {#snippet children({ pages, currentPage: paginationCurrentPage })}

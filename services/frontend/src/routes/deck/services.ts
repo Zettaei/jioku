@@ -6,7 +6,7 @@ import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/ty
 import type { GetDecksStudyRouteResponse } from "$lib/types/server/modules/deck/type/study_dto";
 
 
-export async function fetchUserDecks(
+export async function fetchUserStudyDecks(
     page: number = 1, limit: number | undefined,
     search?: string | undefined, sortBy?: string | undefined, sortAsc?: boolean | undefined
 ): Promise< GetDecksStudyRouteResponse >
@@ -19,6 +19,27 @@ export async function fetchUserDecks(
     try {
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${userState.timezone}&page=${page}` + optionalParams
+            );
+    
+            if (!fetchData.ok) {
+                throw new HttpError(fetchData.status);
+            }
+    
+            return await fetchData.json();
+    
+        } catch (err) {
+            if (err instanceof HttpError) throw err;
+    
+            throw new ConnectionError();
+        }
+}
+
+export async function fetchUserDecksBareMinimum()
+: Promise< GetDecksStudyRouteResponse >
+{
+    try {
+            const fetchData = await fetch(
+                `${PUBLIC_BACKEND_URL}/deck/decks`
             );
     
             if (!fetchData.ok) {
