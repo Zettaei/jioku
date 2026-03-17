@@ -18,7 +18,6 @@
 
     // OPTIMIZE: check if the last image/text and translation is the same as the new one, if it is then no request
     // BUG: race condition if user clicking or searching too fast
-    // BUG: after changing language, user can't enter the same sentence again for some reason
 
   const SearchToolbarContext = getContext<SearchToolbarContextInterface>(SEARCH_TOOLBAR_CONTEXT);
   let AudioContext: AudioContext;
@@ -103,6 +102,7 @@
   // sentence/search listening
   $effect(() => {
     const currentSentence = sentence;
+    const submissionCount = SearchToolbarContext.submissionCount;
 
     if (currentSentence === "") {
         tokens = null;
@@ -116,6 +116,10 @@
         tokens = tokensResult;
         selectedWord = getDefaultSelectedWord(tokens);
         SearchToolbarContext.image = null;
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set("page", "1");
+        await goto(url.toString(), { keepFocus: true });
       }
       finally {
         uppercardIsLoading = false;
@@ -128,6 +132,7 @@
   $effect(() => {
     const word = selectedWord;
     const pageNum = currentPage;
+    const submissionCount = SearchToolbarContext.submissionCount;
 
     if(word === "") {
       return;

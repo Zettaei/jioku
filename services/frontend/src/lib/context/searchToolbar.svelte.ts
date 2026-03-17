@@ -6,11 +6,12 @@ export interface SearchToolbarContextInterface {
     image:File | null;
     translation: TranslationLanguage;
     query: string;
-
+    submissionCount: number;
 }
 
 export class SearchToolbarContextClass implements SearchToolbarContextInterface {
     image = $state<File | null>(null);
     translation = $state<TranslationLanguage>(TranslationLanguage.English);
     query = $state<string>("");
+    submissionCount = $state<number>(0);
 }

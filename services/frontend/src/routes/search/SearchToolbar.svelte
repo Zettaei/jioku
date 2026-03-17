@@ -41,8 +41,7 @@
             return;
         }
 
-        searchbarSubmit(toolbarContext.query);
-        console.log(`${toolbarContext.query} | ${toolbarContext.image} | ${toolbarContext.translation}`)
+        searchbarSubmit(toolbarContext.query, toolbarContext);
     }
 </script>
 
