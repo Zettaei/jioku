@@ -5,9 +5,9 @@
     import type { StudyCardsBlock } from "$lib/types/server/modules/deck/type/study_dto";
     import { page } from "$app/state";
     import { type CardRow, type DeckRow } from "$lib/types/server/core/supabase/type";
-    import { fetchDeckByDeckId, fetchUserDecks } from "../../services";
+    import { fetchDeckByDeckId } from "../../services";
     import { errorState } from "$lib/global/errorState.svelte";
-    import { userState } from "$lib/global/userState.svelte";
+    import { userStore } from "$lib/stores/auth";
     import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
     import { CardStatusType } from "$lib/types/server/modules/deck/type/model";
     import { STUDY_OPTIONS } from "$lib/constant/options";
@@ -54,7 +54,7 @@
     // Use a simple object (non-reactive) to act as a lock for each status
     const fetchLocks = {
         [CardStatusType.new]: false,
-        [CardStatusType.due]: false,
+        [CardStatusType.review]: false,
         [CardStatusType.retry]: false
     };
 
@@ -73,7 +73,7 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
         const result = await fetchCardsByStatus(
             deckId, 
             status, 
-            userState.timezone, 
+            $userStore?.timezone ?? "Asia/Bangkok", 
             items.length, 
             STUDY_OPTIONS.CARD_FETCH_LIMIT
         );
@@ -110,13 +110,13 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
         
         untrack(() => {
             fetchLocks[CardStatusType.new] = true;
-            fetchLocks[CardStatusType.due] = true;
+            fetchLocks[CardStatusType.review] = true;
             fetchLocks[CardStatusType.retry] = true;
             isLoading = true;
             
             Promise.all([
                 fetchDeckByDeckId(deckId),
-                fetchCardsOnStart(deckId, userState.timezone)
+                fetchCardsOnStart(deckId, $userStore?.timezone ?? "Asia/Bangkok")
             ])
             .then(([deckResult, cardsResult]) => {
                 deck = deckResult;
@@ -147,7 +147,7 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
             .finally(() => {
                 isLoading = false;
                 fetchLocks[CardStatusType.new] = false;
-                fetchLocks[CardStatusType.due] = false;
+                fetchLocks[CardStatusType.review] = false;
                 fetchLocks[CardStatusType.retry] = false;
             });
         });
@@ -202,7 +202,7 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
         }
 
         untrack(() => {
-            refillCards(CardStatusType.due, dueCards)
+            refillCards(CardStatusType.review, dueCards)
             .then((updatedBlock) => {
                 if(updatedBlock === null) return;
 

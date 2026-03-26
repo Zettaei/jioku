@@ -5,10 +5,10 @@
 </script>
 
 <div>
-    <Card.Root class="text-center mt-12 border-0 bg-transparent">
+    <Card.Root class="text-start mt-12 border-0 bg-transparent">
     <Card.Header>
-      <Card.Title class="font-bold text-2xl">
-        Dictionary
+      <Card.Title class="pagetitle">
+        DICTIONARY
       </Card.Title>
     </Card.Header>
     <Card.Content>

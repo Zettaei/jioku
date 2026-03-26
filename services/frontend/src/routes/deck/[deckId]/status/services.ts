@@ -13,6 +13,9 @@ export async function fetchStatus(deckId: string, timezone: string)
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status?timezone=${timezone}`,
+            {
+                credentials: "include"
+            }
         );
 
         if (!fetchData.ok) {
@@ -43,6 +46,9 @@ export async function fetchRetentionRateByDate(deckId: string, timezone: string,
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status/retentionrate?timezone=${timezone}` + optional,
+            {
+                credentials: "include"
+            }
         );
 
         if (!fetchData.ok) {
@@ -74,6 +80,9 @@ export async function fetchDueDistribution(deckId: string, timezone: string, ahe
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status/duedistribution?timezone=${timezone}` + optional,
+            {
+                credentials: "include"
+            }
         );
 
         if (!fetchData.ok) {

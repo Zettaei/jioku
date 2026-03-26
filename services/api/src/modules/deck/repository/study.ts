@@ -1,4 +1,4 @@
-import { getSupabaseAdminClient } from "core/supabase/supabase.js";
+import * as Supabase from "src/core/supabase/index.js";
 import type { CardRow } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js"
@@ -10,7 +10,7 @@ async function getStudyDecks(userId: string,
     search: string = "", sortby: string = "createdat", sortasc: boolean
 ): Promise<GetDecksStudyRouteResponse>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const offset = (page - 1) * limit;
 
@@ -24,7 +24,7 @@ async function getStudyDecks(userId: string,
         param_limit: limit
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get study decks from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get study decks from Supabase");
 
     return {
         result: data.decks,
@@ -39,7 +39,7 @@ async function getStudyDecks(userId: string,
 async function getStudyCardsByDeckId(userId: string, deckId: string, timezone: string | undefined ,limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT, offset: number = 0)
 : Promise<GetStudyCardsByDeckIdRouteResponse>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase.rpc("get_study_cards_initial", {
         param_decks_id: deckId,
@@ -56,7 +56,7 @@ async function getStudyCardsByDeckId(userId: string, deckId: string, timezone: s
         param_retry_offset: offset,
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get study cards from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get study cards from Supabase");
 
     return data;
 }
@@ -64,7 +64,7 @@ async function getStudyCardsByDeckId(userId: string, deckId: string, timezone: s
 async function getStudyCardsByStatusAndDeckId(userId: string, deckId: string, timezone: string | undefined , status: number | undefined, limit: number = DECK_OPTIONS.CARD_RESULT_FETCH_LIMIT, offset: number = 0)
 : Promise<GetStudyCardsByStatusAndDeckIdRouteResponse>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase.rpc("get_study_cards_by_status", {
         param_decks_id: deckId,
@@ -75,7 +75,7 @@ async function getStudyCardsByStatusAndDeckId(userId: string, deckId: string, ti
         param_offset: offset
     });
  
-    util.throwSupabaseErrorIfExist(error, "Failed to get study cards from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get study cards from Supabase");
 
     return data;
 }
@@ -83,7 +83,7 @@ async function getStudyCardsByStatusAndDeckId(userId: string, deckId: string, ti
 async function updateCardAndReview(userId: string, deckId: string, cardId: string, timeSpent: number, quality: number)
 : Promise<CardRow>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase.rpc("update_cards_and_add_review", {
         param_decks_id: deckId,
@@ -93,7 +93,7 @@ async function updateCardAndReview(userId: string, deckId: string, cardId: strin
         param_quality: quality
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to update card and add review");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to update card and add review");
 
     return data;
 }

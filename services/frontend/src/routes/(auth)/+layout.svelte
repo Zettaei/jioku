@@ -1,14 +1,18 @@
 <script lang="ts">
-    import { redirect } from "@sveltejs/kit";
-    import { onMount } from "svelte";
-    import { userStore } from "$lib/stores/auth";
+    import { get } from "svelte/store";
+    import { goto } from "$app/navigation";
+    import { userStore, authInitialized } from "$lib/stores/auth";
 
 	let { children } = $props();
 
-    onMount(() => {
-        // TODO: check if user already logged in, if yes redirect to other page
+    $effect(() => {
+        if (get(authInitialized)) {
+            const user = get(userStore);
+            if (user) {
+                goto("/deck");
+            }
+        }
     });
-
 </script>
 
 <!-- DESIGN: add halftone pattern, for both themes -->

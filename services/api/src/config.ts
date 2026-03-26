@@ -97,3 +97,16 @@ export const OCR_OPTIONS = {
     HASH_IMAGE_HEIGHT: 256,
     IMAGE_CACHE_EXPIREIN_SECONDS: 60 * 60 * 6   // 6 hours 
 }
+
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+export const USER_OPTIONS = {
+    ACCESS_TOKEN_EXPIREIN_SECONDS: 60 * 30, // 30 mins
+    // ACCESS_TOKEN_EXPIREIN_SECONDS: 15, // 15 secs
+    ACCESS_TOKEN_COOKIE_NAME: "accesstoken",
+    REFRESH_TOKEN_EXPIREIN_SECONDS: 60 * 60 * 24 * 7, // 7 days
+    // REFRESH_TOKEN_EXPIREIN_SECONDS: 120, // 120 secs
+    REFRESH_TOKEN_COOKIE_NAME: "refreshtoken",
+    COOKIE_SECURE: true,
+    IS_LOGGEDIN_COOKIE_NAME: "is_loggedin"
+}

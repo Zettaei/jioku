@@ -14,12 +14,12 @@ export class InternalError extends Error {
 
 export class SupabaseError extends InternalError {
   constructor(message: string, subMessage: string | undefined, rawResponse: unknown | undefined) {
-    super(message, subMessage, rawResponse);
+    super(message, subMessage, rawResponse, 500);
   }
 }
 export class RedisError extends InternalError {
   constructor(message: string, subMessage: string | undefined, rawResponse: unknown | undefined) {
-    super(message, subMessage, rawResponse);
+    super(message, subMessage, rawResponse, 500);
   }
 }
 

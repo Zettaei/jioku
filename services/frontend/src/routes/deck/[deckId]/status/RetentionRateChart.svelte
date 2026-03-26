@@ -12,7 +12,7 @@
     import { page } from "$app/state";
     import { goto } from "$app/navigation";
     import { fetchRetentionRateByDate } from "./services";
-    import { userState } from "$lib/global/userState.svelte";
+    import { userStore } from "$lib/stores/auth";
     import type { ReviewRetentionRate } from "$lib/types/server/modules/deck/type/model";
     import { onMount, untrack } from "svelte";
     import { date } from "svelte-i18n";
@@ -68,7 +68,7 @@
         
         untrack(() => {
             if(!isFirst) {
-                fetchRetentionRateByDate(deckId, userState.timezone, from, to)
+                fetchRetentionRateByDate(deckId, $userStore?.timezone ?? "Asia/Bangkok", from, to)
                 .then((data) => {
                     retentionrate = data;
                     from = data.from;

@@ -3,7 +3,7 @@
     import { untrack } from "svelte";
     import { fetchStatus } from "./services";
     import type { GetDeckStatusByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
-    import { userState } from "$lib/global/userState.svelte";
+    import { userStore } from "$lib/stores/auth";
     import Card from "$lib/components/ui/card/card.svelte";
     import DeckStatusGraph from "./DeckStatusGraph.svelte";
 
@@ -22,7 +22,7 @@
         untrack(() => {
             isLoading = true;
             console.log(deckId)
-            fetchStatus(deckId, userState.timezone)
+            fetchStatus(deckId, $userStore?.timezone ?? "Asia/Bangkok")
             .then((fetchResult) => {
                 deckStatus = fetchResult;
             })

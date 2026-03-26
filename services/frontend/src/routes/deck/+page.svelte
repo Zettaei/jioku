@@ -162,24 +162,14 @@
 
 <div class="w-full flex justify-center">
     <div class="flex flex-col items-center w-full max-w-160">
-        <div class="w-full flex items-center">
-            <div class="flex-1 flex justify-start">
-                <!-- <Button
-                    class="cursor-pointer {isLoading ? "invisible" : ""}"
-                    variant="outline" onclick={handleRefreshClick}
-                >
-                    <RefreshCwIcon/>
-                    {#if !sidebar.isMobile}
-                        Refresh
-                    {/if}
-                </Button> -->
-            </div>
-            <div class="flex-1 flex justify-center mb-5">
-                <div class="text-2xl font-bold">
-                    Deck List
+        <div class="w-full flex justify-between">
+            <div class="mb-5">
+                <div class="pagetitle flex flex-col items-start">
+                    <span>DECK</span>
+                    <span>LIST</span>
                 </div>
             </div>
-            <div class="flex-1 flex justify-end">
+            <div class="flex justify-end">
                 <DeckSortDropdown sortBy={sortBy} sortAsc={sortAsc}/>
             </div>
         </div>

@@ -9,7 +9,6 @@
     import * as Table from "$lib/components/ui/table/index";
     import * as Pagination from "$lib/components/ui/pagination/index";
     import { cardExtraHeaderName, cardExtraHeaderOrder } from "$lib/constant/cardExtraRows";
-    import { userState } from "$lib/global/userState.svelte";
     import type { CardRow, CardUpdate } from "$lib/types/server/core/supabase/type";
     import { getCardExtraValue, isJsonObject } from "./utils";
     import EditModal from "./EditModal.svelte";
@@ -272,7 +271,7 @@
                     
                     <div class="flex-1 flex justify-center">
                         <div class="text-center">
-                            <div class="font-bold text-lg">Deck Browsing</div>
+                            <div class="font-bold text-lg avantgarde">DECK BROWSING</div>
                             <div class="text-muted-foreground text-xl mb-5">{deck?.name}</div>
                         </div>
                     </div>

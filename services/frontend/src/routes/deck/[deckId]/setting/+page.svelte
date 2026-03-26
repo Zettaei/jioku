@@ -144,7 +144,7 @@
                         />
                     </div>
                     <div class="flex-1">
-                        <div class="text-xl font-bold">Deck</div>
+                        <div class="text-xl font-bold avantgarde">DECK SETTINGS</div>
                         <div class="text-lg">{deck?.name}</div>
                     </div>
                     <div class="flex flex-1 justify-end"></div>

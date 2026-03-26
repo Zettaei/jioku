@@ -163,7 +163,7 @@
     goto(url, { keepFocus: true });
   }
 
-  
+  // BUG: some kanji doesn't have any, so it error when send req to api
   function handleVoiceClick(text: string, reading: string | undefined)
   : void 
   {

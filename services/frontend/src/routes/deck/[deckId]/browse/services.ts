@@ -18,9 +18,9 @@ export async function fetchCardsByDeckId(
     try {
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + optionalParams,
-                // {
-                //     credentials: "include",
-                // }
+                {
+                    credentials: "include",
+                }
             )
     
             if (!fetchData.ok) {
@@ -47,6 +47,7 @@ export async function addCardToDeckId(deckId: string | undefined, card: { data: 
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards`,
                 {
+                    credentials: "include",
                     method: "POST",
                     body: JSON.stringify({
                         card
@@ -77,6 +78,7 @@ export async function updateCard(deckId: string, cardId: string, card: CardUpdat
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards/${cardId}`,
                 {
+                    credentials: "include",
                     method: "PUT",
                     body: JSON.stringify({
                         card,
@@ -108,6 +110,7 @@ export async function deleteCard(deckId: string, cardIds: Array<string>)
             const fetchData = await fetch(
                 `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?` + (cardIds.map((cardId) => ("cardId="+cardId)).join('&')),
                 {
+                    credentials: "include",
                     method: "DELETE"
                 }
             );

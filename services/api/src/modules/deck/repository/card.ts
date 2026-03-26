@@ -1,4 +1,4 @@
-import { getSupabaseAdminClient } from "core/supabase/supabase.js";
+import * as Supabase from "src/core/supabase/index.js";
 import type { CardRow, CardInsert, CardUpdate, DeckRow } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
@@ -14,7 +14,7 @@ async function getCardsByDeckId(userId: string, deckId: string,
 )
 : Promise<PaginatedResponseWithTotalCount<CardRow>>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const offset = (page - 1) * limit;
 
@@ -31,7 +31,7 @@ async function getCardsByDeckId(userId: string, deckId: string,
         count: 'exact'  
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get cards from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return {
         result: data ?? [],
@@ -47,7 +47,7 @@ async function getCardsByDeckId(userId: string, deckId: string,
 async function getCardById(userId: string, cardId: string, deckId: string)
 : Promise<CardRow | null>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("cards")
@@ -57,7 +57,7 @@ async function getCardById(userId: string, cardId: string, deckId: string)
         .eq("decks.users_id", userId)
         .maybeSingle();
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get card from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get card from Supabase");
 
     return data;
 }
@@ -65,7 +65,7 @@ async function getCardById(userId: string, cardId: string, deckId: string)
 async function createCard(userId: string, deckId: string, newCardData: CardInsert)
 : Promise<CardRow>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to create card in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
@@ -77,7 +77,7 @@ async function createCard(userId: string, deckId: string, newCardData: CardInser
             .eq("users_id", userId)
             .maybeSingle();
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        Supabase.utils.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
     {
@@ -90,7 +90,7 @@ async function createCard(userId: string, deckId: string, newCardData: CardInser
             .select("*")
             .single();
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        Supabase.utils.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
 
         return data;
     }
@@ -100,7 +100,7 @@ async function createCard(userId: string, deckId: string, newCardData: CardInser
 async function updateCard(userId: string, cardId: string, deckId: string, updates: CardUpdate)
 : Promise<CardRow>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to update card in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
@@ -112,7 +112,7 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
             param_updates: updates
         })
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        Supabase.utils.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
 
         return data;
@@ -123,7 +123,7 @@ async function updateCard(userId: string, cardId: string, deckId: string, update
 async function deleteCards(userId: string, cardIds: Array<string>, deckId: string)
 : Promise<void>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
     const ERROR_MESSAGE = "Failed to delete cards in Supabase";
     const UNAUTHORIZED_MESSAGE = "Incorrect permissions or card/deck does not exist";
 
@@ -136,7 +136,7 @@ async function deleteCards(userId: string, cardIds: Array<string>, deckId: strin
             .maybeSingle();
 
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        Supabase.utils.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
         util.assertAuthorized(data, UNAUTHORIZED_MESSAGE);
     }
     {
@@ -148,7 +148,7 @@ async function deleteCards(userId: string, cardIds: Array<string>, deckId: strin
             .select();
 
 
-        util.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
+        Supabase.utils.throwSupabaseErrorIfExist(error, ERROR_MESSAGE);
         util.assertAuthorized(data.length > 0 ? data : null, UNAUTHORIZED_MESSAGE);
 
         return;

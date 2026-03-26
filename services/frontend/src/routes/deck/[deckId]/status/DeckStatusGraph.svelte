@@ -11,7 +11,7 @@
     import TooltipTrigger from "$lib/components/ui/tooltip/tooltip-trigger.svelte";
     import TooltipContent from "$lib/components/ui/tooltip/tooltip-content.svelte";
     import { cardStatus } from "$lib/constant/cardStatus";
-    import { userState } from "$lib/global/userState.svelte";
+    import { userStore } from "$lib/stores/auth";
     import { fetchDeckByDeckId } from "../../services";
     import BackButton from "$lib/components/BackButton.svelte";
     import { SESSIONSTORAGE_PREV_DECK_LIST } from "$lib/constant/sessionStorageKey.js";
@@ -136,8 +136,8 @@
                             destination="/deck" sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
                         />
                     </div>
-                    <div class="flex flex-1 justify-center flex-col items-center">
-                        <div class="text-xl font-bold">Deck</div>
+                    <div class="flex flex-1 justify-center flex-col items-center text-center">
+                        <div class="text-xl font-bold avantgarde">DECK STATISTIC</div>
                         <div class="text-lg">{deckName}</div>
                     </div>
                     <div class="flex flex-1 justify-end">
@@ -146,7 +146,7 @@
                 </div>
                 <div class="text-sm gap-4 mt-6 flex w-full justify-end">
                     <div><span class="font-bold">Date:</span> {deckStatus?.date}</div>
-                    <div><span class="font-bold">Timezone:</span> {userState.timezone}</div>
+                    <div><span class="font-bold">Timezone:</span> {$userStore?.timezone ?? "Asia/Bangkok"}</div>
                 </div>
             </div>
 

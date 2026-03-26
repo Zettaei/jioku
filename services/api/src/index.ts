@@ -4,10 +4,10 @@ import { serve } from "@hono/node-server"
 import { cors } from "hono/cors";
 import { HttpError } from "src/errors/httpError.js";
 import { InternalError } from "src/errors/internalError.js";
-import * as utils from "core/utils/index.js";
 import * as ocr from "modules/ocr/index.js";
 import * as dict from "modules/dict/index.js";
 import * as deck from "modules/deck/index.js";
+import * as user from "src/modules/user/index.js";
 
 import { ENV_VARS } from "./config.js";
 import { setupShutdown } from "./shutdown.js";
@@ -29,6 +29,7 @@ app.use(
 app.route("/ocr", ocr.routes);
 app.route("/dict", dict.routes);
 app.route("/deck", deck.routes);
+app.route("/user", user.routes);
 
 
 app.onError((err, c) => {
@@ -39,7 +40,7 @@ app.onError((err, c) => {
         }
 
         if (err instanceof InternalError) {
-            console.error(err.status, err.message);
+            console.error(err.status, err.cause);
             return c.text("Internal Server Error", err.status);
         }
 

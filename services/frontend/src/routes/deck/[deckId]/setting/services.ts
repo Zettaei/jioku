@@ -14,6 +14,7 @@ export async function updateDeck(deckId: string, deckData: DeckEditableData)
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
             {
+                credentials: "include",
                 method: "PUT",
                 body: JSON.stringify(deckData)
             }
@@ -44,6 +45,7 @@ export async function deleteDeck(deckId: string)
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
             {
+                credentials: "include",
                 method: "DELETE",
             }
         );

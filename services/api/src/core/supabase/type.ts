@@ -1,4 +1,4 @@
-import type { Database } from './generatedType.js'
+import type { Database } from './generatedTypes.js'
 
 // Convenience aliases
 export type DeckRow = Database['public']['Tables']['decks']['Row'];

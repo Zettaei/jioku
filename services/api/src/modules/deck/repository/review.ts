@@ -1,8 +1,9 @@
-import { getSupabaseAdminClient } from "core/supabase/supabase.js";
+import * as Supabase from "src/core/supabase/index.js";
 import type { ReviewRow, ReviewInsert, CardRow } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
 import type { PaginatedResponse } from "../type/dto.js";
+
 
 
 // OPTIMIZE: make it batch insert with Redis Queue or Redis Streams, it's only adding process so likely no Race Condition
@@ -10,7 +11,7 @@ import type { PaginatedResponse } from "../type/dto.js";
 async function getReviewsByCardId(userId: string, deckId: string, cardId: string, page: number = 1, limit: number = DECK_OPTIONS.REVIEW_RESULT_FETCH_LIMIT)
 : Promise<PaginatedResponse<ReviewRow>>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const offset = (page - 1) * limit;
 
@@ -23,7 +24,7 @@ async function getReviewsByCardId(userId: string, deckId: string, cardId: string
         .order("createdat", { ascending: false })
         .range(offset, offset + limit);
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get reviews from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get reviews from Supabase");
 
     const hasNext = (data?.length ?? 0) > limit;
 

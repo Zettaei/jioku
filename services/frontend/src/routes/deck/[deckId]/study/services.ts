@@ -1,7 +1,6 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { STUDY_OPTIONS } from "$lib/constant/options";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
-import { userState } from "$lib/global/userState.svelte";
 import type { CardStatusType } from "$lib/types/server/modules/deck/type/model";
 import type { GetStudyCardsByDeckIdRouteResponse, GetStudyCardsByStatusAndDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/study_dto";
 
@@ -15,9 +14,9 @@ export async function fetchCardsOnStart(deckId: string, timezone: string, offset
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/study/decks/${deckId}?timezone=${timezone}&offset=${offset}&limit=${limit}`,
-            // {
-            //     credentials: "include",
-            // }
+            {
+                credentials: "include"
+            }
         );
 
         if (!fetchData.ok) {
@@ -42,9 +41,9 @@ export async function fetchCardsByStatus(deckId: string, cardStatus: CardStatusT
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/study/decks/${deckId}/${cardStatus}?timezone=${timezone}&offset=${offset}&limit=${limit}`,
-            // {
-            //     credentials: "include",
-            // }
+            {
+                credentials: "include"
+            }
         );
 
         if (!fetchData.ok) {
@@ -73,11 +72,10 @@ export async function submitCardReview(deckId: string, cardId: string, payload: 
             `${PUBLIC_BACKEND_URL}/deck/study/decks/${deckId}/cards/${cardId}`,
             {
                 method: "POST",
-                body: JSON.stringify(payload)
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+                credentials: "include"
             }
-            // {
-            //     credentials: "include",
-            // }
         );
 
         if (!fetchData.ok) {

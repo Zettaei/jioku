@@ -202,12 +202,12 @@
                             ondragenter={(e) => handleDragEnter(e, index)}
                         >
                             <div 
-                                class="flex-none cursor-grab active:cursor-grabbing drag-handle"
+                                class="flex-none cursor-grab active:cursor-grabbing drag-handle self-center"
                                 role="banner"
                                 draggable="true"
                                 ondragstart={(e) => handleDragStart(e, index)}
                             >
-                                <div class="text-xs text-center">{header.key}</div>
+                                <!-- <div class="text-xs text-center">{header.key}</div> -->
                                 <GripVerticalIcon class="h-5 w-5 text-muted-foreground" />
                             </div>
                             <div class="flex-1 space-y-2">

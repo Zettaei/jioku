@@ -1,5 +1,6 @@
 import type { cardExtraHeaderName } from "$lib/constant/cardExtraRows";
-import { userState } from "$lib/global/userState.svelte";
+import { userStore } from "$lib/stores/auth";
+import { get } from "svelte/store";
 import type { Json } from "$lib/types/server/core/supabase/generatedType";
 import type { CardRow } from "$lib/types/server/core/supabase/type";
 
@@ -21,7 +22,7 @@ export function convertTimeToUser(timeText: string, withTime: boolean = true)
     }
 
     return utcDate.toLocaleString("en-GB", {
-        timeZone: userState.timezone,
+        timeZone: get(userStore)?.timezone ?? "Asia/Bangkok",
         dateStyle: "short",
         timeStyle: withTime ? "short" : undefined,
     });

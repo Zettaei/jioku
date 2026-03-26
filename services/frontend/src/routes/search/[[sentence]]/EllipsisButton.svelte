@@ -6,21 +6,23 @@
     import { addCardToDeckId } from "../../deck/[deckId]/browse/services";
     import { errorState } from "$lib/global/errorState.svelte";
     import { successState } from "$lib/global/successState.svelte";
+    import { userStore } from "$lib/stores/auth";
 
     interface Props {
         entryText: string; 
-        kanji?: string; 
-        reading?: string; 
-        meaning?: string;
-        class?: string;
+        kanji?: string | undefined; 
+        reading?: string | undefined; 
+        meaning?: string | undefined;
+        class?: string | undefined;
     }
 
-    let { entryText, kanji, reading, meaning, class: className } = $props();
+    let { entryText, kanji, reading, meaning, class: className }: Props = $props();
 
     const JISHO_SEARCH_URL = "https://jisho.org/search/" as const;
     const BUNPRO_SEARCH_URL = "https://bunpro.jp/vocabs/" as const;
 
     let isAddToDeckModalOpen = $state(false);
+    let isLoggedIn = $derived($userStore !== null);
 
     function handleJishoClick() {
         window.open(JISHO_SEARCH_URL + entryText, "_blank");
@@ -51,7 +53,11 @@
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
          <DropdownMenu.Group>
-          <DropdownMenu.Item onclick={() => { isAddToDeckModalOpen = true; }}>Add to Deck</DropdownMenu.Item>
+          {#if isLoggedIn}
+            <DropdownMenu.Item onclick={() => { isAddToDeckModalOpen = true; }}>Add to Deck</DropdownMenu.Item>
+          {:else}
+            <DropdownMenu.Item onclick={() => goto("/login")}>Log in to Add to Deck</DropdownMenu.Item>
+          {/if}
           <DropdownMenu.Item onclick={handleJishoClick}>
             Search in Jisho.org
             </DropdownMenu.Item>
@@ -63,4 +69,6 @@
        </DropdownMenu.Root>
 </div>
 
-<AddToDeckModal bind:isOpen={isAddToDeckModalOpen} onSave={handleAddToDeck} initialData={{ kanji, reading, meaning }} />
+{#if isLoggedIn}
+  <AddToDeckModal bind:isOpen={isAddToDeckModalOpen} onSave={handleAddToDeck} initialData={{ kanji, reading, meaning }} />
+{/if}

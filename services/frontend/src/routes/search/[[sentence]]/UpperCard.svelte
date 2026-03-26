@@ -28,8 +28,8 @@ import * as Card from "$lib/components/ui/card/index.js";
 
 <Card.Root class="text-lg">
     <Card.Header>
-      <Card.Title class="font-bold">
-        Quick Translation:
+      <Card.Title class="font-bold avantgarde">
+        QUICK TRANSLATION:
       </Card.Title>
     </Card.Header>
     <Card.Content>
@@ -38,7 +38,7 @@ import * as Card from "$lib/components/ui/card/index.js";
 
     <Card.Header class="py-0 my-0">
       <Card.Title class="font-bold flex">
-        Search:
+        <span class="font-bold avantgarde">SEARCH KEYWORDS:</span>
         <span class="px-2 cursor-pointer" onclick={() => handleVoiceClick(searchFullWord)}>
           <Volume2Icon/>
       </span>

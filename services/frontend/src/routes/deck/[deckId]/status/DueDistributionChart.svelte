@@ -7,7 +7,7 @@
 		TooltipProvider,
 	} from "$lib/components/ui/tooltip";
     import { untrack } from "svelte";
-    import { userState } from "$lib/global/userState.svelte";
+    import { userStore } from "$lib/stores/auth";
     import { fetchDueDistribution } from "./services";
     import * as Select from "$lib/components/ui/select/index";
 
@@ -81,7 +81,7 @@
         
         untrack(() => {
             if(!isFirst) {
-                fetchDueDistribution(deckId, userState.timezone, aheadDays)
+                fetchDueDistribution(deckId, $userStore?.timezone ?? "Asia/Bangkok", aheadDays)
                 .then((data) => {
                     duedistribution = data;
                     colorRules = generateColorRules(duedistribution.dues);

@@ -1,4 +1,4 @@
-import { getSupabaseAdminClient } from "core/supabase/supabase.js";
+import * as Supabase from "src/core/supabase/index.js";
 import type { DeckInsert, DeckRow, DeckUpdate } from "src/core/supabase/type.js";
 import { DECK_OPTIONS } from "src/config.js";
 import * as util from "../util.js";
@@ -8,7 +8,7 @@ import type { PaginatedResponse } from "../type/dto.js";
 async function getDecksByUserId(userId: string, page: number = 1, limit: number = DECK_OPTIONS.DECK_RESULT_FETCH_LIMIT)
 : Promise<PaginatedResponse<DeckRow>> 
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const offset = (page - 1) * limit;
 
@@ -20,7 +20,7 @@ async function getDecksByUserId(userId: string, page: number = 1, limit: number 
         .order("id", { ascending: false })  // extra, in case of decks having the same name
         .range(offset, offset + limit)
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     const hasNext = (data?.length ?? 0) > limit;
 
@@ -40,7 +40,7 @@ async function getDecksByUserId(userId: string, page: number = 1, limit: number 
 async function getDeckById(userId: string, deckId: string)
 : Promise<DeckRow | null> 
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
     
     const { data, error } = await supabase
         .from("decks")
@@ -49,7 +49,7 @@ async function getDeckById(userId: string, deckId: string)
         .eq("users_id", userId)
         .maybeSingle();
         
-    util.throwSupabaseErrorIfExist(error, "Failed to get deck from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return data;
 }
@@ -58,7 +58,7 @@ async function getDeckById(userId: string, deckId: string)
 async function createDeck(newDeckData: DeckInsert)
 : Promise<DeckRow>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("decks")
@@ -66,7 +66,7 @@ async function createDeck(newDeckData: DeckInsert)
         .select("*")
         .maybeSingle();
 
-    util.throwSupabaseErrorIfExist(error, "Failed to create decks in Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return data;
 }
@@ -75,7 +75,7 @@ async function createDeck(newDeckData: DeckInsert)
 async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckUpdate)
 : Promise<DeckRow> 
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("decks")
@@ -85,7 +85,7 @@ async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckU
         .select("*")
         .maybeSingle();
 
-    util.throwSupabaseErrorIfExist(error, "Failed to update deck in Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
     util.assertAuthorized(data, "Incorrect permissions or deck does not exist");
 
     return data;
@@ -95,7 +95,7 @@ async function updateDeck(deckId: string, userId: string, updatedDeckData: DeckU
 async function deleteDeck(deckId: string, userId: string)
 : Promise<void> 
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase
         .from("decks")
@@ -105,7 +105,7 @@ async function deleteDeck(deckId: string, userId: string)
         .select("*")
         .maybeSingle();
 
-    util.throwSupabaseErrorIfExist(error, "Failed to delete deck in Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
     util.assertAuthorized(data, "Incorrect permissions or deck does not exist");
         
     return;
@@ -115,7 +115,7 @@ async function deleteDeck(deckId: string, userId: string)
 async function getDeckStatusById(userId: string, deckId: string, timezone: string | undefined = undefined)
 : Promise<GetDeckStatusByIdRouteResponse>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase.rpc("get_deck_status", {
         param_decks_id: deckId,
@@ -123,7 +123,7 @@ async function getDeckStatusById(userId: string, deckId: string, timezone: strin
         param_timezone: timezone
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get deck status from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return data;
 }
@@ -132,7 +132,7 @@ async function getDeckStatusById(userId: string, deckId: string, timezone: strin
 async function getRetentionRateByDate(userId: string, deckId: string, timezone: string, from: string | undefined, to: string | undefined)
 : Promise<GetRetentionRateByDateRouteResponse>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase.rpc("get_retention_rate_by_date", {
         param_decks_id: deckId,
@@ -142,7 +142,7 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
         param_to_date: to ?? null
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get retention rate by date from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return data;
 }
@@ -151,7 +151,7 @@ async function getRetentionRateByDate(userId: string, deckId: string, timezone: 
 async function getDueDistributionByDate(userId: string, deckId: string, timezone: string, ahead_days: number | undefined)
 : Promise<GetDueDistributionByDateRouteResponse>
 {
-    const supabase = getSupabaseAdminClient();
+    const supabase = Supabase.getSupabaseAdminClient();
 
     const { data, error } = await supabase.rpc("get_due_distribution_by_date", {
         param_decks_id: deckId,
@@ -160,7 +160,7 @@ async function getDueDistributionByDate(userId: string, deckId: string, timezone
         param_ahead_days: ahead_days ?? null
     });
 
-    util.throwSupabaseErrorIfExist(error, "Failed to get retention rate by date from Supabase");
+    Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return data;
 }

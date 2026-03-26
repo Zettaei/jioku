@@ -21,9 +21,29 @@
 @font-face {
 	font-family: "ITC Avant Garde Gothic Medium";
 	src: url("$lib/assets/fonts/avant-garde-gothic-medium.otf");
+}
 
+@font-face {
 	font-family: "ITC Avant Garde Gothic CE Book";
 	src: url("$lib/assets/fonts/avant-garde-gothic-ce-book.otf")
+}
+
+.avantgarde {
+    font-family: var(--font-avant-garde-gothic-medium);
+	letter-spacing: 0.1rem;
+}
+
+.avantgardecebook {
+    font-family: var(--font-avant-garde-gothic-ce-book);
+	letter-spacing: 0.1rem;
+}
+
+.pagetitle {
+	font-family: var(--font-avant-garde-gothic-medium);
+	font-size: 4rem;
+	font-weight: bold;
+	line-height: 0.9;
+	letter-spacing: 0.1rem;
 }
 
 :root {

@@ -20,9 +20,6 @@ export async function fetchTokens(text: string = "", translationLang: Translatio
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/dict/tokens/${encodeURI(text)}?translation=${encodeURI(translationLang)}`,
-            // {
-            //     credentials: "include",
-            // }
         )
 
         if (!fetchData.ok) {

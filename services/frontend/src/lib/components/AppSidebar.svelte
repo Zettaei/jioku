@@ -2,27 +2,37 @@
   import {
     ChevronsRightIcon,
     LibraryBigIcon,
-    SearchIcon
+    SearchIcon,
+    LogInIcon,
+    LogOutIcon,
+    UserIcon,
   } from "@lucide/svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { Settings2Icon } from "@lucide/svelte";
   import ThemeToggle from "./app-ThemeToggle.svelte";
   import { cn } from "$lib/utils";
   import { page } from "$app/state";
+  import { userStore } from "$lib/stores/auth";
+  import { goto } from "$app/navigation";
+  import { logout } from "../../routes/(auth)/services";
+  import { errorState } from "$lib/global/errorState.svelte";
 
   const classname_menuButton = cn("h-10 px-3 text-lg w-full rounded-none");
   const classname_menuButton_active = cn("border-l-4 border-yellow-500");
   const classname_menuButton_inactive = cn("border-l-4 border-transparent hover:border-border");
   const classname_appTitle = cn(
     "w-full text-center text-nowrap text-xl",
-    "font-bold font-['font-avant-garde-gothic-medium']",
+    "font-bold avantgarde",
   );
-  const classname_titleButton = cn("ms-3");
+  const classname_titleButton = cn("ms-3 avantgarde");
 
 
 
   const sidebar = Sidebar.useSidebar();
   let isOpen = $derived(sidebar.open);
+
+  let user = $derived($userStore);
+  let isLoggedIn = $derived(user !== null);
 
   const onMenuButtonClick = () => {
     sidebar.setOpenMobile(false);
@@ -44,12 +54,25 @@
     return page.url.pathname.startsWith(url);
   };
 
-  const bodyItems = [
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch {
+      // ignore errors on logout — clear client state regardless
+    }
+    userStore.set(null);
+    goto("/search");
+  }
+
+  const alwaysItems = [
     {
       title: "Search",
       url: "/search",
       icon: SearchIcon,
     },
+  ];
+
+  const memberItems = [
     {
       title: "Deck",
       url: "/deck",
@@ -82,7 +105,7 @@
     <Sidebar.Group>
       <Sidebar.GroupContent>
         <Sidebar.Menu>
-          {#each bodyItems as item (item.title)}
+          {#each alwaysItems as item (item.title)}
             <Sidebar.MenuItem>
               <Sidebar.MenuButton 
                 class={cn(
@@ -100,6 +123,27 @@
               </Sidebar.MenuButton>
             </Sidebar.MenuItem>
           {/each}
+
+          {#if isLoggedIn}
+            {#each memberItems as item (item.title)}
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton 
+                  class={cn(
+                    classname_menuButton,
+                    isActive(item.url) ? classname_menuButton_active : classname_menuButton_inactive
+                  )} 
+                  onclick={onMenuButtonClick}
+                >
+                  {#snippet child({ props })}
+                    <a href={item.url} {...props}>
+                      <item.icon />
+                      <span class={classname_titleButton}>{item.title}</span>
+                    </a>
+                  {/snippet}
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            {/each}
+          {/if}
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
@@ -115,30 +159,57 @@
     </div>
   </Sidebar.Content>
   <Sidebar.Footer class="px-0 pb-2">
+    {#if isLoggedIn}
+      <Sidebar.Group>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {#each footerItems as item (item.title)}
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton 
+                  class={cn(
+                    classname_menuButton,
+                    isActive(item.url) ? classname_menuButton_active : classname_menuButton_inactive
+                  )} 
+                  onclick={onMenuButtonClick}
+                >
+                  {#snippet child({ props })}
+                    <a href={item.url} {...props}>
+                      <item.icon />
+                      <span class={classname_titleButton}>{item.title}</span>
+                    </a>
+                  {/snippet}
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    {/if}
+
     <Sidebar.Group>
       <Sidebar.GroupContent>
         <Sidebar.Menu>
-          {#each footerItems as item (item.title)}
+
+          {#if !isLoggedIn}
             <Sidebar.MenuItem>
-              <Sidebar.MenuButton 
-                class={cn(
-                  classname_menuButton,
-                  isActive(item.url) ? classname_menuButton_active : classname_menuButton_inactive
-                )} 
-                onclick={onMenuButtonClick}
+              <Sidebar.MenuButton
+                class={cn(classname_menuButton, classname_menuButton_inactive)}
+                onclick={() => { onMenuButtonClick(); goto("/login"); }}
               >
                 {#snippet child({ props })}
-                  <a href={item.url} {...props}>
-                    <item.icon />
-                    <span class={classname_titleButton}>{item.title}</span>
+                  <a href="/login" {...props}>
+                    <LogInIcon />
+                    <span class={classname_titleButton}>Log In</span>
                   </a>
                 {/snippet}
               </Sidebar.MenuButton>
             </Sidebar.MenuItem>
-          {/each}
+          {/if}
+          
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
+
     <Sidebar.Group>
       <Sidebar.GroupContent>
         <Sidebar.Menu>

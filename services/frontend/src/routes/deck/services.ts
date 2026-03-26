@@ -1,6 +1,7 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
-import { userState } from "$lib/global/userState.svelte";
+import { userStore } from "$lib/stores/auth";
+import { get } from "svelte/store";
 import type { DeckEditableData } from "$lib/types/deck";
 import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 import type { GetDecksStudyRouteResponse } from "$lib/types/server/modules/deck/type/study_dto";
@@ -18,7 +19,10 @@ export async function fetchUserStudyDecks(
     
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${userState.timezone}&page=${page}` + optionalParams
+                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${get(userStore)?.timezone ?? "Asia/Bangkok"}&page=${page}` + optionalParams,
+                {
+                    credentials: "include"
+                }
             );
     
             if (!fetchData.ok) {
@@ -39,7 +43,10 @@ export async function fetchUserDecksBareMinimum()
 {
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks`
+                `${PUBLIC_BACKEND_URL}/deck/decks`,
+                {
+                    credentials: "include"
+                }
             );
     
             if (!fetchData.ok) {
@@ -63,9 +70,9 @@ export async function fetchDeckByDeckId(deckId: string)
     try {
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
-            // {
-            //     credentials: "include",
-            // }
+            {
+                credentials: "include"
+            }
         )
 
         if (!fetchData.ok) {
@@ -92,6 +99,7 @@ export async function createDeck(deckData: DeckEditableData)
         const fetchData = await fetch(
             `${PUBLIC_BACKEND_URL}/deck/decks`,
             {
+                credentials: "include",
                 method: "POST",
                 body: JSON.stringify(deckData)
             }
