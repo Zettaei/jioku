@@ -53,11 +53,9 @@
     let to = $state<string | undefined>(defaultRetentionRate.to);
 	let passed = $state(0);
 	let failed = $state(0);
-    let accuracy = $derived(((failed !== 0 ? 
-        (passed / failed) / failed 
-        : 
-        passed !== 0 ? 1 : 0
-    ) *100).toFixed(2));
+    let accuracy = $derived(
+        ((passed + failed !== 0 ? (passed / (passed + failed)) : 0) * 100).toFixed(2)
+    );
 
     $effect(() => {
         isLoading = true;
@@ -85,6 +83,10 @@
             }
             else {
                 retentionrate = defaultRetentionRate;
+                from = defaultRetentionRate.from;
+                to = defaultRetentionRate.to;
+                passed = defaultRetentionRate.passed;
+                failed = defaultRetentionRate.failed;
                 isFirst = false;
                 isLoading = false;
             }
@@ -155,7 +157,7 @@
                 {/if}
             </div>
             <div class="">
-                {@render dropdown()}
+                {@render dropdown()}.
             </div>
         </div>
         <Table class="text-center">

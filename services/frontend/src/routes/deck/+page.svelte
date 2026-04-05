@@ -19,6 +19,11 @@
     import { page } from '$app/state';
     import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js';
     import { SESSIONSTORAGE_PREV_DECK_LIST } from '$lib/constant/sessionStorageKey.js';
+    import { DECK_EXTRA_SETTING_DEFAULT_VALUE } from '$lib/constant/deck.js';
+    import type { DeckExtraSetting } from '$lib/types/deck.js';
+    import { LocalStorageKey } from '$lib/localStorage.js';
+    import { userStore } from '$lib/stores/auth.js';
+    import { get } from 'svelte/store';
     
     const SUB_BUTTON_STYLE = cn("flex-4 py-2 hover:bg-accent cursor-pointer");
     const STUDY_BUTTON_STYLE = cn("flex-4 rounded-tr-2xl hover:bg-accent cursor-pointer");
@@ -137,6 +142,30 @@
     pageChanged = !pageChanged;
   }
 
+    // FIXME: Fake the newLimit setting, it only work for individual device for now.
+
+  function getTodayDateStr(timezone: string): string {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(new Date());
+  }
+  function getEffectiveNewCount(deckId: string, rawCount: number, settings: unknown): number {
+    const timezone = get(userStore)?.timezone ?? 'Asia/Bangkok';
+    const limit: number = ((settings as DeckExtraSetting)?.newLimit) ?? (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number);
+    const raw = localStorage.getItem(`${LocalStorageKey.StudyNewCardCount}_${deckId}`);
+    let usedToday = 0;
+
+    // console.log(getTodayDateStr(timezone))
+
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as { count: number; date: string };
+        if (parsed.date === getTodayDateStr(timezone)) usedToday = parsed.count ?? 0;
+        } catch { /* ignore */ }
+    }
+    return Math.max(0, Math.min(rawCount, limit - usedToday));
+  }
+
+    /////////////////////////////////////
+  
   function handleSearch()
   : void
   {
@@ -169,7 +198,7 @@
                     <span>LIST</span>
                 </div>
             </div>
-            <div class="flex justify-end">
+            <div class="flex justify-end items-end pb-4">
                 <DeckSortDropdown sortBy={sortBy} sortAsc={sortAsc}/>
             </div>
         </div>
@@ -216,7 +245,7 @@
                             <div class="text-lg">{deck.name}</div>
 
                             <div class="space-x-2 text-xs">
-                                <span>{"new: "}{due[0].count}</span>
+                                <span>{"new: "}{getEffectiveNewCount(deck.id, due[0].count, deck.settings)}</span>
                                 <span>{"due: "}{due[1].count}</span>
                                 <span>{"retry: "}{due[2].count}</span>
                             </div>

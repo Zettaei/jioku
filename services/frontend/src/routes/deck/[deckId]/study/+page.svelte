@@ -16,24 +16,38 @@
     import Loading from "../../../Loading.svelte";
     import CardContent from "./Content.svelte";
     import GradeButtons from "./GradeButtons.svelte";
+    import BackButton from "$lib/components/BackButton.svelte";
+    import { SESSIONSTORAGE_PREV_DECK_LIST } from "$lib/constant/sessionStorageKey";
+    import { DECK_EXTRA_SETTING_DEFAULT_VALUE } from "$lib/constant/deck";
+    import type { DeckExtraSetting } from "$lib/types/deck";
+    import { LocalStorageKey } from "$lib/localStorage";
 
     
-
+    const backDestination = "/deck";
     const StudyDeckToolbarContext = getContext<StudyDeckToolbarContextClass>(STUDY_DECK_TOOLBAR_CONTEXT);
     const deckId = $derived(page.params.deckId as string);  // due to routing, it will never be undefined, okay? okay
     let deck = $state<GetDeckByIdRouteResponse | null>(null);
     let headerOrder = $derived<Array<string>>(deck?.headersorder as Array<string> ?? []);
     let currentCard = $state<CardRow | undefined>(undefined);
-    let isFrontSide = $state(true); // or question side (no answer showing mode)
+    let isFrontSide = $state(true); // or question side (no-answer-showing mode)
     let countThisSession = $state(0);
+    let newCountToday = $state(0);
     let isFinished = $state(false);
     let isError = $state(false);
 
-    let quality = $state<number | null>(null);
     let isLoading = $state<boolean>(true);
+    let isSubmitting = $state<boolean>(false);
+    let submitError = $state<boolean>(false);
     let newCards = $state<StudyCardsBlock | null>(null);
     let dueCards = $state<StudyCardsBlock | null>(null);
     let retryCards = $state<StudyCardsBlock | null>(null);
+    
+    // Track pending fetch operations per card status
+    let pendingFetch = $state({
+        [CardStatusType.new]: false,
+        [CardStatusType.review]: false,
+        [CardStatusType.retry]: false
+    });
 
     let newCardLength = $derived(newCards?.items?.length ?? 0);
     let newCardTotalLeft = $derived(
@@ -51,56 +65,76 @@
         retryCards ? (Math.max(0, (retryCards.total ?? 0) - (retryCards.items?.length ?? 0))): 0
     );
 
-    // Use a simple object (non-reactive) to act as a lock for each status
-    const fetchLocks = {
-        [CardStatusType.new]: false,
-        [CardStatusType.review]: false,
-        [CardStatusType.retry]: false
-    };
+    // FIXME: Fake the newLimit setting, it only work for individual device for now.
 
-async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock | null)
-: Promise<StudyCardsBlock | null>
-{
-    if (fetchLocks[status] || !currentBlock) return null;
+    let newLimit = $derived<number>(
+        ((deck?.settings as unknown as DeckExtraSetting)?.newLimit)
+        ?? (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number)
+    );
+    let newLimitReached = $derived(newCountToday >= newLimit);
 
-    const totalLeft = currentBlock.total - currentBlock.items.length;
-    if (totalLeft <= 0) return currentBlock;
-
-    fetchLocks[status] = true;
-
-    try {
-        const items = currentBlock.items;
-        const result = await fetchCardsByStatus(
-            deckId, 
-            status, 
-            $userStore?.timezone ?? "Asia/Bangkok", 
-            items.length, 
-            STUDY_OPTIONS.CARD_FETCH_LIMIT
-        );
-
-        const fetchedItems = result?.items ?? [];
-        const existingIds = new Set(items.map(card => card.id));
-        const uniqueItems = fetchedItems.filter(card => !existingIds.has(card.id));
-
-        if (uniqueItems.length > 0) {
-            return { 
-                ...result,
-                items: [...items, ...uniqueItems]
-            };
-        } else if (result) {
-            return { ...currentBlock, total: result.total };
-        }
-    } catch (err: any) {
-        isError = true;
-        errorState.show(err.message, err.status);
-    } finally {
-        // Wait 1 second before allowing another fetch
-        setTimeout(() => {
-            fetchLocks[status] = false;
-        }, 1000);
+    function getTodayDateStr(): string {
+        const timezone = $userStore?.timezone ?? 'Asia/Bangkok';
+        return new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(new Date());
     }
-    return currentBlock;
-}
+    function loadNewCountFromStorage(id: string): number {
+        const raw = localStorage.getItem(`${LocalStorageKey.StudyNewCardCount}_${id}`);
+        if (!raw) return 0;
+        try {
+            const parsed = JSON.parse(raw) as { count: number; date: string };
+            if (parsed.date !== getTodayDateStr()) return 0;
+            return parsed.count ?? 0;
+        } catch { return 0; }
+    }
+    function saveNewCountToStorage(id: string, count: number): void {
+        localStorage.setItem(
+            `${LocalStorageKey.StudyNewCardCount}_${id}`,
+            JSON.stringify({ count, date: getTodayDateStr() })
+        );
+    }
+
+    ///////////////////////
+
+    async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock | null)
+    : Promise<StudyCardsBlock | null>
+    {
+        if (pendingFetch[status] || !currentBlock) return null;
+
+        const totalLeft = currentBlock.total - currentBlock.items.length;
+        if (totalLeft <= 0) return currentBlock;
+
+        pendingFetch[status] = true;
+
+        try {
+            const items = currentBlock.items;
+            const result = await fetchCardsByStatus(
+                deckId, 
+                status, 
+                $userStore?.timezone ?? "Asia/Bangkok", 
+                items.length, 
+                STUDY_OPTIONS.CARD_FETCH_LIMIT
+            );
+
+            const fetchedItems = result?.items ?? [];
+            const existingIds = new Set(items.map(card => card.id));
+            const uniqueItems = fetchedItems.filter(card => !existingIds.has(card.id));
+
+            if (uniqueItems.length > 0) {
+                return { 
+                    ...result,
+                    items: [...items, ...uniqueItems]
+                };
+            } else if (result) {
+                return { ...currentBlock, total: result.total };
+            }
+        } catch (err: any) {
+            isError = true;
+            errorState.show(err.message, err.status);
+        } finally {
+            pendingFetch[status] = false;
+        }
+        return currentBlock;
+    }
 
 
 
@@ -109,9 +143,9 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
         if(!deckId) return;
         
         untrack(() => {
-            fetchLocks[CardStatusType.new] = true;
-            fetchLocks[CardStatusType.review] = true;
-            fetchLocks[CardStatusType.retry] = true;
+            pendingFetch[CardStatusType.new] = true;
+            pendingFetch[CardStatusType.review] = true;
+            pendingFetch[CardStatusType.retry] = true;
             isLoading = true;
             
             Promise.all([
@@ -125,12 +159,17 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
                 dueCards = cardsResult[1];
                 retryCards = cardsResult[2];
 
+                newCountToday = loadNewCountFromStorage(deckId);
+                const limitReached = newCountToday >= (((deckResult?.settings as unknown as DeckExtraSetting)?.newLimit) ?? (DECK_EXTRA_SETTING_DEFAULT_VALUE.newLimit as number));
+
                 const allCards = [newCards, dueCards, retryCards];
 
                 // NOTE: locked to new card for now and loop through each one for the first card
 
-                for(const card of allCards) {
-                    if(card?.items.length! > 0) {
+                for (let i = 0; i < allCards.length; i++) {
+                    const card = allCards[i];
+                    if (i === 0 && limitReached) continue; // skip new cards if daily limit reached
+                    if ((card?.items?.length ?? 0) > 0) {
                         currentCard = card?.items[0];
                         return;
                     }
@@ -146,9 +185,9 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
             })
             .finally(() => {
                 isLoading = false;
-                fetchLocks[CardStatusType.new] = false;
-                fetchLocks[CardStatusType.review] = false;
-                fetchLocks[CardStatusType.retry] = false;
+                pendingFetch[CardStatusType.new] = false;
+                pendingFetch[CardStatusType.review] = false;
+                pendingFetch[CardStatusType.retry] = false;
             });
         });
 
@@ -168,13 +207,13 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
     });
 
 
-    // TODO: dont know if these work as intended, need test later
+    // NOTE: dont know if these work as intended, but Sonnet 4.6-san said it is though
     // listen to new cards length changes
     $effect(() => {
         const length = newCardLength;
         const totalLeft = newCardTotalLeft;
 
-        if (totalLeft <= 0 || length === undefined || length > STUDY_OPTIONS.FETCH_NEW_CARD_WHEN_LENGTH) {
+        if (newLimitReached || totalLeft <= 0 || length === undefined || length > STUDY_OPTIONS.FETCH_NEW_CARD_WHEN_LENGTH) {
             return;
         }
 
@@ -202,6 +241,7 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
         }
 
         untrack(() => {
+            refillCards(CardStatusType.review, dueCards)
             refillCards(CardStatusType.review, dueCards)
             .then((updatedBlock) => {
                 if(updatedBlock === null) return;
@@ -241,46 +281,71 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
 
     ////////////////////////////////////////////////
 
+    // NOTE: Maybe for future implementation - currently disabled during study mode
     StudyDeckToolbarContext.onEditClick = () => {};
     StudyDeckToolbarContext.onDeleteClick = () => {};
 
 
     function handleGradeClick(timeSpent: number, quality: number) {
-    if (!currentCard || !newCards || !dueCards || !retryCards) return;
+    if (!currentCard || !newCards || !dueCards || !retryCards || isSubmitting || submitError) return;
 
-    submitCardReview(deckId, currentCard.id, { timeSpent, quality });
+    isSubmitting = true;
+    submitCardReview(deckId, currentCard.id, { timeSpent, quality })
+    .then(() => {
+        // Submission succeeded, safe to proceed with state updates
+        submitError = false;
+
+        // Track if the graded card was a new card before removal
+        const wasNewCard = newCards?.items?.some(c => c.id === currentCard!.id) ?? false;
 
         // 1. Remove the card from the active list
         // We filter by ID to be safe rather than shift()
-        if (newCards.items.some(c => c.id === currentCard!.id)) {
+        if (newCards?.items?.some(c => c.id === currentCard!.id)) {
             newCards = { ...newCards, items: newCards.items.filter(c => c.id !== currentCard!.id), total: newCards.total - 1 };
-        } else if (dueCards.items.some(c => c.id === currentCard!.id)) {
+        } else if (dueCards?.items?.some(c => c.id === currentCard!.id)) {
             dueCards = { ...dueCards, items: dueCards.items.filter(c => c.id !== currentCard!.id), total: dueCards.total - 1 };
-        } else if (retryCards.items.some(c => c.id === currentCard!.id)) {
+        } else if (retryCards?.items?.some(c => c.id === currentCard!.id)) {
             retryCards = { ...retryCards, items: retryCards.items.filter(c => c.id !== currentCard!.id), total: retryCards.total - 1 };
+        }
+
+        // Increment and persist new card count if a new card was just reviewed
+        if (wasNewCard) {
+            newCountToday++;
+            saveNewCountToStorage(deckId, newCountToday);
         }
 
         // if failed, add to retry
         if (quality < 3) {
-            const failedCard = { ...currentCard, status: CardStatusType.retry };
-            retryCards = { ...retryCards, items: [...retryCards.items, failedCard], total: retryCards.total + 1 };
+            const failedCard = { ...currentCard, status: CardStatusType.retry } as CardRow;
+            retryCards = { ...retryCards!, items: [...retryCards!.items, failedCard], total: retryCards!.total + 1 };
         }
 
-        // 
-        if(retryCards.items.length > 0 && countThisSession % 4 === 0) {
-            currentCard = retryCards.items[0];
-        } else if (newCards.items.length > 0) {
-            currentCard = newCards.items[0];
-        } else if (dueCards.items.length > 0) {
-            currentCard = dueCards.items[0];
-        } else if (retryCards.items.length > 0) {
-            currentCard = retryCards.items[0];
+        if((retryCards?.items?.length ?? 0) > 0 && countThisSession % 4 === 0) {
+            currentCard = retryCards!.items[0];
+
+        } else if ((newCards?.items?.length ?? 0) > 0 && !newLimitReached) {
+            currentCard = newCards!.items[0];
+
+        } else if ((dueCards?.items?.length ?? 0) > 0) {
+            currentCard = dueCards!.items[0];
+
+        } else if ((retryCards?.items?.length ?? 0) > 0) {
+            currentCard = retryCards!.items[0];
+            
         } else {
             isFinished = true;
         }
 
-    isFrontSide = true;
-    countThisSession++;
+        isFrontSide = true;
+        countThisSession++;
+    })
+    .catch((err) => {
+        errorState.show(err.message, err.status);
+        submitError = true;
+    })
+    .finally(() => {
+        isSubmitting = false;
+    });
 }
 
 </script>
@@ -289,15 +354,15 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
   class="w-full sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto flex justify-center text-center"
 >
   {#if isError}
-    <div>Error occured</div>
+    <div>An Error occured</div>
   {:else if isLoading}
     <Loading />
   {:else if isFinished}
-    <div>Finished</div>
+    {@render finishedPage()}
   {:else if currentCard}
     {@const status = currentCard.status}
     <Card.Header class="text-sm flex justify-center">
-      <span class={status === 0 ? "underline" : ""}>new: {newCards?.total!}</span
+      <span class={status === 0 ? "underline" : ""}>new: {newLimitReached ? 0 : Math.min(newCards?.total ?? 0, newLimit - newCountToday)}</span
       >
       |
       <span class={status === 1 ? "underline" : ""}>due: {dueCards?.total!}</span
@@ -311,3 +376,12 @@ async function refillCards(status: CardStatusType, currentBlock: StudyCardsBlock
     <GradeButtons bind:isFrontSide onGradeClick={handleGradeClick} />
   {/if}
 </Card.Root>
+
+{#snippet finishedPage()}
+    <div>Finished</div>
+    <div>
+        <BackButton destination={backDestination} 
+        sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
+        />
+    </div>
+{/snippet}

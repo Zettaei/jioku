@@ -17,7 +17,7 @@
     import { DICT_OPTIONS } from "$lib/constant/options";
 
     // OPTIMIZE: check if the last image/text and translation is the same as the new one, if it is then no request
-    // BUG: race condition if user clicking or searching too fast
+    // FIXME: race condition if user clicking or searching too fast
 
   const SearchToolbarContext = getContext<SearchToolbarContextInterface>(SEARCH_TOOLBAR_CONTEXT);
   let AudioContext: AudioContext;
