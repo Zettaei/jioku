@@ -1,7 +1,7 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import type { TranslationLanguage } from "$lib/types/server/modules/dict/type/model";
 import { ConnectionError, HttpError } from "$lib/errors/HttpError";
-import type { EntriesRouteResponse, TokensRouteResponse, VoiceRouteResponse } from "$lib/types/server/modules/dict/type/dto";
+import type { EntriesRouteResponse, SpeechToTextRouteResponse, TokensRouteResponse, VoiceRouteResponse } from "$lib/types/server/modules/dict/type/dto";
 import { AzureTTSVoiceName } from "$lib/types/server/modules/dict/type/azureTTS";
 
 
@@ -86,6 +86,33 @@ export async function fetchTokensOCR(image: File, translationLang: TranslationLa
     }
 }
 
+export async function fetchTokensSpeechtotext(audio: Blob, lang: "jp" | "en", translationLang: TranslationLanguage)
+: Promise<TokensRouteResponse> 
+{
+    try {
+        const arrayBuffer = await audio.arrayBuffer();
+        const fetchData = await fetch(
+            `${PUBLIC_BACKEND_URL}/dict/tokens/speechtotext?lang=${lang}&translation=${translationLang}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "audio/webm" },
+                body: arrayBuffer,
+            }
+        );
+
+        if (!fetchData.ok) {
+            throw new HttpError(fetchData.status);
+        }
+
+        return await fetchData.json() as TokensRouteResponse;
+
+    } catch (err) {
+        if (err instanceof HttpError) throw err;
+
+        throw new ConnectionError();
+    }
+}
+
 
 export async function fetchVoice(text: string = "", reading: string | undefined)
 : Promise<VoiceRouteResponse> 
@@ -118,4 +145,31 @@ export async function playVoice(AudioContext: AudioContext, decodeAudioBuffer: A
     source.connect(AudioContext.destination);
 
     source.start(0)
+}
+
+export async function fetchSpeechToText(audio: Blob, lang: "jp" | "en")
+: Promise<SpeechToTextRouteResponse>
+{
+    try {
+        const arrayBuffer = await audio.arrayBuffer();
+        const fetchData = await fetch(
+            `${PUBLIC_BACKEND_URL}/dict/speechtotext?lang=${lang}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "audio/webm" },
+                body: arrayBuffer,
+            }
+        );
+
+        if (!fetchData.ok) {
+            throw new HttpError(fetchData.status);
+        }
+
+        return await fetchData.json() as SpeechToTextRouteResponse;
+
+    } catch (err) {
+        if (err instanceof HttpError) throw err;
+
+        throw new ConnectionError();
+    }
 }

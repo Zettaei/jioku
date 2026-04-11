@@ -40,7 +40,7 @@ app.onError((err, c) => {
         }
 
         if (err instanceof InternalError) {
-            console.error(err.status, err.cause);
+            console.error(err.status, err.message);
             return c.text("Internal Server Error", err.status);
         }
 

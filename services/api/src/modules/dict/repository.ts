@@ -55,31 +55,31 @@ async function getWord(word: string, wordType: WordType, from: number = 0, size:
     return result;
 }
 
-async function getAzureTTSAccessToken()
+async function getAzureSpeechAccessToken()
 : Promise<string | null>
 {
     const redis = await getRedisClient();
-    const result = await redis.get(DICT_OPTIONS.AZURE_ACCESSTOKEN_KEY);
-    
+    const result = await redis.get(DICT_OPTIONS.AZURE_SPEECH_ACCESSTOKEN_KEY);
+
     return result?.trim() ?? null;
 }
 
-async function setAzureTTSAccessToken(token: string)
+async function setAzureSpeechAccessToken(token: string)
 : Promise<void>
 {
     const redis = await getRedisClient();
-    await redis.set(DICT_OPTIONS.AZURE_ACCESSTOKEN_KEY, token, {
+    await redis.set(DICT_OPTIONS.AZURE_SPEECH_ACCESSTOKEN_KEY, token, {
         expiration: {
             type: "EX", // seconds
-            value: DICT_OPTIONS.AZURE_ACCESSTOKEN_EXPIREIN_SECONDS
+            value: DICT_OPTIONS.AZURE_SPEECH_ACCESSTOKEN_EXPIREIN_SECONDS
         }
     });
-    
+
     return;
 }
 
 export {
     getWord,
-    getAzureTTSAccessToken,
-    setAzureTTSAccessToken
+    getAzureSpeechAccessToken,
+    setAzureSpeechAccessToken
 }

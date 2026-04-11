@@ -1,12 +1,16 @@
 import kuromoji, { type IpadicFeatures, type Tokenizer } from "kuromoji"
 import path from "path";
+import { spawn } from "child_process";
+import { existsSync } from "fs";
+import ffmpegPath from "ffmpeg-static";
 import { TranslationLanguage, WordType } from "./type/model.js";
 import { isJapanese, isKana } from "wanakana";
-import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSAccessTokenErrorRespone, AzureTTSRequestOKResponse } from "./type/dto.js";
+import type { AzureTranslationErrorResponse, AzureTranslationOKResponse, AzureTranslationRequest, AzureTTSAccessTokenErrorRespone, AzureTTSRequestOKResponse, AzureSTTOKResponse } from "./type/dto.js";
 import { InternalError } from "src/errors/internalError.js";
 import { DICT_OPTIONS, ENV_VARS } from "src/config.js";
 import { BadRequestError, UnauthorizedError } from "src/errors/httpError.js";
-import { AzureTTSVoiceName } from "./type/azureTTS.js";
+import { AzureTTSVoiceName } from "./type/azureTTS.js";;
+import os from 'os';
 
 const DICT_PATH = path.join("node_modules", "kuromoji", "dict");
 
@@ -148,21 +152,21 @@ async function sendToAzureTextToSpeech(accesstoken: string, sentence: string, re
 }
 
 
-async function fetchNewAzureTTSAccessToken()
-: Promise<string> {
-
-    const response = await fetch(`${ENV_VARS.AZURE_TTS_TOKEN_URL.value}`, {
+async function fetchNewAzureSpeechAccessToken()
+: Promise<string>
+{
+    const response = await fetch(`${ENV_VARS.AZURE_SPEECH_TOKEN_URL.value}`, {
         method: 'POST',
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Ocp-Apim-Subscription-Key": ENV_VARS.AZURE_TTS_KEY.value,
+            "Ocp-Apim-Subscription-Key": ENV_VARS.AZURE_SPEECH_KEY.value,
         }
     });
 
-    if(!response.ok) {
+    if (!response.ok) {
         throw new InternalError(
-            "Failed request from Azure Speech Services code: " + response.status, 
-            response.statusText, 
+            "Failed request from Azure Speech Services code: " + response.status,
+            response.statusText,
             {
                 status: response.status,
                 headers: response.headers
@@ -224,13 +228,97 @@ function convertToKatakana(text: string)
 }
 
 
+async function convertAudioToWav(inputBuffer: Buffer)
+: Promise<Buffer>
+{
+    return new Promise((resolve, reject) => {
+        const staticPath = ffmpegPath as unknown as string | null;
+        
+        // Check if the static binary actually exists
+        const useStatic = staticPath && existsSync(staticPath);
+        const ffmpegBin = useStatic ? staticPath : "ffmpeg";
+
+        const ffmpeg = spawn(ffmpegBin, [
+            '-i', 'pipe:0',
+            '-f', 'wav',
+            '-ac', '1',
+            '-ar', '16000',
+            '-acodec', 'pcm_s16le',
+            'pipe:1'
+        ]);
+
+        const chunks: Buffer[] = [];
+        const errorChunks: Buffer[] = [];
+
+        ffmpeg.stdout.on('data', (chunk) => chunks.push(chunk));
+        
+        ffmpeg.stderr.on('data', (chunk) => errorChunks.push(chunk));
+
+        ffmpeg.on('error', (err) => {
+            reject(new InternalError("Failed to start ffmpeg process", err.message));
+        });
+
+        ffmpeg.on('close', (code) => {
+            if (code === 0) {
+                resolve(Buffer.concat(chunks));
+            } else {
+                const errorMsg = Buffer.concat(errorChunks).toString();
+                reject(new InternalError(`ffmpeg exited with code ${code}: ${errorMsg}`));
+            }
+        });
+
+        // Write buffer and handle potential pipe errors
+        ffmpeg.stdin.on('error', (err) => {
+            // Ignore EPIPE errors here, as the 'close' event will handle the failure
+            if ((err as any).code !== 'EPIPE') console.error("stdin error", err);
+        });
+
+        ffmpeg.stdin.end(inputBuffer);
+    });
+}
+
+
+async function sendToAzureSpeechToText(accesstoken: string, wavBuffer: Buffer, lang: "jp" | "en" = "en")
+: Promise<string>
+{
+    const response = await fetch(`${ENV_VARS.AZURE_STT_URL.value}?language=${lang === "jp" ? "ja-JP" : "en-US"}`, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000",
+            "Authorization": `Bearer ${accesstoken}`
+        },
+        body: wavBuffer
+    });
+
+    if (!response.ok) {
+        if (response.status === 401) {
+            throw new UnauthorizedError("Invalid or Missing Access Token");
+        }
+
+        throw new InternalError(
+            "Failed request from Azure Speech-to-Text code: " + response.status,
+            response.statusText,
+            {
+                status: response.status,
+                headers: response.headers
+            }
+        );
+    }
+
+    const data = await response.json() as AzureSTTOKResponse;
+    return data.DisplayText ?? "";
+}
+
+
 export {
     initializeTokenizer,
     isUsefulToken,
     getWordType,
     sendToAzureTranslator,
-    fetchNewAzureTTSAccessToken,
+    fetchNewAzureSpeechAccessToken,
     sendToAzureTextToSpeech,
+    convertAudioToWav,
+    sendToAzureSpeechToText,
     validateTranslationLanguage,
     validateQuery,
     validateVoicename,

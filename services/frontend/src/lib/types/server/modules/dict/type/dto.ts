@@ -106,3 +106,8 @@ extends AzureErrorResponse
 export interface AzureTTSRequestErrorResponse
 extends AzureErrorResponse
 {};
+
+////////////////////////////////////////////// SPEECH TO TEXT
+export interface SpeechToTextRouteResponse {
+    text: string;
+}

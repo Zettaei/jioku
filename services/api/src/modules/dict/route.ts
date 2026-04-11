@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { string } from "core/utils/index.js";
 import { TranslationLanguage } from "./type/model.js";
-import { type TokensRouteResponse, type EntriesRouteResponse, type AzureTTSRequestOKResponse } from "./type/dto.js";
-import { entriesRouteHandler, tokensOcrRouteHandler, tokensRouteHandler, voiceRouteHandler } from "./handler.js";
+import { type TokensRouteResponse, type EntriesRouteResponse, type AzureTTSRequestOKResponse, type SpeechToTextRouteResponse } from "./type/dto.js";
+import { entriesRouteHandler, tokensOcrRouteHandler, tokensSpeechToTextRouteHandler, tokensRouteHandler, voiceRouteHandler, speechToTextRouteHandler } from "./handler.js";
 import { DICT_OPTIONS } from "src/config.js";
 
 const routes = new Hono();
@@ -77,6 +77,44 @@ routes.get("/voice/:sentence", async (c) => {
         "Content-Type": "audio/ogg; codecs=opus; rate=24000"
     });
 });
+
+
+routes.post("/tokens/speechtotext", async (c) => {
+    const queryTranslation = string.trimOrUndefined(c.req.query("translation")) as TranslationLanguage | undefined;
+    const arrayBuffer = await c.req.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const lang = string.trimOrUndefined(c.req.query("lang")) as "jp" | "en" | undefined;
+
+    if (buffer.length === 0) {
+        return c.json({ error: "Empty audio buffer" }, 400);
+    }
+
+    const result = await tokensSpeechToTextRouteHandler({
+        tokens: { query: { translation: queryTranslation } },
+        stt: { audio: buffer, lang }
+    });
+
+    return c.json<TokensRouteResponse>(result);
+});
+
+
+routes.post("/speechtotext", async (c) => {
+
+    const arrayBuffer = await c.req.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const lang = string.trimOrUndefined(c.req.query("lang")) as "jp" | "en" | undefined;
+
+    if (buffer.length === 0) {
+        return c.json({ error: "Empty audio buffer" }, 400);
+    }
+    
+    const result = await speechToTextRouteHandler({
+        audio: buffer,
+        lang
+    });
+
+    return c.json<SpeechToTextRouteResponse>(result);
+})
 
 
 export { routes };

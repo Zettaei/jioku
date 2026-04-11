@@ -4,9 +4,11 @@
 
   interface Props {
     query: string;
+    placeholder?: string;
   }
 
   export let query: string;
+  export let placeholder: string = "Search...";
 </script>
 
 <InputGroup.Root>
@@ -14,7 +16,7 @@
   size={60}
     bind:value={query}
     type="search"
-    placeholder="Search..."
+    placeholder={placeholder}
   />
   <InputGroup.Addon>
     <SearchIcon class="" />

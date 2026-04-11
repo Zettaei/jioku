@@ -36,6 +36,18 @@ export interface TokensOcrRouteHandler {
 }
 
 
+////////////////////////////////////////////// TOKENS-SPEECHTOTEXT
+export interface TokensSpeechToTextRouteHandler {
+    tokens: {
+        query: TokensRouteHandlerQuery;
+    };
+    stt: {
+        audio: Buffer | File | string | undefined;
+        lang: "jp" | "en" | undefined;
+    };
+}
+
+
 ////////////////////////////////////////////// ENTRIES
 export type EntriesRouteHandlerQuery = {
     translation: TranslationLanguage | undefined;
@@ -106,5 +118,28 @@ extends AzureErrorResponse
 {};
 
 export interface AzureTTSRequestErrorResponse
+extends AzureErrorResponse
+{};
+
+
+////////////////////////////////////////////// SPEECH TO TEXT
+export interface SpeechToTextRouteHandler {
+    audio: Buffer | File | string | undefined;
+    lang: "jp" | "en" | undefined;
+}
+
+export interface SpeechToTextRouteResponse {
+    text: string;
+}
+
+// AZURE STT
+export interface AzureSTTOKResponse {
+    RecognitionStatus: string;
+    DisplayText: string;
+    Offset: number;
+    Duration: number;
+}
+
+export interface AzureSTTErrorResponse
 extends AzureErrorResponse
 {};

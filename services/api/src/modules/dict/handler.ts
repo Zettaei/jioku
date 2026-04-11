@@ -3,7 +3,7 @@ import * as service from  "./service.js";
 import * as repository from "./repository.js";
 import * as Ocr from "modules/ocr/index.js";
 import { DICT_OPTIONS } from "src/config.js";
-import type { EntriesRouteHandler, EntriesRouteResponse, TokensOcrRouteHandler, TokensRouteHandler, TokensRouteResponse, VoiceRouteHandler, VoiceRouteResponse } from "./type/dto.js";
+import type { EntriesRouteHandler, EntriesRouteResponse, TokensOcrRouteHandler, TokensRouteHandler, TokensRouteResponse, TokensSpeechToTextRouteHandler, VoiceRouteHandler, VoiceRouteResponse, SpeechToTextRouteHandler, SpeechToTextRouteResponse } from "./type/dto.js";
 import { BadRequestError } from "src/errors/httpError.js";
 import { TranslationLanguage } from "./type/model.js";
 import { AzureTTSVoiceName } from "./type/azureTTS.js";
@@ -130,9 +130,49 @@ async function voiceRouteHandler(req: VoiceRouteHandler)
 }
 
 
+async function tokensSpeechToTextRouteHandler(req: TokensSpeechToTextRouteHandler)
+: Promise<TokensRouteResponse>
+{
+    const tokensTranslation = req.tokens.query.translation ?? TranslationLanguage.English;
+
+    const sttResult = await speechToTextRouteHandler({
+        audio: req.stt.audio,
+        lang: req.stt.lang
+    });
+
+    const tokensResult = await tokensRouteHandler({
+        param: sttResult.text,
+        query: {
+            translation: tokensTranslation
+        }
+    });
+
+    return tokensResult;
+}
+
+
+async function speechToTextRouteHandler(req: SpeechToTextRouteHandler)
+: Promise<SpeechToTextRouteResponse>
+{
+    const audio = req.audio;
+    const lang = req.lang ?? "en";
+
+    if (!audio || typeof audio === 'string') {
+        throw new BadRequestError("Audio file is required");
+    }
+
+    const audioBuffer = Buffer.isBuffer(audio) ? audio : Buffer.from(await audio.arrayBuffer());
+    const text = await service.processSpeechToText(audioBuffer, lang);
+
+    return { text };
+}
+
+
 export {
     tokensRouteHandler,
     tokensOcrRouteHandler,
+    tokensSpeechToTextRouteHandler,
     entriesRouteHandler,
-    voiceRouteHandler
+    voiceRouteHandler,
+    speechToTextRouteHandler
 }

@@ -55,16 +55,16 @@ export const ENV_VARS = {
         value: string.trimOrUndefined(process.env.AZURE_TTS_URL),
         isRequired: true
     },
-    AZURE_TTS_TOKEN_URL: {
-        value: string.trimOrUndefined(process.env.AZURE_TTS_TOKEN_URL),
+    AZURE_SPEECH_TOKEN_URL: {
+        value: string.trimOrUndefined(process.env.AZURE_SPEECH_TOKEN_URL),
         isRequired: true
     },
-    AZURE_TTS_KEY: {
-        value: string.trimOrUndefined(process.env.AZURE_TTS_KEY),
+    AZURE_SPEECH_KEY: {
+        value: string.trimOrUndefined(process.env.AZURE_SPEECH_KEY),
         isRequired: true
     },
-    AZURE_TTS_REGION: {
-        value: string.trimOrUndefined(process.env.AZURE_TTS_REGION),
+    AZURE_STT_URL: {
+        value: string.trimOrUndefined(process.env.AZURE_STT_URL),
         isRequired: true
     }
 } as const;
@@ -86,8 +86,8 @@ export const DICT_OPTIONS = {
     INDEX_KEYNAME: "dict:entry_idx",
     MAX_QUERY_LENGTH: 300,
     RESULT_LIMIT: 20,
-    AZURE_ACCESSTOKEN_KEY: "azure:tts:accesstoken",
-    AZURE_ACCESSTOKEN_EXPIREIN_SECONDS: 60 * 10, // 10 mins (Azure Key last 10 mins)
+    AZURE_SPEECH_ACCESSTOKEN_KEY: "azure:speech:accesstoken",
+    AZURE_SPEECH_ACCESSTOKEN_EXPIREIN_SECONDS: 60 * 10, // 10 mins (Azure Key last 10 mins)
 }
 
 export const OCR_OPTIONS = {

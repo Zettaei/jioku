@@ -8,7 +8,7 @@ import type { AzureTTSVoiceName } from "./type/azureTTS.js";
 import type { InternalError } from "src/errors/internalError.js";
 
 const tokenizer = await utils.initializeTokenizer();
-let reservedAccessToken: string = '';
+let reservedSpeechAccessToken: string = '';
 
 async function processTokenization(paramQuery: string)
 : Promise<Array<TokenFeatures>> 
@@ -99,12 +99,12 @@ async function processVoiceGeneration(
     let isRedisAvailable: boolean = true;
 
     try {
-        accesstoken = await repository.getAzureTTSAccessToken() ?? '';
+        accesstoken = await repository.getAzureSpeechAccessToken() ?? '';
     }
     catch(err) {
         console.error("Cannot connect to Redis, skipping global access token")
         isRedisAvailable = false;
-        accesstoken = reservedAccessToken;
+        accesstoken = reservedSpeechAccessToken;
     }
 
     const katakanaReading = utils.convertToKatakana(paramReading)
@@ -117,16 +117,17 @@ async function processVoiceGeneration(
     catch(err) {
         // failed because accessToken expired -> retry with new token
         if((err as InternalError)?.status === 401) {
-            accesstoken = await utils.fetchNewAzureTTSAccessToken();
+            accesstoken = await utils.fetchNewAzureSpeechAccessToken();
             // if redis available store in Redis, else store in this server memory 
             if(isRedisAvailable) {
-                repository.setAzureTTSAccessToken(accesstoken); // not await!!!
+                repository.setAzureSpeechAccessToken(accesstoken); // not await!!!
             }
             else {
-                reservedAccessToken = accesstoken;
+                reservedSpeechAccessToken = accesstoken;
             }
 
             voiceBuffer = await utils.sendToAzureTextToSpeech(accesstoken, sentence, katakanaReading, paramVoicename)
+
         }
         else {
             throw err;
@@ -137,9 +138,54 @@ async function processVoiceGeneration(
 }
 
 
+async function processSpeechToText(audioBuffer: Buffer, lang: "jp" | "en" = "en")
+: Promise<string>
+{
+    let accesstoken: string = "";
+    let isRedisAvailable: boolean = true;
+
+    try {
+        accesstoken = await repository.getAzureSpeechAccessToken() ?? '';
+    }
+    catch(err) {
+        console.error("Cannot connect to Redis, skipping global access token")
+        isRedisAvailable = false;
+        accesstoken = reservedSpeechAccessToken;
+    }
+
+    const wavBuffer = await utils.convertAudioToWav(audioBuffer);
+
+    let text: string;
+    try {
+        text = await utils.sendToAzureSpeechToText(accesstoken, wavBuffer, lang);
+    }
+    catch(err) {
+        // failed because accessToken expired -> retry with new token
+        if((err as InternalError)?.status === 401) {
+            accesstoken = await utils.fetchNewAzureSpeechAccessToken();
+            // if redis available store in Redis, else store in this server memory
+            if(isRedisAvailable) {
+                repository.setAzureSpeechAccessToken(accesstoken); // not await!!!
+            }
+            else {
+                reservedSpeechAccessToken = accesstoken;
+            }
+
+            text = await utils.sendToAzureSpeechToText(accesstoken, wavBuffer, lang);
+        }
+        else {
+            throw err;
+        }
+    }
+
+    return text;
+}
+
+
 export {
     processTokenization,
     processRedisResultTranslation,
     processQuickTranslation,
-    processVoiceGeneration
+    processVoiceGeneration,
+    processSpeechToText
 }
