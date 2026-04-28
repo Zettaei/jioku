@@ -4,7 +4,7 @@ import * as util from "../util.js";
 import type { DeckResponseHiddenColumn, GetDeckStatusByIdRouteResponse, GetRetentionRateByDateRouteResponse, GetDueDistributionByDateRouteResponse } from "../type/deck_dto.js";
 import type { PaginatedResponse } from "../type/dto.js";
 import { InternalError } from "src/errors/internalError.js";
-import type { Json } from "src/core/supabase/generatedType.js";
+import type { Json } from "src/core/supabase/generatedTypes.js";
 
 async function getDecksByUserId(userId: string, page: number | undefined, limit: number | undefined)
 : Promise<PaginatedResponse<Omit<DeckRow, DeckResponseHiddenColumn>>>
