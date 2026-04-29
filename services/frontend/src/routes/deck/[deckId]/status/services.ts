@@ -1,4 +1,5 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
+
+import { ENV_VARS } from "$lib/constant/env";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
 import type { GetDeckStatusByIdRouteResponse, GetDueDistributionByDateRouteResponse, GetRetentionRateByDateRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 
@@ -12,7 +13,7 @@ export async function fetchStatus(deckId: string, timezone: string)
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status?timezone=${timezone}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status?timezone=${timezone}`,
             {
                 credentials: "include"
             }
@@ -45,7 +46,7 @@ export async function fetchRetentionRateByDate(deckId: string, timezone: string,
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status/retentionrate?timezone=${timezone}` + optional,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status/retentionrate?timezone=${timezone}` + optional,
             {
                 credentials: "include"
             }
@@ -79,7 +80,7 @@ export async function fetchDueDistribution(deckId: string, timezone: string, ahe
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status/duedistribution?timezone=${timezone}` + optional,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/status/duedistribution?timezone=${timezone}` + optional,
             {
                 credentials: "include"
             }

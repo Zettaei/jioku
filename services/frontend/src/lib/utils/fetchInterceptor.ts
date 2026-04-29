@@ -1,5 +1,5 @@
+import { ENV_VARS } from "$lib/constant/env";
 import { userStore } from "$lib/stores/auth";
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { deleteCookie } from "./cookie";
 
 /**
@@ -39,7 +39,7 @@ export function setupFetchInterceptor() {
  */
 async function attemptTokenRefresh(refreshFetch: typeof fetch): Promise<boolean> {
     try {
-        const res = await refreshFetch(`${PUBLIC_BACKEND_URL}/user/refresh`, {
+        const res = await refreshFetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/refresh`, {
             method: "POST",
             credentials: "include",
         });

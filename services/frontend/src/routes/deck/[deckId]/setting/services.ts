@@ -1,4 +1,4 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
+import { ENV_VARS } from "$lib/constant/env";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
 import type { DeckEditableData } from "$lib/types/deck";
 import type { DeleteDeckRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
@@ -12,7 +12,7 @@ export async function updateDeck(deckId: string, deckData: DeckEditableData)
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
             {
                 credentials: "include",
                 method: "PUT",
@@ -43,7 +43,7 @@ export async function deleteDeck(deckId: string)
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
             {
                 credentials: "include",
                 method: "DELETE",

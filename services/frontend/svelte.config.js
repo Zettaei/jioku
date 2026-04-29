@@ -1,4 +1,5 @@
-import adapter from '@sveltejs/adapter-static';
+// import adapter_static from '@sveltejs/adapter-static';
+import adapter_node from "@sveltejs/adapter-node";
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -7,7 +8,11 @@ const config = {
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
 
-	kit: { adapter: adapter() }
+	kit: { 
+		adapter: adapter_node({
+			strict: false
+		}) 
+	}
 };
 
 export default config;

@@ -1,5 +1,5 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { ConnectionError, HttpError } from "$lib/errors/HttpError";
+import { ENV_VARS } from "$lib/constant/env";
 
 export interface LoginPayload {
     email: string;
@@ -25,7 +25,7 @@ export interface TokenCheckResponse {
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/login`, {
+        const res = await fetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/login`, {
             credentials: "include",
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -47,7 +47,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
 export async function register(payload: RegisterPayload): Promise<AuthResponse> {
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/register`, {
+        const res = await fetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/register`, {
             credentials: "include",
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -69,7 +69,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponse> 
 
 export async function tokenCheck(): Promise<TokenCheckResponse> {
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/tokencheck`, {
+        const res = await fetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/tokencheck`, {
             credentials: "include",
             method: "GET",
         });
@@ -86,7 +86,7 @@ export async function tokenCheck(): Promise<TokenCheckResponse> {
 
 export async function logout(): Promise<void> {
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/logout`, {
+        const res = await fetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/logout`, {
             credentials: "include",
             method: "POST",
         });
@@ -105,7 +105,7 @@ export interface UserSettings {
 
 export async function updateSettings(settings: UserSettings): Promise<void> {
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/settings`, {
+        const res = await fetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/settings`, {
             credentials: "include",
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -126,7 +126,7 @@ export async function updateSettings(settings: UserSettings): Promise<void> {
  */
 export async function refreshAccessToken(): Promise<boolean> {
     try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/refresh`, {
+        const res = await fetch(`${ENV_VARS.PUBLIC_BACKEND_URL}/user/refresh`, {
             credentials: "include",
             method: "POST",
         });

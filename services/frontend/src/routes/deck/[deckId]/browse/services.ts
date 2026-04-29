@@ -1,4 +1,5 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
+
+import { ENV_VARS } from "$lib/constant/env";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
 import type { CardUpdate } from "$lib/types/server/core/supabase/type";
 import type { GetCardsByDeckIdRouteResponse } from "$lib/types/server/modules/deck/type/card_dto";
@@ -17,7 +18,7 @@ export async function fetchCardsByDeckId(
 
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + optionalParams,
+                `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?page=${page}` + optionalParams,
                 {
                     credentials: "include",
                 }
@@ -45,7 +46,7 @@ export async function addCardToDeckId(deckId: string | undefined, card: { data: 
 
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards`,
+                `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards`,
                 {
                     credentials: "include",
                     method: "POST",
@@ -76,7 +77,7 @@ export async function updateCard(deckId: string, cardId: string, card: CardUpdat
 
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards/${cardId}`,
+                `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards/${cardId}`,
                 {
                     credentials: "include",
                     method: "PUT",
@@ -108,7 +109,7 @@ export async function deleteCard(deckId: string, cardIds: Array<string>)
 
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?` + (cardIds.map((cardId) => ("cardId="+cardId)).join('&')),
+                `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}/cards?` + (cardIds.map((cardId) => ("cardId="+cardId)).join('&')),
                 {
                     credentials: "include",
                     method: "DELETE"

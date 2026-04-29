@@ -1,8 +1,7 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import type { TranslationLanguage } from "$lib/types/server/modules/dict/type/model";
 import { ConnectionError, HttpError } from "$lib/errors/HttpError";
 import type { EntriesRouteResponse, SpeechToTextRouteResponse, TokensRouteResponse, VoiceRouteResponse } from "$lib/types/server/modules/dict/type/dto";
-import { AzureTTSVoiceName } from "$lib/types/server/modules/dict/type/azureTTS";
+import { ENV_VARS } from "$lib/constant/env";
 
 
 export function getDefaultSelectedWord(tokens: TokensRouteResponse)
@@ -19,7 +18,7 @@ export async function fetchTokens(text: string = "", translationLang: Translatio
 {
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/tokens/${encodeURI(text)}?translation=${encodeURI(translationLang)}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/dict/tokens/${encodeURI(text)}?translation=${encodeURI(translationLang)}`,
         )
 
         if (!fetchData.ok) {
@@ -41,7 +40,7 @@ export async function fetchSearchWords(word: string = "", translationLang: Trans
 {
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/entries/${encodeURI(word)}?translation=${encodeURI(translationLang)}&page=${page}&limit=${limit}`
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/dict/entries/${encodeURI(word)}?translation=${encodeURI(translationLang)}&page=${page}&limit=${limit}`
         );
 
         if (!fetchData.ok) {
@@ -66,7 +65,7 @@ export async function fetchTokensOCR(image: File, translationLang: TranslationLa
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/tokens/ocr?translation=${translationLang}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/dict/tokens/ocr?translation=${translationLang}`,
             {
                 method: "POST",
                 body: form
@@ -92,7 +91,7 @@ export async function fetchTokensSpeechtotext(audio: Blob, lang: "jp" | "en", tr
     try {
         const arrayBuffer = await audio.arrayBuffer();
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/tokens/speechtotext?lang=${lang}&translation=${translationLang}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/dict/tokens/speechtotext?lang=${lang}&translation=${translationLang}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "audio/webm" },
@@ -120,7 +119,7 @@ export async function fetchVoice(text: string = "", reading: string | undefined)
     const readingParam = reading ? `?reading=${reading}` : '';
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/voice/${text}${readingParam}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/dict/voice/${text}${readingParam}`,
             {
                 method: "GET",
             }
@@ -153,7 +152,7 @@ export async function fetchSpeechToText(audio: Blob, lang: "jp" | "en")
     try {
         const arrayBuffer = await audio.arrayBuffer();
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/dict/speechtotext?lang=${lang}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/dict/speechtotext?lang=${lang}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "audio/webm" },
