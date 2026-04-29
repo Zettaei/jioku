@@ -49,5 +49,8 @@ and put these Environment Variables in
 
 
 # P.S. types for Supabase
+for developers who want the code for your Supabase
+(which must have been setup, read [supabase.md]())
+
 run the script below to get the Supabase types.  
 `npx supabase gen types typescript --schema "{schema_names_seperated_with_comma}" --project-id {project_id} > src/core/supabase/generatedTypes.ts`
