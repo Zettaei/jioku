@@ -20,7 +20,7 @@ function validateEnvironment(): boolean {
     console.log("\nChecking Environment Variables:");
 
     for (const name of Object.keys(ENV_VARS) as EnvVarKeys[]) {
-        console.log(ENV_VARS[name].value);
+        // console.log(ENV_VARS[name].value);
         if(ENV_VARS[name].isRequired === true && !ENV_VARS[name].value) {
             ++missingRequiredVarsCount
         }
@@ -35,8 +35,7 @@ function validateEnvironment(): boolean {
     if(isExit) {
         process.exit(1);
     }
-    console.log("[OK] All required environment variables are set");
-    console.log("================================\n");
+    console.log("[OK] All required environment variables are set.");
     return true;
 }
 
