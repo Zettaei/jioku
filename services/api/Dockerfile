@@ -18,10 +18,11 @@ FROM node@sha256:26ded7f450a0ad37241d2ae97ea521a59cb551a1785c8a950f74b0a291ad3ae
 WORKDIR /app
 
 COPY --from=BUILD_STAGE /app/dist ./dist
-COPY package.json ./
+COPY package*.json ./
 COPY .env ./
 RUN npm install --omit=dev
 
 EXPOSE 8787
 
-CMD ["node", "--env-file=.env", "dist/index.js"]
+USER node
+CMD ["node", "dist/index.js"]
