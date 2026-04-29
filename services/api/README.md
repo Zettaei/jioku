@@ -13,16 +13,26 @@ After setting up env, there are 2 ways to build and run
 go to [docker-compose.md](../../docker-compose.md).
 
 ## Dockerfile
-build image with this script  
+
+### 1. build image with this script  
 `docker build -t {tag_name} .`  
-*example: `docker build -t jioku_api:latest .`*
+> *example: `docker build -t jioku_api .`*
 
-then run with this script  
-`docker run --env-file .env {tag_name}`  
-*example: `docker run --env-file .env jioku_api`*
+### 2. then run with this script  
+`docker run --rm -it --env-file .env -p {port}:8787 {tag_name}`  >
+> *example: `docker run --rm -it --env-file .env -p 8787:8787 jioku_api`*
+> *(remove `--rm`to keep the container after the server is stopped)*
 
-other basic commands: [docker cheatsheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf).
+### 3. use the server address
+if you running this on your device normally, you should be able to access this server with 
+`http://localhost:{port}`
+> *example: `http://localhost:8787`*
 
+to stop the server, press Ctrl+C on the terminal you run all that commands on.
+
+
+### THESE ARE JUST ONE WAY TO USE DOCKER, THERE ARE OTHER WAY MAYBE EVEN BETTER WAY TO USE IT BUT GO LOOK FOR YERSELF, OKIE?
+<br><br>
 
 # Environment Variables
 copy and rename the .env.example file or make a new file named `.env`  
