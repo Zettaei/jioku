@@ -19,8 +19,8 @@ go to [docker-compose.md](../../docker-compose.md).
 > *example: `docker build -t jioku_api .`*
 
 ### 2. then run with this script  
-`docker run --rm -it --env-file .env -p {port}:8787 {tag_name}`  >
-> *example: `docker run --rm -it --env-file .env -p 8787:8787 jioku_api`*
+`docker run --rm -it --env-file .env -p {port}:8787 {tag_name}`
+> *example: `docker run --rm -it --env-file .env -p 8787:8787 jioku_api`*<br>
 > *(remove `--rm`to keep the container after the server is stopped)*
 
 ### 3. use the server address
@@ -28,7 +28,7 @@ if you running this on your device normally, you should be able to access this s
 `http://localhost:{port}`
 > *example: `http://localhost:8787`*
 
-to stop the server, press Ctrl+C on the terminal you run all that commands on.
+to stop the server, press Ctrl+C on the terminal you run `docker run` command on.
 
 
 ### THESE ARE JUST ONE WAY TO USE DOCKER, THERE ARE OTHER WAY MAYBE EVEN BETTER WAY TO USE IT BUT GO LOOK FOR YERSELF, OKIE?
