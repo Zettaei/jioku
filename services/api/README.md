@@ -44,7 +44,7 @@ and put these Environment Variables in
 | OCR_URL                   | URL of the OCR service                                       | `http://localhost:8000`                                           |
 | OCR_API_KEY               | API key for the OCR service                                  | `your-ocr-api-key`                                                |
 | REDISSTACK_URL            | Redis Stack connection URL                                   | `redis://localhost:6379`                                          |
-| REDISSTACK_USERNAME       | Redis Stack username                                         | `default`                                                         |
+| REDISSTACK_USERNAME       | Redis Stack username (usually just empty)                    | `default`                                                         |
 | REDISSTACK_PASSWORD       | Redis Stack password                                         | `your-redis-password`                                             |
 | SUPABASE_URL              | Supabase project URL                                         | `https://xyz.supabase.co`                                         |
 | SUPABASE_SERVICE_KEY      | Supabase service role key                                    | `your-service-key`                                                |

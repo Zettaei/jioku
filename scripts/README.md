@@ -1,10 +1,11 @@
-> *You must already installed Python version 3.9 or newer*
+# W H A T
 
 This is the seeding app to parse and seed the **JMdict(English)** dictionary to Redis.
 
 <br>
 
-# Setup
+# H O W
+> *You must already have installed Python version 3.9 or newer*
 
 ## 1. Get the Dictionary
 This script is designed to work **only with the JMdict_e file** (English version of JMdict).  
