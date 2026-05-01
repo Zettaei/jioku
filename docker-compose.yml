@@ -1,4 +1,25 @@
 services:
+  api:
+    container_name: api
+    build:
+      context: services/api
+      dockerfile: Dockerfile
+    image: api
+    env_file:
+      - services/api/.env
+    ports:
+      - ${COMPOSE_API_EXPOSE_PORT:-8787}:8787
+    
+  frontend:
+    container_name: frontend
+    build:
+      context: services/frontend
+      dockerfile: Dockerfile
+    image: frontend
+    env_file:
+      - services/frontend/.env
+    ports:
+      - ${COMPOSE_FRONTEND_EXPOSE_PORT:-3000}:3000
 
   redisstack:
     container_name: redisstack
