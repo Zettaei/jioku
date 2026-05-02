@@ -17,13 +17,7 @@ go and do that on these:
 
 after that make another `.env` for **docker-compose** as well, go to [#Environment Variables](#environment-variables).
 
-## 2. Setting Supabase Schema
-do the step in [schema/README.md](schema/README.md).
-
-## 3. Setting Dictionary
-do the step in [scripts/README.md](scripts/README.md)
-
-## 4. Run
+## 2. Run
 > ***Docker** must be running while doing this steps*
 
 execute this script in terminal to run docker-compose for services,  
