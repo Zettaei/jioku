@@ -1,12 +1,14 @@
-*You must already have installed Docker on your device*  
-*You must already have setup Supabase with all the tables/columns ready*
+
 
 
 # Setup
+> *You must already have installed Docker on your device*  
+> *You must already have setup Supabase with all the tables/columns ready*
+
 Setting up [Environment Variables](#environment-variables).  
 
-After setting up env, there are 2 ways to build and run
-[docker-compose](#docker-compose) and [Dockerfile](#dockerfile).
+After setting up .env, there are 2 ways to build and run
+[docker-compose](#docker-compose) and [Dockerfile](#dockerfile).  
 **Please choose either Docker Compose or standalone Dockerfile for your workflow. Using both simultaneously may result in configuration conflicts.**.
 
 ## docker-compose (easier way)
@@ -37,11 +39,12 @@ to stop the server, press Ctrl+C on the terminal you run `docker run` command on
 # Environment Variables
 copy and rename the .env.example file or make a new file named `.env`  
 and put these Environment Variables in
+> *for **docker-compose** use there are some differences, please read [#For docker-compose](#for-docker-compose)*
 
 | **Name**                  | **Description**                                              | **Example**                                                       |
 |---------------------------|--------------------------------------------------------------|-------------------------------------------------------------------|
 | FRONTEND_URL              | Frontend server/client URL this server will talk to          | `http://localhost:3000`                                           |
-| OCR_URL                   | URL of the OCR service                                       | `http://localhost:8000`                                           |
+| OCR_URL                   | URL of the OCR service                                       | `http://localhost:8866`                                           |
 | OCR_API_KEY               | API key for the OCR service                                  | `your-ocr-api-key`                                                |
 | REDISSTACK_URL            | Redis Stack connection URL                                   | `redis://localhost:6379`                                          |
 | REDISSTACK_USERNAME       | Redis Stack username (usually just empty)                    | `default`                                                         |
@@ -57,10 +60,18 @@ and put these Environment Variables in
 | AZURE_TTS_URL             | Azure Text-to-Speech endpoint URL                            | `https://eastus.tts.speech.microsoft.com`                         |
 | AZURE_STT_URL             | Azure Speech-to-Text endpoint URL                            | `https://eastus.stt.speech.microsoft.com`                         |
 
+## For docker-compose
+due to docker network bridge on docker-compose, some url work a bit differently, these are the one needed to be use instead of normally
+| **Name** | **Value** |
+|----------|-----------|
+| OCR_URL | `http://paddleocr:8866` |
+| REDISSTACK_URL | `redis://redisstack:6379` |
 
-# P.S. types for Supabase
-for developers who want the code for your Supabase
-(which must have been setup, read [supabase.md]())
+for other Environment Variables, put in normally.
 
+<br><br>
+
+
+# Types for Supabase
 run the script below to get the Supabase types.  
 `npx supabase gen types typescript --schema "{schema_names_seperated_with_comma}" --project-id {project_id} > src/core/supabase/generatedTypes.ts`
