@@ -61,8 +61,12 @@ export async function fetchSearchWords(word: string = "", translationLang: Trans
 export async function fetchTokensOCR(image: File, translationLang: TranslationLanguage)
 : Promise<TokensRouteResponse> 
 {
+    const lastDotIndex = image.name.lastIndexOf(".");
+    const ext = lastDotIndex !== -1 ? image.name.slice(lastDotIndex) : "";
+    const renamedFile = new File([image], `imageFile${ext}`, { type: image.type });
+    
     const form = new FormData();
-    form.set("file", image);
+    form.set("file", renamedFile);
 
     try {
         const fetchData = await fetch(
