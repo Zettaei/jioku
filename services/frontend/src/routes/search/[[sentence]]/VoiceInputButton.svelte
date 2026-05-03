@@ -4,6 +4,9 @@
     import { fetchTokensSpeechtotext } from "../services";
     import { TranslationLanguage } from "$lib/types/server/modules/dict/type/model";
     import type { TokensRouteResponse } from "$lib/types/server/modules/dict/type/dto";
+    import { lang } from "$lib/i18n";
+    import { bgtext2 } from "$lib/stores/bgtext";
+    import { bgtexthover } from "$lib/utils/bgtext";
 
     interface Props {
         query: string;
@@ -11,10 +14,11 @@
         isProcessing: boolean;
         translationLang: TranslationLanguage;
         onSubmit: (result: TokensRouteResponse) => void;
+        isFirstPage?: boolean;
     }
 
     // @ts-expect-error
-    let { query = $bindable(), isListening = $bindable(), isProcessing = $bindable(), translationLang, onSubmit }: Props = $props<Props>();
+    let { query = $bindable(), isListening = $bindable(), isProcessing = $bindable(), translationLang, onSubmit, isFirstPage = false }: Props = $props<Props>();
 
     let mediaRecorder: MediaRecorder | null = null;
     let audioChunks: Blob[] = [];
@@ -72,16 +76,42 @@
     }
 </script>
 
-<Button
-    variant={isListening ? "destructive" : "outline"}
-    size="icon"
-    onclick={handleClick}
-    disabled={isProcessing}
-    title={isListening ? "Stop recording" : "Search by voice"}
->
-    {#if isProcessing}
-        <LoaderCircleIcon size={20} class="animate-spin" />
-    {:else}
-        <MicIcon size={20} class={isListening ? "animate-pulse" : ""} />
-    {/if}
-</Button>
+{#if isFirstPage}
+    <div>
+        <Button
+            class="w-full cursor-pointer"
+            variant={isListening ? "destructive" : "outline"}
+            onclick={handleClick}
+            disabled={isProcessing}
+            title={isListening ? $lang.search.voiceInput.stopRecording : $lang.search.voiceInput.searchByVoice}
+            onmouseenter={bgtexthover(bgtext2, ">> Speech To Text")}
+            onmouseleave={bgtexthover(bgtext2)}
+            onmouseup={bgtexthover(bgtext2)}
+        >
+            {#if isProcessing}
+                <LoaderCircleIcon size={20} class="animate-spin" />
+            {:else}
+                <MicIcon size={20} class={isListening ? "animate-pulse" : ""} />
+            {/if}
+
+            <span>{$lang.search.voiceInput.label}</span>
+        </Button>
+    </div>
+{:else}
+    <div>
+        <Button
+            class="cursor-pointer"
+            variant={isListening ? "destructive" : "outline"}
+            size="icon"
+            onclick={handleClick}
+            disabled={isProcessing}
+            title={isListening ? $lang.search.voiceInput.stopRecording : $lang.search.voiceInput.searchByVoice}
+        >
+            {#if isProcessing}
+                <LoaderCircleIcon size={20} class="animate-spin" />
+            {:else}
+                <MicIcon size={20} class={isListening ? "animate-pulse" : ""} />
+            {/if}
+        </Button>
+    </div>
+{/if}

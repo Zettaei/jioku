@@ -1,13 +1,14 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { lang } from "$lib/i18n";
 
   interface Props {
     title: string;
     message: string;
     open: boolean;
     onConfirm: (() => void) | undefined;
-    onCancel: (() => void) | undefined;
+    onCancel?: (() => void) | undefined;
   }
 
   let {
@@ -38,8 +39,8 @@
       </Dialog.Description>
     </Dialog.Header>
     <Dialog.Footer>
-      <Button variant="outline" onclick={handleCancel}>No</Button>
-      <Button variant="destructive" onclick={handleConfirm}>Yes</Button>
+      <Button variant="outline" onclick={handleCancel}>{$lang.common.no}</Button>
+      <Button variant="destructive" onclick={handleConfirm}>{$lang.common.yes}</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

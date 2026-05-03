@@ -13,7 +13,7 @@
   let { toolbarSnippet }: { toolbarSnippet: Snippet | null } = $props();
 </script>
 
-<div class="w-full fixed top-0 left-0 right-0 bg-background">
+<div class="w-full fixed top-0 left-0 right-0 bg-background z-28">
   <nav class="w-full h-full flex items-center justify-between border-b py-1">
     <Button
       variant="ghost"

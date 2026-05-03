@@ -6,9 +6,11 @@
     import { userStore } from "$lib/stores/auth";
     import Card from "$lib/components/ui/card/card.svelte";
     import DeckStatusGraph from "./DeckStatusGraph.svelte";
+    import { fetchDeckByDeckId } from "../../services";
 
     let deckId: string = $derived(page.params.deckId ?? '');
     let deckStatus: GetDeckStatusByIdRouteResponse = $state(null);
+    let deckName: string = $state("");
 
     let isLoading = $state(true);
 
@@ -21,10 +23,13 @@
 
         untrack(() => {
             isLoading = true;
-            console.log(deckId)
-            fetchStatus(deckId, $userStore?.timezone ?? "Asia/Bangkok")
-            .then((fetchResult) => {
-                deckStatus = fetchResult;
+            Promise.all([
+                fetchStatus(deckId, $userStore?.timezone ?? "Asia/Bangkok"),
+                fetchDeckByDeckId(deckId)
+            ])
+            .then(([statusResult, deckResult]) => {
+                deckStatus = statusResult;
+                deckName = deckResult?.name ?? "";
             })
             .catch((err) => {
                 throw err;
@@ -37,13 +42,16 @@
 
 </script>
 
+<svelte:head>
+  <title>DECK STATISTICS{deckName ? ": " + deckName : ""}</title>
+</svelte:head>
 
-<div>
+<div class="w-full max-x-4xl">
     {#if isLoading}
-        <p class="text-center">Loading deck status...</p>
+        <p class="text-center">Loading deck statistics...</p>
     {:else}
         {#if deckStatus}
-            <DeckStatusGraph deckId={deckId} deckStatus={deckStatus} />
+            <DeckStatusGraph deckId={deckId} deckName={deckName} deckStatus={deckStatus} />
         {/if}
 
     {/if}

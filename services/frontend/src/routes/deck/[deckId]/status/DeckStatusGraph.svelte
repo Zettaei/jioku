@@ -12,7 +12,6 @@
     import TooltipContent from "$lib/components/ui/tooltip/tooltip-content.svelte";
     import { cardStatus } from "$lib/constant/cardStatus";
     import { userStore } from "$lib/stores/auth";
-    import { fetchDeckByDeckId } from "../../services";
     import BackButton from "$lib/components/BackButton.svelte";
     import { SESSIONSTORAGE_PREV_DECK_LIST } from "$lib/constant/sessionStorageKey.js";
 
@@ -20,29 +19,18 @@
 
     interface Props {
         deckId: string;
+        deckName: string;
         deckStatus: DeckStatus;
     }
 
-    let { deckId, deckStatus }: Props = $props();
+    let { deckId, deckName, deckStatus }: Props = $props();
 
-    let deckName: string = $state("");
     let backButtonRef: { click: () => void } | undefined = $state();
     let statusChartCanvas: HTMLCanvasElement;
     let maturityChartCanvas: HTMLCanvasElement;
 
     let statusChart: Chart;
     let maturityChart: Chart;
-
-    $effect(() => {
-        if (deckId) {
-            fetchDeckByDeckId(deckId)
-            .then((deck) => {
-                if (deck?.name) 
-                deckName = deck.name;
-            });
-        }
-    });
-
 
     onMount(() => {
         // Card Status Distribution (Pie)
@@ -124,27 +112,27 @@
     });
 </script>
 
-<div class="flex justify-center gap-0">
-    <Card class="max-w-xl w-full">
-        <div class="p-6 space-y-8">
+<div class="w-full flex justify-center">
+    <Card>
+        <div class="px-6 py-4 space-y-12">
 
             <!-- Deck Header with BackButton -->
             <div class="pb-4 border-b">
-                <div class="flex items-center">
+                <div class="flex items-start">
                     <div class="flex flex-1 justify-start">
                         <BackButton bind:this={backButtonRef} 
                             destination="/deck" sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
                         />
                     </div>
                     <div class="flex flex-1 justify-center flex-col items-center text-center">
-                        <div class="text-xl font-bold avantgarde">DECK STATISTIC</div>
-                        <div class="text-lg">{deckName}</div>
+                        <div class="font-bold avantgarde">DECK STATISTICS</div>
+                        <div class="">{deckName}</div>
                     </div>
                     <div class="flex flex-1 justify-end">
                         <div></div>
                     </div>
                 </div>
-                <div class="text-sm gap-4 mt-6 flex w-full justify-end">
+                <div class="text-base gap-4 mt-6 flex w-full justify-end">
                     <div><span class="font-bold">Date:</span> {deckStatus?.date}</div>
                     <div><span class="font-bold">Timezone:</span> {$userStore?.timezone ?? "Asia/Bangkok"}</div>
                 </div>
@@ -153,13 +141,13 @@
 
             <!-- Card Status Distribution -->
             <div>
-                <h3 class="text-md font-semibold mb-4 text-center">Card Status Distribution</h3>
+                <h3 class="text-lg font-semibold mb-4 text-center">Card Status Distribution</h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="flex w-full justify-center">
                         <canvas bind:this={statusChartCanvas} class="max-h-48"></canvas>
                     </div>
                     <div class="border-l pl-4">
-                        <div class="space-y-2 text-xs">
+                        <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span>Total:</span>
                                 <span class="font-semibold">{deckStatus.cards_total}</span>
@@ -181,12 +169,12 @@
             <div>
                 <h3 class="text-md font-semibold mb-4 text-center">Card Maturity Distribution</h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="flex w-full justify-center">
                         <canvas bind:this={maturityChartCanvas} class="max-h-48"></canvas>
                     </div>
                     <div class="border-l pl-4">
                         <TooltipProvider>
-                            <div class="space-y-2 text-xs">
+                            <div class="space-y-2">
                                 {#each Object.keys(cardMaturity) as item}
                                 {@const name = item[0].toUpperCase() + item.substring(1,)}
                                 {@const key = item as keyof typeof cardMaturity}

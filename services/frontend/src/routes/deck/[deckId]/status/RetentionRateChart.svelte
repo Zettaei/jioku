@@ -156,8 +156,8 @@
                     </div>
                 {/if}
             </div>
-            <div class="">
-                {@render dropdown()}.
+            <div class="pb-6">
+                {@render dropdown()}
             </div>
         </div>
         <Table class="text-center">

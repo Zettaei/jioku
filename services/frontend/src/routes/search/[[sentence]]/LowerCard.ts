@@ -2,7 +2,6 @@ import { HightlightBoxType } from "$lib/types/search";
 import type { FtSearchResult } from "$lib/types/server/core/redisstack/type";
 import type { Entry } from "$lib/types/server/modules/dict/type/model";
 
-// TODO: update type for some of these error
 export function getEntryMetadata(entry: Entry) 
 {
     let highlight: Record<HightlightBoxType, HightlightBoxType | undefined> = {
@@ -28,6 +27,5 @@ export function getEntryMetadata(entry: Entry)
 
 
 export function getPosName(pos: string) {
-    // TODO: convert the pos to its name
     return pos;
 }

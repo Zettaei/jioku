@@ -19,7 +19,7 @@ async function getCardsByDeckId(userId: string, deckId: string,
     const offset = (page - 1) * limit;
 
     // FIXME: search text is searching the entire json which include the key, "d" catches "rea'd'ing"
-    const { data, error, count } = await supabase.rpc("get_cards", {
+    const { data, error } = await supabase.rpc("get_cards", {
         param_decks_id: deckId,
         param_users_id: userId,
         param_searchtext: search,
@@ -27,15 +27,13 @@ async function getCardsByDeckId(userId: string, deckId: string,
         param_sortby_direction: sortasc ? "ASC" : "DESC",
         param_offset: offset,
         param_limit: limit
-    }, {   
-        count: 'exact'  
     });
 
     Supabase.utils.throwSupabaseErrorIfExist(error, "Failed to get decks from Supabase");
 
     return {
-        result: data ?? [],
-        total: count ?? 0,
+        result: data.data ?? [],
+        total: data.total ?? 0,
         pagination: {
             page,
             limit,

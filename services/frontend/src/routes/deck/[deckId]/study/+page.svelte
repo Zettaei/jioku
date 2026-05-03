@@ -289,55 +289,56 @@
     function handleGradeClick(timeSpent: number, quality: number) {
     if (!currentCard || !newCards || !dueCards || !retryCards || isSubmitting || submitError) return;
 
+    const cardId = currentCard.id;
+
+    // Track if the graded card was a new card before removal
+    const wasNewCard = newCards?.items?.some(c => c.id === cardId) ?? false;
+
+    // 1. Remove the card from the active list immediately (optimistic)
+    if (newCards?.items?.some(c => c.id === cardId)) {
+        newCards = { ...newCards, items: newCards.items.filter(c => c.id !== cardId), total: newCards.total - 1 };
+    } else if (dueCards?.items?.some(c => c.id === cardId)) {
+        dueCards = { ...dueCards, items: dueCards.items.filter(c => c.id !== cardId), total: dueCards.total - 1 };
+    } else if (retryCards?.items?.some(c => c.id === cardId)) {
+        retryCards = { ...retryCards, items: retryCards.items.filter(c => c.id !== cardId), total: retryCards.total - 1 };
+    }
+
+    // Increment and persist new card count if a new card was just reviewed
+    if (wasNewCard) {
+        newCountToday++;
+        saveNewCountToStorage(deckId, newCountToday);
+    }
+
+    // if failed, add to retry
+    if (quality < 3) {
+        const failedCard = { ...currentCard, status: CardStatusType.retry } as CardRow;
+        retryCards = { ...retryCards!, items: [...retryCards!.items, failedCard], total: retryCards!.total + 1 };
+    }
+
+    if((retryCards?.items?.length ?? 0) > 0 && countThisSession % 4 === 0) {
+        currentCard = retryCards!.items[0];
+
+    } else if ((newCards?.items?.length ?? 0) > 0 && !newLimitReached) {
+        currentCard = newCards!.items[0];
+
+    } else if ((dueCards?.items?.length ?? 0) > 0) {
+        currentCard = dueCards!.items[0];
+
+    } else if ((retryCards?.items?.length ?? 0) > 0) {
+        currentCard = retryCards!.items[0];
+        
+    } else {
+        isFinished = true;
+    }
+
+    isFrontSide = true;
+    countThisSession++;
+
+    // Submit in the background — UI has already moved on
     isSubmitting = true;
-    submitCardReview(deckId, currentCard.id, { timeSpent, quality })
+    submitCardReview(deckId, cardId, { timeSpent, quality })
     .then(() => {
-        // Submission succeeded, safe to proceed with state updates
         submitError = false;
-
-        // Track if the graded card was a new card before removal
-        const wasNewCard = newCards?.items?.some(c => c.id === currentCard!.id) ?? false;
-
-        // 1. Remove the card from the active list
-        // We filter by ID to be safe rather than shift()
-        if (newCards?.items?.some(c => c.id === currentCard!.id)) {
-            newCards = { ...newCards, items: newCards.items.filter(c => c.id !== currentCard!.id), total: newCards.total - 1 };
-        } else if (dueCards?.items?.some(c => c.id === currentCard!.id)) {
-            dueCards = { ...dueCards, items: dueCards.items.filter(c => c.id !== currentCard!.id), total: dueCards.total - 1 };
-        } else if (retryCards?.items?.some(c => c.id === currentCard!.id)) {
-            retryCards = { ...retryCards, items: retryCards.items.filter(c => c.id !== currentCard!.id), total: retryCards.total - 1 };
-        }
-
-        // Increment and persist new card count if a new card was just reviewed
-        if (wasNewCard) {
-            newCountToday++;
-            saveNewCountToStorage(deckId, newCountToday);
-        }
-
-        // if failed, add to retry
-        if (quality < 3) {
-            const failedCard = { ...currentCard, status: CardStatusType.retry } as CardRow;
-            retryCards = { ...retryCards!, items: [...retryCards!.items, failedCard], total: retryCards!.total + 1 };
-        }
-
-        if((retryCards?.items?.length ?? 0) > 0 && countThisSession % 4 === 0) {
-            currentCard = retryCards!.items[0];
-
-        } else if ((newCards?.items?.length ?? 0) > 0 && !newLimitReached) {
-            currentCard = newCards!.items[0];
-
-        } else if ((dueCards?.items?.length ?? 0) > 0) {
-            currentCard = dueCards!.items[0];
-
-        } else if ((retryCards?.items?.length ?? 0) > 0) {
-            currentCard = retryCards!.items[0];
-            
-        } else {
-            isFinished = true;
-        }
-
-        isFrontSide = true;
-        countThisSession++;
     })
     .catch((err) => {
         errorState.show(err.message, err.status);
@@ -350,8 +351,12 @@
 
 </script>
 
+<svelte:head>
+  <title>DECK STUDY</title>
+</svelte:head>
+
 <Card.Root
-  class="w-full sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto flex justify-center text-center"
+  class="w-full h-full max-w-3xl mx-auto flex justify-center text-center"
 >
   {#if isError}
     <div>An Error occured</div>
@@ -361,19 +366,26 @@
     {@render finishedPage()}
   {:else if currentCard}
     {@const status = currentCard.status}
-    <Card.Header class="text-sm flex justify-center">
-      <span class={status === 0 ? "underline" : ""}>new: {newLimitReached ? 0 : Math.min(newCards?.total ?? 0, newLimit - newCountToday)}</span
-      >
-      |
-      <span class={status === 1 ? "underline" : ""}>due: {dueCards?.total!}</span
-      >
-      |
-      <span class={status === 2 ? "underline" : ""}
-        >retry: {retryCards?.total! }</span
-      >
-    </Card.Header>
+    <div class="w-full flex px-4">
+        <div class="flex-2/12 text-start">
+            <BackButton destination={backDestination} 
+                sessionStorageKey={SESSIONSTORAGE_PREV_DECK_LIST}
+            />
+        </div>
+        <Card.Header class="flex-8/12 text-sm flex justify-center items-center font-bold gap-2">
+            <span class={status === 0 ? "border-2 border-yellow-500 rounded px-2 py-1" : ""}>new: <span class="text-blue-600 dark:text-blue-400">{newLimitReached ? 0 : Math.min(newCards?.total ?? 0, newLimit - newCountToday)}</span></span
+            >
+            |
+            <span class={status === 1 ? "border-2 border-yellow-500 rounded px-2 py-1" : ""}>due: <span class="text-green-600 dark:text-green-400">{dueCards?.total!}</span></span
+            >
+            |
+            <span class={status === 2 ? "border-2 border-yellow-500 rounded px-2 py-1" : ""}>retry: <span class="text-red-600 dark:text-orange-500">{retryCards?.total! }</span></span
+            >
+        </Card.Header>
+        <div class="flex-2/12"></div>
+    </div>
     <CardContent bind:isFrontSide headerOrder={headerOrder} currentCard={currentCard} />
-    <GradeButtons bind:isFrontSide onGradeClick={handleGradeClick} />
+    <GradeButtons bind:isFrontSide currentCard={currentCard} onGradeClick={handleGradeClick} />
   {/if}
 </Card.Root>
 

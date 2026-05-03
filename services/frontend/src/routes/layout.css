@@ -20,12 +20,12 @@
 
 @font-face {
 	font-family: "ITC Avant Garde Gothic Medium";
-	src: url("$lib/assets/fonts/avant-garde-gothic-medium.otf");
+	src: url("/fonts/avant-garde-gothic-medium.woff2");
 }
 
 @font-face {
 	font-family: "ITC Avant Garde Gothic CE Book";
-	src: url("$lib/assets/fonts/avant-garde-gothic-ce-book.otf")
+	src: url("/fonts/avant-garde-gothic-ce-book.woff2");
 }
 
 .avantgarde {
@@ -45,6 +45,7 @@
 	line-height: 0.9;
 	letter-spacing: 0.1rem;
 }
+
 
 :root {
 	--radius: 0.625rem;
@@ -153,8 +154,28 @@
 	--color-sidebar-ring: var(--sidebar-ring);
 }
 
-input:focus {
-  outline: none;
-  border-color: gold;
-  box-shadow: 0 0 0 2px gold;
+.sticky-none {
+  position: static !important;
+}
+
+.jioku_background_dark {
+	background-attachment: fixed;
+    background-image: 
+        radial-gradient(circle, rgba(222, 221, 218, 0.3) 1px, transparent 1px),
+        linear-gradient(315deg, rgba(6, 6, 6, 1) 0%, rgb(12, 12, 12) 75%, rgba(28, 28, 28, 1) 100%);
+    
+    background-size: 58px 58px, auto;
+    
+    background-repeat: repeat, no-repeat;
+}
+
+.jioku_background_light {
+	background-attachment: fixed;
+    background-image: 
+        radial-gradient(circle, rgba(6, 6, 6, 0.3) 1px, transparent 1px),
+        linear-gradient(315deg, rgba(255, 255, 255, 1) 0%, rgb(249, 249, 249) 75%, rgba(233, 233, 233, 1) 100%);
+    
+    background-size: 58px 58px, auto;
+    
+    background-repeat: repeat, no-repeat;
 }

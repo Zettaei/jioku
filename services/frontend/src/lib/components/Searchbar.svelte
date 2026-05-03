@@ -5,15 +5,15 @@
   interface Props {
     query: string;
     placeholder?: string;
+    class?: string;
   }
 
-  export let query: string;
-  export let placeholder: string = "Search...";
+  let { query = $bindable(), placeholder = "Search...", class: className = "" }: Props = $props();
 </script>
 
-<InputGroup.Root>
+<InputGroup.Root class={className}>
   <InputGroup.Input
-  size={60}
+    size={60}
     bind:value={query}
     type="search"
     placeholder={placeholder}

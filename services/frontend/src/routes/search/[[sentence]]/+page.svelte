@@ -15,6 +15,9 @@
     import { goto } from "$app/navigation";
     import * as Pagination from "$lib/components/ui/pagination/index.js";
     import { DICT_OPTIONS } from "$lib/constant/options";
+    import { searchKeywordStore } from "$lib/stores/search";
+    import { bgtext2 } from "$lib/stores/bgtext";
+    import { bgtexthover } from "$lib/utils/bgtext";
 
     // OPTIMIZE: check if the last image/text and translation is the same as the new one, if it is then no request
     // FIXME: race condition if user clicking or searching too fast
@@ -22,7 +25,6 @@
   const SearchToolbarContext = getContext<SearchToolbarContextInterface>(SEARCH_TOOLBAR_CONTEXT);
   let AudioContext: AudioContext;
   const voiceCache = new Map<string, AudioBuffer>();
-  
   
   let uppercardIsLoading = $state<boolean>(false);
   let lowercardIsLoading = $state<boolean>(false);
@@ -35,6 +37,7 @@
 
   let selectedWord = $state("");
   let selectedIndex = $derived<string>(tokens?.tokens[0] ? "0" : "");
+
 
   let currentPage = $derived.by<number>(() => {
     let p = Number(page.url.searchParams.get("page"));
@@ -91,7 +94,15 @@
         tokens = tokensResult;
         selectedWord = getDefaultSelectedWord(tokens);
         SearchToolbarContext.query = "";
-        goto("/search?page=1");
+
+        if(tokens?.tokens) {
+          searchKeywordStore.update((history) => {
+            const keyword = tokens!.tokens.map((word) => word.surface_form).join('');
+            const newHistory = [keyword, ...history.filter((item) => item !== keyword)].slice(0, DICT_OPTIONS.MAX_SEARCH_HISTORY_LENGTH);
+            return newHistory;
+          });
+          goto("/search?page=1");
+        }
       }
       finally {
         uppercardIsLoading = false;
@@ -116,6 +127,7 @@
         tokens = tokensResult;
         selectedWord = getDefaultSelectedWord(tokens);
         SearchToolbarContext.image = null;
+        SearchToolbarContext.query = "";
         
         const url = new URL(window.location.href);
         url.searchParams.set("page", "1");
@@ -163,16 +175,16 @@
     goto(url, { keepFocus: true });
   }
 
-  // BUG: some kanji doesn't have any, so it error when send req to api
   function handleVoiceClick(text: string, reading: string | undefined)
   : void 
   {
     if(!AudioContext) {
       throw new Error("Speech unavailable")
     }
+    const key = text + ':' + reading
 
     // check the page cache
-    let decodedVoiceBuffer = voiceCache.get(text + reading);
+    let decodedVoiceBuffer = voiceCache.get(key);
     if(decodedVoiceBuffer) {
       playVoice(AudioContext, decodedVoiceBuffer);
 
@@ -188,14 +200,18 @@
           voiceCache.delete(firstKey);
         }
 
-        voiceCache.set(text + reading, decodedVoiceBuffer);
+        voiceCache.set(key, decodedVoiceBuffer);
       })
     }
   }
 
 </script>
 
-<div class="w-full max-w-4xl flex flex-col space-y-5">
+<svelte:head>
+  <title>DICTIONARY{selectedWord ? ": " + selectedWord : ""}</title>
+</svelte:head>
+
+<div class="w-full max-w-4xl">
 
 {#if isFrontpage}
     <FrontPage />
@@ -233,6 +249,9 @@
                         onclick={() => {
                             if (currentPage > 1) handlePageChange(currentPage - 1);
                         }}
+                        onmouseenter={bgtexthover(bgtext2, ">> Go to Page " + (currentPage === 0 ? 0 : currentPage - 1))}
+                        onmouseleave={bgtexthover(bgtext2)}
+                        onmouseup={bgtexthover(bgtext2)}
                     />
                 </Pagination.Item>
                 {#each pages as page (page.key)}
@@ -247,6 +266,9 @@
                             {page} 
                             isActive={currentPage === page.value}
                             onclick={() => handlePageChange(page.value)}
+                            onmouseenter={bgtexthover(bgtext2, ">> Go to Page " + page.value)}
+                            onmouseleave={bgtexthover(bgtext2)}
+                            onmouseup={bgtexthover(bgtext2)}
                         >
                         {page.value}
                         </Pagination.Link>
@@ -261,6 +283,9 @@
                             const totalPages = Math.ceil(entries?.total / pageLimit);
                             if (currentPage < totalPages) handlePageChange(currentPage + 1);
                         }}
+                        onmouseenter={bgtexthover(bgtext2, ">> Go to Page " + (currentPage+1))}
+                        onmouseleave={bgtexthover(bgtext2)}
+                        onmouseup={bgtexthover(bgtext2)}
                     />
                 </Pagination.Item>
                 </Pagination.Content>

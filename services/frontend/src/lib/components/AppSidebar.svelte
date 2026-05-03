@@ -12,10 +12,13 @@
   import ThemeToggle from "./app-ThemeToggle.svelte";
   import { cn } from "$lib/utils";
   import { page } from "$app/state";
-  import { userStore } from "$lib/stores/auth";
+  import { userStore, isLoggedInStore } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
-  import { logout } from "../../routes/(auth)/services";
   import { errorState } from "$lib/global/errorState.svelte";
+  import { lang } from "$lib/i18n";
+  import LanguagePicker from "./LanguagePicker.svelte";
+    import { getCookie } from "$lib/utils/cookie";
+    import { onMount } from "svelte";
 
   const classname_menuButton = cn("h-10 px-3 text-lg w-full rounded-none");
   const classname_menuButton_active = cn("border-l-4 border-yellow-500");
@@ -26,17 +29,21 @@
   );
   const classname_titleButton = cn("ms-3 avantgarde");
 
-
-
   const sidebar = Sidebar.useSidebar();
   let isOpen = $derived(sidebar.open);
 
-  let user = $derived($userStore);
-  let isLoggedIn = $derived(user !== null);
-
-  const onMenuButtonClick = () => {
+  const onMenuButtonClick = async (url: string) => {
     sidebar.setOpenMobile(false);
+    await goto(url);
   }
+
+  let isLoggedIn = $derived($isLoggedInStore);
+
+  $effect(() => {
+    if(getCookie("is_loggedin") === "true") {
+      isLoggedInStore.set(true);
+    }
+  });
 
   function handleMouseEnter() {
     if (!sidebar.isMobile) {
@@ -54,39 +61,29 @@
     return page.url.pathname.startsWith(url);
   };
 
-  async function handleLogout() {
-    try {
-      await logout();
-    } catch {
-      // ignore errors on logout — clear client state regardless
-    }
-    userStore.set(null);
-    goto("/search");
-  }
-
-  const alwaysItems = [
+  const alwaysItems = $derived([
     {
-      title: "Search",
+      title: $lang.nav.search,
       url: "/search",
       icon: SearchIcon,
     },
-  ];
+  ]);
 
-  const memberItems = [
+  const memberItems = $derived([
     {
-      title: "Deck",
+      title: $lang.nav.deck,
       url: "/deck",
       icon: LibraryBigIcon,
     },
-  ];
+  ]);
 
-  const footerItems = [
+  const footerItems = $derived([
     {
-      title: "Settings",
+      title: $lang.nav.settings,
       url: "/settings",
       icon: Settings2Icon,
     },
-  ];
+  ]);
 </script>
 
 
@@ -94,7 +91,7 @@
   variant="floating"
   collapsible="icon"
   side="left"
-  class="uppercase"
+  class="uppercase z-30"
   onmouseenter={() => { isOpen ? handleMouseEnter() : undefined }}
   onmouseleave={() => { isOpen ? handleMouseLeave() : undefined }}
 >
@@ -112,7 +109,7 @@
                   classname_menuButton,
                   isActive(item.url) ? classname_menuButton_active : classname_menuButton_inactive
                 )} 
-                onclick={onMenuButtonClick}
+                onclick={() => onMenuButtonClick(item.url)}
               >
                 {#snippet child({ props })}
                   <a href={item.url} {...props}>
@@ -132,7 +129,7 @@
                     classname_menuButton,
                     isActive(item.url) ? classname_menuButton_active : classname_menuButton_inactive
                   )} 
-                  onclick={onMenuButtonClick}
+                  onclick={() => onMenuButtonClick(item.url)}
                 >
                   {#snippet child({ props })}
                     <a href={item.url} {...props}>
@@ -170,7 +167,7 @@
                     classname_menuButton,
                     isActive(item.url) ? classname_menuButton_active : classname_menuButton_inactive
                   )} 
-                  onclick={onMenuButtonClick}
+                  onclick={() => onMenuButtonClick(item.url)}
                 >
                   {#snippet child({ props })}
                     <a href={item.url} {...props}>
@@ -194,12 +191,12 @@
             <Sidebar.MenuItem>
               <Sidebar.MenuButton
                 class={cn(classname_menuButton, classname_menuButton_inactive)}
-                onclick={() => { onMenuButtonClick(); goto("/login"); }}
+                onclick={() => onMenuButtonClick("/login")}
               >
                 {#snippet child({ props })}
                   <a href="/login" {...props}>
                     <LogInIcon />
-                    <span class={classname_titleButton}>Log In</span>
+                    <span class={classname_titleButton}>{$lang.nav.login}</span>
                   </a>
                 {/snippet}
               </Sidebar.MenuButton>
@@ -214,12 +211,14 @@
       <Sidebar.GroupContent>
         <Sidebar.Menu>
           {#if sidebar.state === "expanded" || sidebar.isMobile }
-            <Sidebar.MenuItem class="flex justify-between items-center">
-              <div class={classname_appTitle}> J I O K U </div>
-              <ThemeToggle />
+            <Sidebar.MenuItem class="flex justify-between items-center gap-2">
+              <div class={classname_appTitle}> {$lang.nav.appTitle} </div>
+              <div class="flex gap-1">
+                <ThemeToggle />
+              </div>
             </Sidebar.MenuItem>
           {:else}
-            <Sidebar.MenuItem>
+            <Sidebar.MenuItem class="flex gap-1 justify-center">
               <ThemeToggle />
             </Sidebar.MenuItem>
           {/if}
