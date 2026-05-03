@@ -13,11 +13,8 @@
   import { userStore } from "$lib/stores/auth";
   import { login } from "../services";
   import { getCookie } from "$lib/utils/cookie";
-
-  // Check is_loggedin cookie immediately and redirect
-  if (getCookie("is_loggedin") === "true") {
-    goto("/deck");
-  }
+    import { bgtext2 } from "$lib/stores/bgtext";
+    import { bgtexthover } from "$lib/utils/bgtext";
 
   let email = $state("");
   let password = $state("");
@@ -50,20 +47,23 @@
       formError = err.message ?? "Login failed. Please check your credentials.";
     } finally {
       isLoading = false;
+      bgtexthover(bgtext2);
     }
   }
 </script>
 
-<div class="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-  <div class="flex w-full max-w-sm flex-col gap-6">
+<svelte:head>
+  <title>LOGIN</title>
+</svelte:head>
+
+<div class="flex flex-col items-center justify-start">
+  <div class="flex w-full max-w-md flex-col gap-6 pt-40">
+    <div class="pagetitle">LOGIN</div>
     <div class="flex flex-col gap-6">
-      <Card.Root>
-        <Card.Header class="text-center">
-          <Card.Title class="text-xl">Log In</Card.Title>
-        </Card.Header>
+      <Card.Root class="py-8">
         <Card.Content>
           <form onsubmit={handleSubmit}>
-            <FieldGroup>
+            <FieldGroup class="gap-4">
               <Field>
                 <FieldLabel for="login-email">Email</FieldLabel>
                 <Input
@@ -76,7 +76,7 @@
                 />
                 <FieldError errors={emailError ? [{ message: emailError }] : []} />
               </Field>
-              <Field>
+              <Field class="mb-8">
                 <FieldLabel for="login-password">Password</FieldLabel>
                 <Input
                   id="login-password"
@@ -93,7 +93,11 @@
               {/if}
 
               <Field class="mt-2">
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading}
+                  onmouseenter={bgtexthover(bgtext2, ">> Login")}
+                  onmouseleave={bgtexthover(bgtext2)}
+                  onmouseup={bgtexthover(bgtext2)}
+                >
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
               </Field>
@@ -108,6 +112,9 @@
                   variant="link"
                   style="cursor:pointer"
                   onclick={() => goto("/register")}
+                  onmouseenter={bgtexthover(bgtext2, ">> Go To Register")}
+                  onmouseleave={bgtexthover(bgtext2)}
+                  onmouseup={bgtexthover(bgtext2)}
                 >Register</Button>
               </div>
             </FieldGroup>

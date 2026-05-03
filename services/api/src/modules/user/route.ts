@@ -22,21 +22,21 @@ routes.post("/login", async (c) => {
         sameSite: "lax",
         path: "/",
         maxAge: USER_OPTIONS.ACCESS_TOKEN_EXPIREIN_SECONDS
-    })
+    });
     setCookie(c, USER_OPTIONS.REFRESH_TOKEN_COOKIE_NAME, result.refreshtoken, {
         httpOnly: true,
         secure: USER_OPTIONS.COOKIE_SECURE,
         sameSite: "lax",
         path: "/",
         maxAge: USER_OPTIONS.REFRESH_TOKEN_EXPIREIN_SECONDS
-    })
+    });
     setCookie(c, "is_loggedin", "true", {
         httpOnly: false,
-        secure: USER_OPTIONS.COOKIE_SECURE,
+        secure: false,
         sameSite: "lax",
         path: "/",
-        maxAge: USER_OPTIONS.ACCESS_TOKEN_EXPIREIN_SECONDS
-    })
+        maxAge: USER_OPTIONS.REFRESH_TOKEN_EXPIREIN_SECONDS
+    });
 
     return c.json<LoginRouteResponse>({ username: result.username, timezone: result.timezone }, 200);
 });
@@ -93,11 +93,19 @@ routes.post("/refresh", async (c) => {
         path: "/",
         maxAge: USER_OPTIONS.REFRESH_TOKEN_EXPIREIN_SECONDS
     })
+    setCookie(c, "is_loggedin", "true", {
+        httpOnly: false,
+        secure: false,
+        sameSite: "lax",
+        path: "/",
+        maxAge: USER_OPTIONS.REFRESH_TOKEN_EXPIREIN_SECONDS
+    });
 
     return c.json({ message: "Token refreshed" }, 200);
 });
 
 routes.post("/logout", async (c) => {
+
     deleteCookie(c, USER_OPTIONS.ACCESS_TOKEN_COOKIE_NAME, {
         httpOnly: true,
         secure: USER_OPTIONS.COOKIE_SECURE,

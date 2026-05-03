@@ -5,6 +5,8 @@
     import { XIcon, PlusIcon, GripVerticalIcon } from "@lucide/svelte";
     import { DECK_DEFAULT_HEADER } from "$lib/constant/deck";
     import { untrack } from "svelte";
+    import { bgtexthover } from "$lib/utils/bgtext";
+    import { bgtext2 } from "$lib/stores/bgtext";
 
     interface Header {
         key: string;  
@@ -183,7 +185,7 @@
     </div>
 
     <!-- Headers Configuration -->
-    <Accordion.Root value={["headers"]} class="mb-0 pb-0">
+    <Accordion.Root type={"multiple"} value={["headers"]} class="mb-0 pb-0">
         <Accordion.Item value="headers">
             <Accordion.Trigger class="py-3 cursor-pointer">
                 Column Headers ({headers.length}/{MAX_HEADERS})
@@ -226,6 +228,9 @@
                                     size="sm"
                                     onclick={() => handleRemoveColumn(index)}
                                     class="cursor-pointer"
+                                    onmouseenter={bgtexthover(bgtext2, ">> Remove This Header")}
+                                    onmouseleave={bgtexthover(bgtext2)}
+                                    onmouseup={bgtexthover(bgtext2)}
                                 >
                                     <XIcon class="h-4 w-4" />
                                 </Button>
@@ -239,6 +244,9 @@
                             size="sm"
                             onclick={handleAddColumn}
                             class="w-full cursor-pointer mt-4"
+                            onmouseenter={bgtexthover(bgtext2, ">> Add New Header")}
+                            onmouseleave={bgtexthover(bgtext2)}
+                            onmouseup={bgtexthover(bgtext2)}
                         >
                             <PlusIcon class="h-4 w-4 mr-2" />
                             Add Column

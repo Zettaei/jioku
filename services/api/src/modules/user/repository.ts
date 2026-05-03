@@ -45,6 +45,7 @@ async function loginWithEmailPassword(email: string, password: string)
     };
 }
 
+
 async function registerWithEmailPassword(username: string, email: string, password: string, timezone: string)
 : Promise<string>
 {
@@ -76,6 +77,7 @@ async function registerWithEmailPassword(username: string, email: string, passwo
     return authData.user.id;
 }
 
+
 async function getUserById(userId: string)
 : Promise<{ username: string; timezone: string } | null>
 {
@@ -104,6 +106,7 @@ async function getUserById(userId: string)
     return { username, timezone };
 }
 
+
 async function validateAccessToken(accesstoken: string)
 : Promise<{ userId: string }>
 {
@@ -117,6 +120,7 @@ async function validateAccessToken(accesstoken: string)
 
     return { userId: data.user.id };
 }
+
 
 async function refreshAccessToken(refreshtoken: string)
 : Promise<{ accesstoken: string; refreshtoken: string }>
@@ -139,6 +143,22 @@ async function refreshAccessToken(refreshtoken: string)
     };
 }
 
+
+// FIXME: no item is created on the "profiles" page right now;
+async function updateUserSettings(userId: string, settings: { timezone: string })
+: Promise<void> 
+{
+    const supabase = getSupabaseAdminClient();
+
+    const { error } = await supabase.rpc("update_profile", {
+        "param_users_id": userId,
+        "param_settings": settings
+    });
+
+    throwIfErrorBasic(error);
+}
+
+
 export {
     loginWithEmailPassword,
     registerWithEmailPassword,
@@ -147,14 +167,3 @@ export {
     refreshAccessToken,
     updateUserSettings,
 };
-
-async function updateUserSettings(userId: string, settings: { timezone: string }): Promise<void> {
-    const supabase = getSupabaseAdminClient();
-
-    const { error } = await supabase
-        .from("profiles")
-        .update({ settings })
-        .eq("id", userId);
-
-    throwIfErrorBasic(error);
-}

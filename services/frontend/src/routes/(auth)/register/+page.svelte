@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
-  import * as Select from "$lib/components/ui/select/index.js";
   import {
     FieldGroup,
     Field,
@@ -10,22 +9,28 @@
     FieldSeparator,
   } from "$lib/components/ui/field/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
+  import { ChevronDown } from "@lucide/svelte";
   import { goto } from "$app/navigation";
   import { successState } from "$lib/global/successState.svelte";
   import { register } from "../services";
-  import { timeZones } from "$lib/constant/timezone";
+  import { timeZoneOptions } from "$lib/constant/timezone";
   import { getCookie } from "$lib/utils/cookie";
-
-  // Check is_loggedin cookie immediately and redirect
-  if (getCookie("is_loggedin") === "true") {
-    goto("/deck");
-  }
+    import { bgtexthover } from "$lib/utils/bgtext";
+    import { bgtext2 } from "$lib/stores/bgtext";
 
   let username = $state("");
   let email = $state("");
   let password = $state("");
   let confirmPassword = $state("");
   let timezone = $state("");
+  let timezoneSearch = $state("");
+  let isTimezoneDropdownOpen = $state(false);
+  let filteredTimezones = $derived.by(() => {
+    if (!timezoneSearch) return timeZoneOptions;
+    return timeZoneOptions.filter(opt =>
+      opt.label.toLowerCase().includes(timezoneSearch.toLowerCase())
+    );
+  });
   let isLoading = $state(false);
 
   let usernameError = $state("");
@@ -63,20 +68,23 @@
       formError = err.message ?? "Registration failed. Please try again.";
     } finally {
       isLoading = false;
+      bgtexthover(bgtext2);
     }
   }
 </script>
 
-<div class="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-  <div class="flex w-full max-w-sm flex-col gap-6">
-    <div class="flex flex-col gap-6">
+<svelte:head>
+  <title>REGISTER</title>
+</svelte:head>
+
+<div class="flex flex-col items-center justify-center pt-12">
+  <div class="flex w-full max-w-md flex-col gap-6">
+    <div class="pagetitle">REGISTER</div>
+    <div class="flex flex-col">
       <Card.Root>
-        <Card.Header class="text-center">
-          <Card.Title class="text-xl">Create Account</Card.Title>
-        </Card.Header>
         <Card.Content>
           <form onsubmit={handleSubmit}>
-            <FieldGroup>
+            <FieldGroup class="gap-4">
               <Field>
                 <FieldLabel for="register-username">Username</FieldLabel>
                 <Input
@@ -123,19 +131,52 @@
                 />
                 <FieldError errors={confirmPasswordError ? [{ message: confirmPasswordError }] : []} />
               </Field>
-              <Field>
+
+              <!-- TODO: make it that searchable timezone dropdown-like -->
+              <Field class="mb-12">
                 <FieldLabel>Timezone</FieldLabel>
-                <Select.Root type="single" bind:value={timezone} disabled={isLoading}>
-                  <Select.Trigger class="w-full">{timezone}</Select.Trigger>
-                  <Select.Content class="max-h-60 overflow-y-auto">
-                    <Select.Group>
-                      <Select.Label>Select your timezone</Select.Label>
-                      {#each timeZones as tz (tz)}
-                        <Select.Item value={tz}>{tz}</Select.Item>
-                      {/each}
-                    </Select.Group>
-                  </Select.Content>
-                </Select.Root>
+                <div>
+                  <button
+                    type="button"
+                    onclick={() => { isTimezoneDropdownOpen = !isTimezoneDropdownOpen; }}
+                    disabled={isLoading}
+                    class={(isTimezoneDropdownOpen ? "rounded-t-md rounded-b-none" : "rounded-md") + " w-full border border-input px-3 py-2 text-left bg-background hover:bg-accent/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex justify-between items-center"}
+                  >
+                    <span>{(timeZoneOptions.find(o => o.name === timezone)?.label ?? timezone) || "Select timezone..."}</span>
+                    <ChevronDown size={16} class="transition-transform {isTimezoneDropdownOpen ? 'rotate-180' : ''}" />
+                  </button>
+
+                  {#if isTimezoneDropdownOpen}
+                    <div class="border border-input rounded-b-md overflow-hidden">
+                      <Input
+                        type="text"
+                        placeholder="Search timezone..."
+                        bind:value={timezoneSearch}
+                        disabled={isLoading}
+                        class="w-full border-0 border-b border-input rounded-none focus-visible:ring-0"
+                        autofocus
+                      />
+                      <div class="max-h-60 overflow-y-auto bg-background">
+                        {#if filteredTimezones.length > 0}
+                          {#each filteredTimezones as opt (opt.name)}
+                            <button
+                              type="button"
+                              class="w-full text-left px-3 py-2 hover:bg-accent cursor-pointer transition-colors {timezone === opt.name ? 'bg-accent font-semibold' : ''}"
+                              onclick={() => { timezone = opt.name; isTimezoneDropdownOpen = false; timezoneSearch = ""; }}
+                              disabled={isLoading}
+                            >
+                              {opt.label}
+                            </button>
+                          {/each}
+                        {:else}
+                          <div class="px-3 py-2 text-xs text-muted-foreground">
+                            No timezones found
+                          </div>
+                        {/if}
+                      </div>
+                    </div>
+                  {/if}
+                </div>
               </Field>
 
               {#if formError}
@@ -143,7 +184,11 @@
               {/if}
 
               <Field class="mt-2">
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading}
+                  class="cursor-pointer"
+                  onmouseenter={bgtexthover(bgtext2, ">> Register")}
+                  onmouseleave={bgtexthover(bgtext2)}
+                  onmouseup={bgtexthover(bgtext2)}>
                   {isLoading ? "Creating account..." : "Register"}
                 </Button>
               </Field>
@@ -156,8 +201,11 @@
                 <Button
                   type="button"
                   variant="link"
-                  style="cursor:pointer"
+                  class="cursor-pointer"
                   onclick={() => goto("/login")}
+                  onmouseenter={bgtexthover(bgtext2, ">> Go To Login")}
+                  onmouseleave={bgtexthover(bgtext2)}
+                  onmouseup={bgtexthover(bgtext2)}
                 >Log In</Button>
               </div>
             </FieldGroup>

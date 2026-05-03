@@ -2,20 +2,21 @@
 
     // NOTE: Auth system kinda junky, might be good to make use of SvelteKit's load() so it would run that before the page
 
-	import { ModeWatcher } from "mode-watcher";
+	import { ModeWatcher, mode } from "mode-watcher";
 	import './layout.css';
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 	import AppSidebar from "../lib/components/AppSidebar.svelte";
     import { onMount, setContext, type Snippet } from "svelte";
     import AppToolbar from "$lib/components/AppToolbar.svelte";
     import { TOOLBAR_SNIPPET_CONTEXT, type ToolbarSetter } from "$lib/context/toolbar";
-	import { userStore, authInitialized } from "$lib/stores/auth";
     import { errorState } from '$lib/global/errorState.svelte';
     import ErrorPopup from "./ErrorPopup.svelte";
     import SuccessPopup from "./SuccessPopup.svelte";
     import { tokenCheck } from "./(auth)/services";
 	import { getCookie, deleteCookie } from "$lib/utils/cookie";
 	import { setupFetchInterceptor } from "$lib/utils/fetchInterceptor";
+    import AppFooter from "$lib/components/AppFooter.svelte";
+    import { bgtext1, bgtext2 } from "$lib/stores/bgtext";
 
 	let toolbarSnippet: Snippet | null = $state(null);
 
@@ -41,26 +42,12 @@
             errorState.show(msg, status);
         };
 
-        // Check if user has is_loggedin cookie — skip API call if not present
-        const isLoggedInCookie = getCookie("is_loggedin");
-
-        if (isLoggedInCookie === "true") {
-            try {
-                const result = await tokenCheck();
-                userStore.set({ username: result.username, role: "member", timezone: result.timezone });
-            } catch {
-                // Token invalid/expired, clear user state and remove cookie
-                userStore.set(null);
-            }
-        } else {
-            userStore.set(null);
-        }
-
-        authInitialized.set(true);
+        
     });
 
 
 	let isOpen = $state(false);
+
     let { children } = $props();
 	
 </script>
@@ -70,17 +57,41 @@
 <ErrorPopup />
 <SuccessPopup />
 
-<Sidebar.Provider bind:open={isOpen}>
-	<AppSidebar />
-	<div class="w-full">
-		<div>
-			<AppToolbar toolbarSnippet={toolbarSnippet}/>
-		</div>
+<svelte:head>
+    <title>JIOKU</title>
+</svelte:head>
 
-		<main class="container mx-auto px-2 mt-18 mb-40">
-			{@render children()}
-		</main>
-	</div>
+<div class={mode.current === "dark" ? "jioku_background_dark" : "jioku_background_light"}>
+    <div class="absolute right-10 top-18 text-[0.5rem] avantgarde text-end text-accent-foreground/40">
+        <div class="flex-col">
+            <div class="">{$bgtext1.toUpperCase()}</div>
+            <div class="">{$bgtext2.toUpperCase()}</div>
+        </div>
+    </div>
 
-</Sidebar.Provider>
+    <!-- TODO: move anything not AppSidebar out so the sidebar not affect the whole app -->
+
+    <Sidebar.Provider bind:open={isOpen} class="p-0">
+        <AppSidebar />
+        <div class="w-full h-full">
+            <div>
+                <AppToolbar toolbarSnippet={toolbarSnippet}/>
+            </div>
+
+            <div>
+                <div class="container- mx-auto px-8 mt-24 mb-12">
+                    {@render children()}
+
+                </div>
+            </div>
+            
+        </div>
+        
+    </Sidebar.Provider>
+
+    <AppFooter/>
+</div>
+
+
+
 

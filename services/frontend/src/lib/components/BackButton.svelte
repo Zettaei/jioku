@@ -4,6 +4,7 @@
     import { useSidebar } from "./ui/sidebar";
     import { goto } from "$app/navigation";
     import type { assert } from "console";
+    import { bgtext2 } from "$lib/stores/bgtext";
     
     interface Props {
         destination: string;
@@ -28,7 +29,7 @@
             }
 
         } catch {};
-        
+
         return false;
     })();
 
@@ -46,6 +47,9 @@
 
 <Button variant="ghost" class="cursor-pointer"
         onclick={click}
+        onmouseenter={() => {$bgtext2 = ">> Go Back"}}
+        onmouseleave={() => {$bgtext2 = ''}}
+        onmouseup={() => $bgtext2 = ''}
     >
     <ArrowLeftIcon/>
     {#if !sidebar.isMobile}

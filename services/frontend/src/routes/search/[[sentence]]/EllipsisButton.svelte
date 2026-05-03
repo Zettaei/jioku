@@ -7,6 +7,10 @@
     import { errorState } from "$lib/global/errorState.svelte";
     import { successState } from "$lib/global/successState.svelte";
     import { userStore } from "$lib/stores/auth";
+    import Button from "$lib/components/ui/button/button.svelte";
+    import { getCookie } from "$lib/utils/cookie";
+    import { bgtext2 } from "$lib/stores/bgtext";
+    import { bgtexthover } from "$lib/utils/bgtext";
 
     interface Props {
         entryText: string; 
@@ -22,7 +26,9 @@
     const BUNPRO_SEARCH_URL = "https://bunpro.jp/vocabs/" as const;
 
     let isAddToDeckModalOpen = $state(false);
-    let isLoggedIn = $derived($userStore !== null);
+    // OPTIMIZE: vvv ??? maybe pass from parent is better, because now it's checking on every single one of these EllipsisButton
+    let isLoggedIn = getCookie("is_loggedin") === "true";
+
 
     function handleJishoClick() {
         window.open(JISHO_SEARCH_URL + entryText, "_blank");
@@ -39,17 +45,23 @@
         } catch (err: unknown) {
             const errorMsg = err instanceof Error ? err.message : 'Failed to add card to deck';
             errorState.show(errorMsg, 500);
-            console.error('Error adding card to deck:', err);
         }
     }
 
 </script>
 
 
-<div>
+
+
     <DropdownMenu.Root>
         <DropdownMenu.Trigger class={className}>
-            <EllipsisIcon/>
+            <Button variant="outline" size="icon-lg" class="px-3 cursor-pointer"
+            onmouseenter={bgtexthover(bgtext2, ">> Extra Actions")}
+            onmouseleave={bgtexthover(bgtext2)}
+            onmouseup={bgtexthover(bgtext2)}
+            >
+                <EllipsisIcon/>
+            </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
          <DropdownMenu.Group>
@@ -66,8 +78,7 @@
         </DropdownMenu.Item>
          </DropdownMenu.Group>
         </DropdownMenu.Content>
-       </DropdownMenu.Root>
-</div>
+    </DropdownMenu.Root>
 
 {#if isLoggedIn}
   <AddToDeckModal bind:isOpen={isAddToDeckModalOpen} onSave={handleAddToDeck} initialData={{ kanji, reading, meaning }} />

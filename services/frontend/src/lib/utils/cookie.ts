@@ -2,7 +2,7 @@
  * Read a cookie value by name
  */
 export function getCookie(name: string): string | null {
-    if (typeof document === "undefined") return null;
+    // if (typeof document === "undefined") return null;
     
     const nameEQ = name + "=";
     const cookies = document.cookie.split(";");

@@ -55,7 +55,7 @@
   });
 </script>
 
-<Accordion.Root type="single" class="w-full border rounded-lg overflow-hidden">
+<Accordion.Root type="single" class="w-full border rounded-lg overflow-hidden mb-2 bg-background">
   <Accordion.Item value="image-view" class="border-none">
     
     <Accordion.Trigger class="px-2 hover:bg-accent hover:no-underline transition">

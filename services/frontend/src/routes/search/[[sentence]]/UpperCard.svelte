@@ -1,8 +1,10 @@
 <script lang="ts">
     import Button from "$lib/components/ui/button/button.svelte";
-import * as Card from "$lib/components/ui/card/index.js";
+    import * as Card from "$lib/components/ui/card/index.js";
     import type { TokensRouteResponse } from "$lib/types/server/modules/dict/type/dto";
-    import { Volume2Icon } from "@lucide/svelte";
+    import VolumeButton from "./VolumeButton.svelte";
+    import { lang } from "$lib/i18n";
+    import { bgtext2 } from "$lib/stores/bgtext";
 
     interface Props {
         tokens: TokensRouteResponse | null;
@@ -26,29 +28,38 @@ import * as Card from "$lib/components/ui/card/index.js";
 
 </script>
 
-<Card.Root class="text-lg">
+<Card.Root class="text-lg mb-12">
     <Card.Header>
-      <Card.Title class="font-bold avantgarde">
-        QUICK TRANSLATION:
+      <Card.Title class="avantgarde text-lg">
+        {$lang.card.quickTranslation}
       </Card.Title>
     </Card.Header>
     <Card.Content>
       <p class="text-center">{tokens?.quickTranslation.text}</p>
     </Card.Content>
 
+    <div class="my-1"></div>
+
     <Card.Header class="py-0 my-0">
-      <Card.Title class="font-bold flex">
-        <span class="font-bold avantgarde">SEARCH KEYWORDS:</span>
-        <span class="px-2 cursor-pointer" onclick={() => handleVoiceClick(searchFullWord)}>
-          <Volume2Icon/>
-      </span>
+      <Card.Title class="font-bold flex items-center">
+        <span class="avantgarde text-lg me-2">{$lang.card.searchKeywords}</span>
+        <VolumeButton text={searchFullWord} onClick={handleVoiceClick} />
       </Card.Title>
     </Card.Header>
     <Card.Content class="text-xl">
       {#each tokens?.tokens as token, index}
         {#if token.isUseful}
             {@const indexStr = index.toString()}
-            <button class="hover:underline cursor-pointer {(selectedIndex === indexStr) ? "text-yellow-400 font-bold underline" : ""}" onclick={(e) => {handleWordClick(e);}} id={indexStr}>
+            <button class="hover:underline cursor-pointer {(selectedIndex === indexStr) ? "text-yellow-400 font-bold underline" : ""}" 
+            onclick={(e) => {handleWordClick(e);}} id={indexStr}
+            onmouseenter={
+              selectedIndex === index.toString() ? 
+              () => {} 
+              : 
+              () => {$bgtext2 = ">> Select '" + token.surface_form + "'"}
+            }
+            onmouseleave={() => {$bgtext2 = ''}}
+            >
                 {token.surface_form}
             </button>
         {:else}

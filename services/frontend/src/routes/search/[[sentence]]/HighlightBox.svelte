@@ -23,8 +23,7 @@
 
 
 {#snippet common()}
-    <div class="px-2 text-sm text-white bg-gradient-to-r from-green-600 to-yellow-400 rounded-sm">
-
+    <div class="px-2 pb-0.5 text-sm text-accent bg-gradient-to-r from-green-600 to-yellow-400 rounded-sm font-bold">
         common
     </div>
 {/snippet}

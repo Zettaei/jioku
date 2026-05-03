@@ -147,7 +147,7 @@
 				TODAY
 			{/if}
 		</div>
-		<div class="pb-2 self-center">
+		<div class="pb-6 self-center">
 			{@render dropdown()}
 		</div>
 	</div>

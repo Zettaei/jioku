@@ -1,5 +1,6 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { ConnectionError, HttpError } from "$lib/errors/HttpError";
+import { isLoggedInStore } from "$lib/stores/auth";
 
 export interface LoginPayload {
     email: string;
@@ -36,6 +37,8 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
             const message = await res.text();
             throw new HttpError(res.status, message || "Login failed. Please check your credentials.");
         }
+
+        isLoggedInStore.set(true);
 
         return await res.json();
 
@@ -84,26 +87,7 @@ export async function tokenCheck(): Promise<TokenCheckResponse> {
     }
 }
 
-export async function logout(): Promise<void> {
-    try {
-        const res = await fetch(`${PUBLIC_BACKEND_URL}/user/logout`, {
-            credentials: "include",
-            method: "POST",
-        });
-
-        if (!res.ok) throw new HttpError(res.status);
-
-    } catch (err) {
-        if (err instanceof HttpError) throw err;
-        throw new ConnectionError();
-    }
-}
-
-export interface UserSettings {
-    timezone: string;
-}
-
-export async function updateSettings(settings: UserSettings): Promise<void> {
+export async function updateSettings(settings: {}): Promise<void> {
     try {
         const res = await fetch(`${PUBLIC_BACKEND_URL}/user/settings`, {
             credentials: "include",

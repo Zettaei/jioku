@@ -19,6 +19,8 @@
     import BackButton from '$lib/components/BackButton.svelte';
     import { SESSIONSTORAGE_PREV_DECK_LIST } from '$lib/constant/sessionStorageKey.js';
     import type { GetDeckByIdRouteResponse } from '$lib/types/server/modules/deck/type/deck_dto.js';
+    import { bgtexthover } from '$lib/utils/bgtext.js';
+    import { bgtext2 } from '$lib/stores/bgtext.js';
 
     const sidebar = useSidebar();
 
@@ -128,8 +130,12 @@
     onCancel={() => {}}
 />
 
+<svelte:head>
+  <title>DECK SETTINGS{deck?.name ? ": " + deck.name : ""}</title>
+</svelte:head>
+
 <div class="flex justify-center gap-0">
-    <Card.Root class="text-center px-auto max-w-xl w-full">
+    <Card.Root class="text-center px-auto max-w-2xl w-full">
     {#if isLoading}
         {@render Submitted()}
     {:else}
@@ -151,8 +157,8 @@
                 </div>
             </Card.Header>
             <Card.Content>
-            <!-- @ts-ignore -->
-                <Accordion.Root value={["extra"]}>
+            
+                <Accordion.Root value={["extra"]} type="multiple">
                     <Accordion.AccordionItem>
                         <DeckMetadataForm mode="edit" bind:deck={deck} 
                             onSave={() => {}} onCancel={() => {}}
@@ -199,6 +205,9 @@
                             onclick={handleDeleteClick}
                             class="cursor-pointer py-5"
                             variant="destructive"
+                            onmouseenter={bgtexthover(bgtext2, ">> Delete This Deck")}
+                            onmouseleave={bgtexthover(bgtext2)}
+                            onmouseup={bgtexthover(bgtext2)}
                         >
                             <TrashIcon/>
                             {#if !sidebar.isMobile}
@@ -211,6 +220,9 @@
                             onclick={() => backButtonRef?.click() }
                             class="cursor-pointer py-5"
                             variant="outline"
+                            onmouseenter={bgtexthover(bgtext2, ">> Go Back")}
+                            onmouseleave={bgtexthover(bgtext2)}
+                            onmouseup={bgtexthover(bgtext2)}
                         >
                             <ArrowLeftIcon/> Cancel
                         </Button>
@@ -218,6 +230,9 @@
                             onclick={handleSettingSave}
                             class="cursor-pointer py-5"
                             variant="default"
+                            onmouseenter={bgtexthover(bgtext2, ">> Save Changes")}
+                            onmouseleave={bgtexthover(bgtext2)}
+                            onmouseup={bgtexthover(bgtext2)}
                         >
                             <SaveIcon/> Save
                         </Button>
