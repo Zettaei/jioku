@@ -5,7 +5,7 @@ import { ocrRouteHandler } from "./handler.js";
 
 const routes = new Hono();
 
-// BUG: only english image filename work for now, might fix later
+// NOTE: since only english image filename is accepted, I forced rename all the image files no matter the language to a generic english name
 // OPTIMIZE: store reqId in redis and have frontend poll for that reqId every 2-3s until it finished, maybe 30s timeout
 routes.post("/", async (c) => {
     const file = (await c.req.parseBody())["file"];
