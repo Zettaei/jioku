@@ -1,10 +1,51 @@
 --------------- ### THIS IS FOR SUPABASE ONLY
 --------------- ### copy these code to run on supabase sql query
 
-  -- param_ahead_days <= 31 THEN day
-  -- param_ahead_days > 31 && param_ahead_days <= 366 THEN month(12)
-  -- param_ahead_days > 366 THEN year
-  -- # NOTE: QUITE A BAD DESIGN I THINK, USING AHEAD_DAYS IS A HUGE MISTAKE, yabai
+CREATE OR REPLACE FUNCTION update_profile(
+  param_users_id uuid,
+  param_settings jsonb
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  tz text;
+BEGIN
+  tz := param_settings->>'timezone';
+
+  IF tz IS NOT NULL THEN
+    IF NOT EXISTS (
+      SELECT 1 
+      FROM pg_timezone_names 
+      WHERE name = tz
+    ) THEN
+      RAISE EXCEPTION 'Invalid timezone';
+    END IF;
+  END IF;
+
+  -- Update
+  UPDATE profiles
+  SET 
+    settings = param_settings,
+    updatedat = NOW()
+  WHERE id = param_users_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Profile not found';
+  END IF;
+END;
+$$;
+
+
+
+
+
+-- vv this fix the count days/months (30,31, 28,29) mismatch problem but add problem about
+--    search at 30 Dec will only show THAT year, not next year
+-- param_ahead_days <= 31 THEN day
+-- param_ahead_days > 31 && param_ahead_days <= 366 THEN month(12)
+-- param_ahead_days > 366 THEN year
+-- # NOTE: QUITE A BAD DESIGN I THINK, USING AHEAD_DAYS MIGHT BE A MISTAKE, yabai
 CREATE OR REPLACE FUNCTION get_due_distribution_by_date(
   param_decks_id uuid,
   param_users_id uuid,
@@ -19,80 +60,115 @@ DECLARE
   enddate date;
   utc_start timestamptz;
   utc_end timestamptz;
+  safe_aheaddays integer;
+  
+  tmp_card_nextdue json;
+  tmp_card_overdue_count json;
 
   group_unit text;
-  result_json json; -- Match the return type
 BEGIN
 
-  -- Check Permission
+  -- Permission check
   PERFORM 1 
   FROM decks 
   WHERE id = param_decks_id 
     AND users_id = param_users_id;
+
   IF NOT FOUND THEN
     RAISE EXCEPTION USING MESSAGE = 'Deck not found', ERRCODE = '42501';
   END IF;
 
+  safe_aheaddays := COALESCE(param_ahead_days, 7);
 
   startdate := (NOW() AT TIME ZONE param_timezone)::date;
-  enddate := (startdate + param_ahead_days)::date;
-  utc_start := startdate AT TIME ZONE param_timezone;
-  utc_end := utc_start + (param_ahead_days * INTERVAL '1 day') ;
 
   group_unit := CASE
-    WHEN param_ahead_days <= 31   THEN 'day'
-    -- WHEN param_ahead_days <= 185  THEN 'week'
-    WHEN param_ahead_days <= 366  THEN 'month'
+    WHEN safe_aheaddays <= 30  THEN 'day'
+    WHEN safe_aheaddays <= 366 THEN 'month'
     ELSE 'year'
   END;
 
+  -- NORMAL DAY RANGE
+  IF group_unit = 'day' THEN
+    enddate := startdate + safe_aheaddays;
+
+  -- bascially start the at the first day of THAT YEAR to the last day of THAT YEAR
+  ELSIF group_unit = 'month' THEN
+    startdate := date_trunc('year', startdate)::date;
+    enddate := (startdate + INTERVAL '1 year - 1 day')::date;
+
+  -- bascially start the at the first day of THAT YEAR to the last day of THAT 5th YEAR
+  ELSE
+    startdate := date_trunc('year', startdate)::date;
+    enddate := (startdate + INTERVAL '5 year')::date; -- arbitrary range
+  END IF;
+
+  -- Overdue cards
+  SELECT count(*) 
+  INTO tmp_card_overdue_count
+  FROM cards
+  WHERE decks_id = param_decks_id 
+    AND status = 1 
+    AND (due AT TIME ZONE param_timezone)::date < startdate
+  ;
+
+
+  -- Next due cards
+  utc_start := startdate AT TIME ZONE param_timezone;
+  utc_end := (enddate + 1) AT TIME ZONE param_timezone;
 
   WITH 
-  genseries AS (
-    SELECT generate_series(
-      date_trunc(group_unit, startdate),
-      date_trunc(group_unit, enddate),
-      ('1 ' || group_unit)::interval
-    )::date AS bucket
-  ),
+    genseries AS (
+      SELECT generate_series(
+        date_trunc(group_unit, startdate),
+        date_trunc(group_unit, enddate),
+        ('1 ' || group_unit)::interval
+      )::date AS bucket
+    ),
 
-  cards_count AS (
-    SELECT 
-      date_trunc(group_unit, (due AT TIME ZONE param_timezone))::date AS day_date,
-      COUNT(*) AS total
-    FROM cards
-    WHERE decks_id = param_decks_id 
-      AND due >= utc_start
-      AND due <= utc_end
-    GROUP BY 1
-  ),
+    cards_count AS (
+      SELECT 
+        date_trunc(group_unit, (due AT TIME ZONE param_timezone))::date AS bucket,
+        COUNT(*) AS total
+      FROM cards
+      WHERE decks_id = param_decks_id
+        AND status = 1 
+        AND (due AT TIME ZONE param_timezone)::date >= startdate
+        AND (due AT TIME ZONE param_timezone)::date <= enddate
+      GROUP BY 1
+    ),
 
-  result AS (
-    SELECT 
-      CASE 
-        WHEN group_unit = 'day'   THEN to_char(genseries.bucket, 'YYYY-MM-DD')
-        WHEN group_unit = 'week'  THEN to_char(genseries.bucket, 'IYYY-"W"IW') -- e.g., 2026-W08
-        WHEN group_unit = 'month' THEN to_char(genseries.bucket, 'YYYY-MM')
-        ELSE to_char(genseries.bucket, 'YYYY')
-      END AS date,
-      COALESCE(cards_count.total, 0) AS count
-    FROM genseries
-    LEFT JOIN cards_count ON genseries.bucket = cards_count.day_date
-    ORDER BY genseries.bucket ASC
-  )
+    result AS (
+      SELECT 
+        CASE 
+          WHEN group_unit = 'day'   THEN to_char(genseries.bucket, 'YYYY-MM-DD')
+          WHEN group_unit = 'month' THEN to_char(genseries.bucket, 'YYYY-MM')
+          ELSE to_char(genseries.bucket, 'YYYY')
+        END AS date,
+        COALESCE(cards_count.total, 0) AS count
+      FROM genseries
+      LEFT JOIN cards_count 
+        ON genseries.bucket = cards_count.bucket
+      ORDER BY genseries.bucket
+    )
 
-  SELECT COALESCE(json_agg(result), '[]'::json) 
-  INTO result_json 
+  SELECT json_agg(result)
+  INTO tmp_card_nextdue
   FROM result;
 
-  RETURN result_json;
+
+  RETURN json_build_object(
+    'dues', tmp_card_nextdue,
+    'overdues_count', tmp_card_overdue_count
+  );
+
 END
 $$;
 
 
 
 
--- GetCards
+
 CREATE OR REPLACE FUNCTION get_cards(
   param_decks_id uuid,
   param_users_id uuid,
@@ -102,12 +178,13 @@ CREATE OR REPLACE FUNCTION get_cards(
   param_offset integer DEFAULT 0,
   param_limit integer DEFAULT 20
 )
-RETURNS SETOF cards
+RETURNS json
 LANGUAGE plpgsql
 AS $$
 DECLARE
+  tmp_count integer;
+  tmp_cards json;
 
-  
 BEGIN
   -- IF param_sortby NOT IN ('id', 'status', 'due', 'interval', 'easefactor', 'repetition', 'createdat', 'updatedat') THEN
   --   RAISE EXCEPTION 'Invalid sortby';
@@ -117,27 +194,40 @@ BEGIN
     RAISE EXCEPTION 'Invalid sortby direction';
   END IF;
 
-    -- Permission check
+
+  -- Permission check
   PERFORM 1
   FROM decks
   WHERE id = param_decks_id
     AND users_id = param_users_id;
 
+  IF NOT FOUND THEN
+    RAISE EXCEPTION USING MESSAGE = 'Deck not found', ERRCODE = '42501';
+  END IF;
+
+
+  SELECT count(*) INTO tmp_count 
+  FROM cards 
+  WHERE decks_id = param_decks_id AND data::text ILIKE '%' || param_searchtext || '%';
+
+
   -- %L -> literal 'string' stuff with double quote, %I -> identifier table name scheme column name stuff, %s -> simple string insert as is
-  RETURN QUERY EXECUTE format('
-    SELECT *
-    FROM cards
-    WHERE decks_id = %L 
-    AND data::text ILIKE %L
-    ORDER BY %I %s
-    LIMIT %L
-    OFFSET %L',
-    param_decks_id,
-    '%' || param_searchtext || '%',
-    param_sortby,
-    param_sortby_direction,
-    param_limit,
-    param_offset
+  EXECUTE format('
+    SELECT jsonb_agg(t) FROM (
+      SELECT * FROM cards
+      WHERE decks_id = %L 
+      AND data::text ILIKE %L
+      ORDER BY %I %s
+      LIMIT %L OFFSET %L
+    ) t',
+    param_decks_id, '%' || param_searchtext || '%', param_sortby, 
+    param_sortby_direction, param_limit, param_offset
+  ) INTO tmp_cards;
+
+
+  RETURN jsonb_build_object(
+    'total', tmp_count,
+    'data', coalesce(tmp_cards, '[]'::json)
   );
 END;
 $$;
@@ -145,8 +235,7 @@ $$;
 
 
 
--- GetRetentionRateByDate
--- get retention rate for the date (only the first review of that card for the day is count)
+
 CREATE OR REPLACE FUNCTION get_retention_rate_by_date(
   param_decks_id uuid,
   param_users_id uuid,
@@ -158,49 +247,64 @@ RETURNS json
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  utc_fromdate timestamptz;
-  utc_todate timestamptz;
-  
+  local_today date;
+  final_from date;
+  final_to date;
+  result_json json;
 BEGIN
-  -- Check Permission
-  PERFORM 1 FROM decks WHERE id = param_decks_id AND users_id = param_users_id;
+  -- 1. Check Permission
+  PERFORM 1 
+  FROM decks 
+  WHERE id = param_decks_id AND users_id = param_users_id;
+  
   IF NOT FOUND THEN
     RAISE EXCEPTION USING MESSAGE = 'Deck not found', ERRCODE = '42501';
   END IF;
 
+  -- 2. Determine Local "Today" relative to the user's timezone
+  local_today := (NOW() AT TIME ZONE param_timezone)::date;
+  
+  -- 3. Set the date boundaries
+  final_from := COALESCE(param_from_date, local_today);
+  final_to   := COALESCE(param_to_date, local_today);
 
-  utc_fromdate := param_from_date AT TIME ZONE param_timezone;
-  utc_todate   := (param_to_date + 1) AT TIME ZONE param_timezone;
-
-
-  RETURN (
-    SELECT json_build_object(
-      'from', param_from_date,
-      'to', param_to_date,
-      'passed', COUNT(*) FILTER (WHERE quality >= 3),
-      'failed', COUNT(*) FILTER (WHERE quality < 3)
+  -- 4. Calculate stats
+  -- We wrap the query to ensure we only count the FIRST review per card per day
+  SELECT json_build_object(
+    'from', final_from,
+    'to', final_to,
+    'passed', COUNT(*) FILTER (WHERE quality >= 3),
+    'failed', COUNT(*) FILTER (WHERE quality < 3),
+    'total', COUNT(*)
+  )
+  INTO result_json
+  FROM (
+    SELECT DISTINCT ON (
+      reviews.cards_id, 
+      (reviews.createdat AT TIME ZONE param_timezone)::date
     )
-    FROM (
-      SELECT DISTINCT ON (reviews.cards_id, (reviews.createdat AT TIME ZONE param_timezone)::date)
-        reviews.quality
-      FROM reviews
-      JOIN cards ON reviews.cards_id = cards.id
-      WHERE cards.decks_id = param_decks_id
-        AND reviews.createdat >= utc_fromdate 
-        AND reviews.createdat < utc_todate
-      ORDER BY 
-        reviews.cards_id, 
-        (reviews.createdat AT TIME ZONE param_timezone)::date, -- for some reason this have to match the SELCT DISTINCT ON
-        reviews.createdat ASC
-    ) total_stats
-  );
+      reviews.quality
+    FROM reviews
+    JOIN cards ON reviews.cards_id = cards.id
+    WHERE cards.decks_id = param_decks_id
+      -- THE FIX: Shift UTC storage to Local Time before checking the date
+      -- This stops the 7-hour "Bangkok vs UTC" overlap
+      AND (reviews.createdat AT TIME ZONE param_timezone)::date >= final_from
+      AND (reviews.createdat AT TIME ZONE param_timezone)::date <= final_to
+    ORDER BY 
+      reviews.cards_id, 
+      (reviews.createdat AT TIME ZONE param_timezone)::date, 
+      reviews.createdat ASC
+  ) AS daily_first_reviews;
+
+  RETURN result_json;
 END;
 $$;
 
 
 
 
--- GetDeckStatistic
+
 CREATE OR REPLACE FUNCTION get_deck_status(
   param_decks_id uuid,
   param_users_id uuid,
@@ -217,8 +321,7 @@ DECLARE
   tmp_total_count integer;
   tmp_card_status_count jsonb;
   tmp_card_maturity_count jsonb;
-  tmp_card_due_days_count jsonb;
-  tmp_card_due_before_yesterday_total integer; -- Changed to integer
+  tmp_card_due_distribution json;
   tmp_review_retention_rate jsonb;
 BEGIN
   -- Check Permission
@@ -236,6 +339,7 @@ BEGIN
   -- Total cards
   SELECT count(*) INTO tmp_total_count FROM cards WHERE decks_id = param_decks_id;
 
+
   -- Status distribution
   SELECT jsonb_build_object(
     'new', count(*) FILTER (WHERE status = 0),
@@ -245,6 +349,7 @@ BEGIN
   INTO tmp_card_status_count 
   FROM cards 
   WHERE decks_id = param_decks_id;
+
 
   -- Maturity distribution 
   SELECT jsonb_build_object(
@@ -259,45 +364,23 @@ BEGIN
   WHERE decks_id = param_decks_id;
 
 
-  -- Overdue cards
-  SELECT count(*) INTO tmp_card_due_before_yesterday_total
-  FROM cards
-  WHERE decks_id = param_decks_id 
-    AND status = 1 
-    AND due < utc_start;
-
-
-  -- Due cards range
-  -- # OPTIMIZE: avoid do anything to table col, it cause index unuseable
-  SELECT jsonb_agg(dues) INTO tmp_card_due_days_count
-  FROM (
-    SELECT 
-        genseries.day::date as date,
-        COUNT(cards.id) as count
-    FROM generate_series(startdate, startdate + INTERVAL '7 days', '1 day'::interval) AS genseries(day)
-    LEFT JOIN cards ON 
-        (cards.due AT TIME ZONE param_timezone)::date = genseries.day::date
-        AND cards.status = 1
-        AND cards.decks_id = param_decks_id
-    GROUP BY genseries.day
-    ORDER BY genseries.day ASC
-  ) as dues;
+  -- Due Distribution (default = 7)
+  tmp_card_due_distribution := get_due_distribution_by_date(
+    param_decks_id,
+    param_users_id,
+    param_timezone,
+    7
+  );
 
 
   -- Retention rate (Today's local day only)
-  SELECT jsonb_build_object(
-    'from', startdate,
-    'to', startdate,
-    'passed', COUNT(*) FILTER (WHERE quality >= 3),
-    'failed', COUNT(*) FILTER (WHERE quality < 3)
-  ) INTO tmp_review_retention_rate
-  FROM (
-    SELECT DISTINCT ON (cards_id) quality
-    FROM reviews
-    WHERE createdat >= utc_start
-      AND createdat < utc_end 
-    ORDER BY cards_id, createdat DESC
-  ) what;
+  tmp_review_retention_rate := get_retention_rate_by_date(
+    param_decks_id,
+    param_users_id,
+    param_timezone,
+    param_from_date := NULL,
+    param_to_date := NULL
+  );
 
 
   
@@ -305,8 +388,7 @@ BEGIN
     'date', startdate,
     'cards_status_distribution', tmp_card_status_count,
     'cards_maturity_distribution', tmp_card_maturity_count,
-    'cards_due_distribution', tmp_card_due_days_count,
-    'cards_overdue_total', tmp_card_due_before_yesterday_total,
+    'cards_due_distribution', tmp_card_due_distribution,
     'review_retention_rate', tmp_review_retention_rate,
     'cards_total', tmp_total_count
   );
@@ -316,7 +398,7 @@ $$;
 
 
 
--- UpdateCard
+
 CREATE OR REPLACE FUNCTION update_card(
   param_decks_id uuid,
   param_cards_id uuid,
@@ -359,7 +441,7 @@ $$;
 
 
 
--- GetDecksWithCardCounts
+
 CREATE OR REPLACE FUNCTION get_decks_with_card_counts(
     param_users_id uuid,
     param_timezone text,
@@ -420,7 +502,8 @@ BEGIN
               WHERE cards.decks_id = decks.id
                 AND (
                       cards.status = 2
-                      OR cards.due < %L
+                      -- CHANGE IS HERE: Compare local date of the card to the user''s local date
+                      OR (cards.due AT TIME ZONE %L)::date <= %L::date
                     )
               GROUP BY cards.status
             ) cnt
@@ -435,13 +518,14 @@ BEGIN
       OFFSET %L
       LIMIT %L
     ) result',
-    utc_end,                  -- %L
-    param_users_id,               -- %L
-    '%' || param_searchtext || '%', -- %L
-    param_sortby,                 -- %I (The column name)
-    param_sortby_direction,       -- %s (ASC or DESC)
-    param_offset,                 -- %L
-    param_limit                   -- %L
+    param_timezone,                -- %L (for AT TIME ZONE)
+    startdate,                     -- %L (for comparison)
+    param_users_id,                -- %L
+    '%' || param_searchtext || '%',-- %L
+    param_sortby,                  -- %I
+    param_sortby_direction,        -- %s
+    param_offset,                  -- %L
+    param_limit                    -- %L
   ) INTO decks_data;
 
   RETURN json_build_object(
@@ -455,17 +539,7 @@ $$;
 
 
 
--- just type for SM-2
-DROP TYPE IF EXISTS sm2_result CASCADE;
 
-CREATE TYPE sm2_result AS (
-  interval integer,
-  easefactor integer,
-  repetition integer,
-  status_code integer
-);
-
--- THE SM-2 function
 CREATE OR REPLACE FUNCTION calculate_sm2(
   param_interval integer,
   param_easefactor integer,
@@ -540,7 +614,7 @@ $$;
 
 
 
--- UpdateCards(? why 's'?)AndAddReview
+
 CREATE OR REPLACE FUNCTION update_cards_and_add_review(
   param_decks_id uuid,
   param_cards_id uuid,
@@ -619,7 +693,7 @@ $$;
 
 
 
--- GetStudyCardsByStatus
+
 CREATE OR REPLACE FUNCTION get_study_cards_by_status(
   param_decks_id uuid,
   param_users_id uuid,
@@ -670,7 +744,7 @@ BEGIN
 
   startdate := (NOW() AT TIME ZONE param_timezone)::date;
   utc_start := startdate AT TIME ZONE param_timezone;
-  utc_end := utc_start + INTERVAL '1 day';
+  -- utc_end := utc_start + INTERVAL '1 day';
 
   SELECT count(*) 
   INTO tmp_total_count 
@@ -679,7 +753,7 @@ BEGIN
   AND status = param_status_code
   AND (
         param_status_code = 2
-        OR cards.due < utc_end
+        OR (cards.due AT TIME ZONE param_timezone)::date <= startdate
   );
 
 
@@ -721,7 +795,7 @@ $$;
 
 
 
--- GetStudyCardsInitial (first fetch)
+
  CREATE OR REPLACE FUNCTION get_study_cards_initial(
   param_decks_id uuid,
   param_users_id uuid,
@@ -769,7 +843,7 @@ BEGIN
 
   startdate := (NOW() AT TIME ZONE param_timezone)::date;
   utc_start := startdate AT TIME ZONE param_timezone;
-  utc_end := utc_start + INTERVAL '1 day';
+  -- utc_end := utc_start + INTERVAL '1 day';
 
 
   FOREACH tmp_status_code IN ARRAY const_status_code_arr LOOP
@@ -789,7 +863,7 @@ BEGIN
         AND status = tmp_status_code
         AND (
               tmp_status_code = 2
-              OR cards.due < utc_end
+              OR (cards.due AT TIME ZONE param_timezone)::date <= startdate
         )
       ORDER BY due ASC
       LIMIT const_limit_arr[tmp_status_code+1]
@@ -803,7 +877,7 @@ BEGIN
       AND status = tmp_status_code
       AND (
             tmp_status_code = 2
-            OR cards.due < utc_end
+            OR (cards.due AT TIME ZONE param_timezone)::date <= startdate
       );
 
 
@@ -822,3 +896,8 @@ BEGIN
   RETURN result;
 END;
 $$;
+
+
+
+
+

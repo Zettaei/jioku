@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.decks (
     users_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     headersData JSONB NOT NULL DEFAULT '{}'::jsonb,
     headersOrder JSONB NOT NULL DEFAULT '[]'::jsonb,
+    -- headerCount SMALLINT NOT NULL,   likely not needed, probably
     settings JSONB NOT NULL DEFAULT '{}'::jsonb,
     createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -33,7 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_decks_users_id ON public.decks(users_id);
 -- -------------------------
 -- Cards
 -- -------------------------
--- # OPTIMIZE: MIGHT BE A GOOD IDEA TO INDEX THOSE 3 INDEX AS ONE INDEX TOO, MAYBE IT WILL BE FASTER WHEN FETCH
+-- !!!! # OPTIMIZE: MIGHT BE A GOOD IDEA TO INDEX THOSE 3 INDEX AS ONE INDEX TOO, MAYBE IT WILL BE FASTER WHEN FETCH
 CREATE TABLE IF NOT EXISTS public.cards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     decks_id UUID NOT NULL REFERENCES public.decks(id) ON DELETE CASCADE,
@@ -62,4 +63,15 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     quality SMALLINT NOT NULL CHECK(quality BETWEEN 0 AND 5),
     createdAt TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (decks_id, cards_id, createdAt)
+);
+
+
+
+DROP TYPE IF EXISTS sm2_result CASCADE;
+
+CREATE TYPE sm2_result AS (
+  interval integer,
+  easefactor integer,
+  repetition integer,
+  status_code integer
 );
