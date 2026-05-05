@@ -1,11 +1,13 @@
+# W H A T
+Redis Stack, A Redis with modules all(or most)-in-one, for this project will use only RedisJSON and RediSEARCH
 
+# W H Y
+Use **mainly** for storing Dictionary Data and cache OCR result
+it does storing some more cache stuff
 
+# H O W
+> *You must already have installed Docker on your device*  
 
-
-*You must already have installed Docker on your device*  
-
-
-# Setup
 Setting up [Environment Variables](#environment-variables).  
 
 After setting up env, there are 2 ways to build and run

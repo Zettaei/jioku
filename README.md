@@ -1,8 +1,9 @@
-# W H A T    I S    T H I S
+# W H A T
 JIOKU is a full system backend/frontend, services web application about Japanese-English(mainly) with flashcard system to help users remember new vocabs.
 
+<br>
 
-# H O W    T O    S E T U P
+# H O W
 
 ## 1. External Services
 - Create a project in Supabase at https://supabase.com/ 

@@ -1,7 +1,12 @@
-*You must already have installed Docker on your device*  
+# W H A T
+A Python server with OCR engine "PaddleOCR"
 
+# W H Y
+To do image OCR
 
-# Setup
+# H O W
+> *You must already have installed Docker on your device*  
+ 
 Setting up [Environment Variables](#environment-variables).  
 
 After setting up env, there are 2 ways to build and run

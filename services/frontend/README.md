@@ -1,7 +1,12 @@
-*You must already have installed Docker on your device*  
+# W H A T
+A web frontend/client of the application of the Jioku App
 
+# W H Y
+For the user to use the application via web browser
 
-# Setup
+# H O W
+> *You must already have installed Docker on your device*  
+
 Setting up [Environment Variables](#environment-variables).  
 
 After setting up env, there are 2 ways to build and run

@@ -1,7 +1,10 @@
+# W H A T
+An main server of the application of the Jioku App
 
+# W H Y
+For the user to use the application via web browser
 
-
-# Setup
+# H O W
 > *You must already have installed Docker on your device*  
 > *You must already have setup Supabase with all the tables/columns ready*
 

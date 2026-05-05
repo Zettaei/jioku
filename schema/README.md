@@ -1,9 +1,11 @@
+# W H A T
+The codes for tables, columns, rpc functions that are needed in **Supabase** 
+and the indices for **Redis Stack**.
 
-These are code that needed in Supabase  
+# W H Y
+To setup everything needed in **Supabase** and partially needed in **Redis Stack**.
 
-<br>
-
-# Setup
+# H O W
 > *You must have already made a project on the Supabase at [Supabase](https://supabase.com/)*
 
 ## 1. Run the Schema

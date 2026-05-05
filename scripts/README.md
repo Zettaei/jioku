@@ -1,8 +1,8 @@
 # W H A T
+This is the seeding app to parse and seed the **JMdict(English)** dictionary.
 
-This is the seeding app to parse and seed the **JMdict(English)** dictionary to Redis.
-
-<br>
+# W H Y
+Parsing **JMdict(English)** XML file into json and seed it to the **Redis Stack**.
 
 # H O W
 > *You must already have installed Python version 3.9 or newer*
