@@ -1,38 +1,47 @@
-# sv
+# W H A T
+A web frontend/client of the application of the Jioku App
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+# W H Y
+For the user to use the application via web browser
 
-## Creating a project
+# H O W
+> *You must already have installed Docker on your device*  
 
-If you're seeing this, you've probably already done this step. Congrats!
+Setting up [Environment Variables](#environment-variables).  
 
-```sh
-# create a new project in the current directory
-npx sv create
+After setting up env, there are 2 ways to build and run
+[docker-compose](#docker-compose) and [Dockerfile](#dockerfile).
+**Please choose either Docker Compose or standalone Dockerfile for your workflow. Using both simultaneously may result in configuration conflicts.**.
 
-# create a new project in my-app
-npx sv create my-app
-```
+## docker-compose (easier way)
+go to [docker-compose.md](../../docker-compose.md).
 
-## Developing
+## Dockerfile
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### 1. build image with this script  
+`docker build -t {tag_name} .`  
+> *example: `docker build -t jioku_client .`*
 
-```sh
-npm run dev
+### 2. then run with this script  
+`docker run --rm -it --env-file .env -p {port}:3000 {tag_name}`
+> *example: `docker run --rm -it --env-file .env -p 3000:3000 jioku_client`*<br>
+> *(remove `--rm`to keep the container after the server is stopped)*
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+### 3. use the server address
+if you running this on your device normally, you should be able to access this server with 
+`http://localhost:{port}`
+> *example: `http://localhost:3000`*
 
-## Building
+to stop the server, press Ctrl+C on the terminal you run `docker run` command on.
 
-To create a production version of your app:
 
-```sh
-npm run build
-```
+### THESE ARE JUST ONE WAY TO USE DOCKER, THERE ARE OTHER WAY MAYBE EVEN BETTER WAY TO USE IT BUT GO LOOK FOR YERSELF, OKIE?
+<br><br>
 
-You can preview the production build with `npm run preview`.
+# Environment Variables
+copy and rename the .env.example file or make a new file named `.env`  
+and put these Environment Variables in
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| **Name**                  | **Description**                                              | **Example**                                                       |
+|---------------------------|--------------------------------------------------------------|-------------------------------------------------------------------|
+| PUBLIC_BACKEND_URL        | Backend server URL that this frontend will talk to           | `http://localhost:8787`                                           |

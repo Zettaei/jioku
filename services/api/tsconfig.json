@@ -10,7 +10,7 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "typeRoots": [
-      "./src/dict",
+      // "./src/dict",
       "./node_modules/@types"
     ],
     /* Strictness */
@@ -20,6 +20,7 @@
 
     /* If transpiling with TypeScript: */
     "module": "nodenext",
+    "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true,
 
@@ -31,13 +32,11 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "nodenext",
     "lib": ["ESNext"],
-    "baseUrl": ".",
     "paths": {
-      "src/*": ["src/*"],
-      "core/*": ["src/core/*"],
-      "modules/*": ["src/modules/*"],
-      "root/*": ["*"]
+      "src/*": ["./src/*"],
+      "core/*": ["./src/core/*"],
+      "modules/*": ["./src/modules/*"],
+      "root/*": ["./*"]
     }
-
   }
 }

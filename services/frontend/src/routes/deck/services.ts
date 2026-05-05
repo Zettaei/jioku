@@ -1,10 +1,10 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { BadRequestError, ConnectionError, HttpError } from "$lib/errors/HttpError";
 import { userStore } from "$lib/stores/auth";
 import { get } from "svelte/store";
 import type { DeckEditableData } from "$lib/types/deck";
 import type { GetDeckByIdRouteResponse } from "$lib/types/server/modules/deck/type/deck_dto";
 import type { GetDecksStudyRouteResponse } from "$lib/types/server/modules/deck/type/study_dto";
+import { ENV_VARS } from "$lib/constant/env";
 
 
 export async function fetchUserStudyDecks(
@@ -19,7 +19,7 @@ export async function fetchUserStudyDecks(
     
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${get(userStore)?.timezone ?? "Asia/Bangkok"}&page=${page}` + optionalParams,
+                `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/study/decks?timezone=${get(userStore)?.timezone ?? "Asia/Bangkok"}&page=${page}` + optionalParams,
                 {
                     credentials: "include"
                 }
@@ -43,7 +43,7 @@ export async function fetchUserDecksBareMinimum()
 {
     try {
             const fetchData = await fetch(
-                `${PUBLIC_BACKEND_URL}/deck/decks`,
+                `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks`,
                 {
                     credentials: "include"
                 }
@@ -69,7 +69,7 @@ export async function fetchDeckByDeckId(deckId: string)
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks/${deckId}`,
             {
                 credentials: "include"
             }
@@ -97,7 +97,7 @@ export async function createDeck(deckData: DeckEditableData)
 
     try {
         const fetchData = await fetch(
-            `${PUBLIC_BACKEND_URL}/deck/decks`,
+            `${ENV_VARS.PUBLIC_BACKEND_URL}/deck/decks`,
             {
                 credentials: "include",
                 method: "POST",
