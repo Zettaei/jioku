@@ -311,8 +311,14 @@
 
     // if failed, add to retry
     if (quality < 3) {
-        const failedCard = { ...currentCard, status: CardStatusType.retry } as CardRow;
+        const failedCard = { 
+            ...currentCard, 
+            status: CardStatusType.retry,
+            interval: 1,
+            repetition: 0,
+        } as CardRow;
         retryCards = { ...retryCards!, items: [...retryCards!.items, failedCard], total: retryCards!.total + 1 };
+    
     }
 
     if((retryCards?.items?.length ?? 0) > 0 && countThisSession % 4 === 0) {

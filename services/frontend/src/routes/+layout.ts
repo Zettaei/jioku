@@ -12,12 +12,12 @@ function clearAuth() {
     isLoggedInStore.set(false);
 }
 
+// FIXME: somehow when restart server after a while the is_loggedin cookie is gone, refresh token still persist.
 export async function load() {
 
     if (getCookie("is_loggedin") === "true") {
         try {
             const result = await tokenCheck();
-            console.log(result)
             userStore.set({ username: result.username, role: "member", timezone: result.timezone });
         } catch {
             clearAuth()
